@@ -13,7 +13,8 @@ function Invoke-ById([string]$id) {
     if ($node.Current.IsOffscreen) {
         $scrollId = if ($id -eq 'VersionEdit') { 'LibraryScroll' } else { 'GamesScroll' }
         $scroll = (Find-Control -id $scrollId).GetCurrentPattern([Windows.Automation.ScrollPattern]::Pattern)
-        $scroll.SetScrollPercent([Windows.Automation.ScrollPattern]::NoScroll, 100)
+        $percent = if ($id -in @('GameEdit', 'GameRelocate')) { 0 } else { 100 }
+        $scroll.SetScrollPercent([Windows.Automation.ScrollPattern]::NoScroll, $percent)
         Start-Sleep -Milliseconds 200
     }
     (Find-Control -id $id -Enabled -IncludeOffscreen).GetCurrentPattern([Windows.Automation.InvokePattern]::Pattern).Invoke()
@@ -45,6 +46,9 @@ Invoke-Control 'CheckLocation'
 Invoke-Control 'ConfirmLocation'
 Find-Control -id 'GameRelocate' -Enabled | Out-Null
 Invoke-Control 'CheckTargets'
+Find-Control -name (Label 'TargetMatched') -IncludeOffscreen | Out-Null
+(Find-Control -id 'GamesScroll').GetCurrentPattern([Windows.Automation.ScrollPattern]::Pattern).SetScrollPercent([Windows.Automation.ScrollPattern]::NoScroll, 100)
+Start-Sleep -Milliseconds 250
 Find-Control -name (Label 'TargetMatched') | Out-Null
 Capture '43-relocated-matching'
 Invoke-ById 'GameEdit'
