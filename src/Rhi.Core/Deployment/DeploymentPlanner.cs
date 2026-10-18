@@ -1,4 +1,6 @@
 using Rhi.Core.Models;
+using Rhi.Core.Deployment.Resources;
+using System.Security.Cryptography;
 using Rhi.Core.Storage;
 using Rhi.Core.Storage.Windows;
 
@@ -48,7 +50,9 @@ public sealed class DeploymentPlanner(WorkspaceStore store)
                     throw new DeploymentException("GameIdentityChanged", game.Name);
 
                 var version = request.Kind == OperationKind.Clear ? null : library.Versions.Single(v => v.Id == request.VersionId);
-                var desired = version is null ? new Dictionary<string, string>(PathPolicy.Comparer) : Map(library, version);
+                var mapping = version is null ? new ResourceMap(new(PathPolicy.Comparer), [])
+                    : ResourceMapping.Map(library, version, game);
+                var desired = mapping.Files;
                 var old = receipt?.Files.ToDictionary(f => f.RelativePath, PathPolicy.Comparer)
                     ?? new Dictionary<string, ManagedFile>(PathPolicy.Comparer);
                 var paths = old.Keys.Union(desired.Keys, PathPolicy.Comparer).Order(PathPolicy.Comparer);
@@ -65,18 +69,23 @@ public sealed class DeploymentPlanner(WorkspaceStore store)
                     FileIdentity.AssertSingleLink(target);
                     var before = BlobStore.Hash(target);
                     old.TryGetValue(relative, out var managed);
-                    desired.TryGetValue(relative, out var source);
+                    desired.TryGetValue(relative, out var resource);
+                    var source = resource?.SourcePath;
                     if (managed?.OriginalHash is { } original) store.Blobs.Verify(original);
-                    var wanted = source is null ? managed?.OriginalHash : BlobStore.Hash(source)
-                        ?? throw new DeploymentException("SourceUnavailable", source);
+                    var wanted = resource?.Content is { } content ? Convert.ToHexString(SHA256.HashData(content))
+                        : source is null ? managed?.OriginalHash : BlobStore.Hash(source)
+                            ?? throw new DeploymentException("SourceUnavailable", source);
                     changes.Add(new(relative, source, wanted, before, managed?.OriginalHash,
-                        source is not null, managed is not null && before != managed.InstalledHash,
-                        DirectoryLease.ExistingParent(target)));
+                        resource is not null, managed is not null && before != managed.InstalledHash,
+                        DirectoryLease.ExistingParent(target), resource?.Content, resource?.Edits));
                 }
+                foreach (var input in mapping.Inputs)
+                    if (BlobStore.Hash(input.Path) != input.Hash)
+                        throw new DeploymentException("ChangedSincePreflight", input.Path);
                 plans.Add(new(request, library.Name, version?.Label ?? receipt!.VersionLabel, changes.ToArray(),
                     receipt?.CreatedDirectories ?? [],
                     changes.Any(c => c.BeforeHash is not null && !old.ContainsKey(c.RelativePath)),
-                    changes.Any(c => c.ExternalChange && c.BeforeHash is not null)));
+                    changes.Any(c => c.ExternalChange && c.BeforeHash is not null), mapping.Inputs));
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or DeploymentException or InvalidOperationException)
             { AddIssue(issues, ex); }
@@ -108,24 +117,6 @@ public sealed class DeploymentPlanner(WorkspaceStore store)
         }
     }
 
-    private static Dictionary<string, string> Map(ResourceLibrary library, ResourceVersion version)
-    {
-        if (version.Kind != ResourceKind.Files) throw new DeploymentException("AdapterNotAvailable", version.Kind.ToString());
-        var source = PathPolicy.Full(version.SourcePath);
-        var prefix = PathPolicy.Relative(version.TargetOverride ?? library.TargetRelative);
-        var map = new Dictionary<string, string>(PathPolicy.Comparer);
-        if (File.Exists(source)) map.Add(Path.Combine(prefix, Path.GetFileName(source)), source);
-        else if (Directory.Exists(source))
-            foreach (var file in PathPolicy.Files(source))
-            {
-                var relative = PathPolicy.Relative(Path.Combine(prefix, Path.GetRelativePath(source, file)));
-                if (!map.TryAdd(relative, file)) throw new DeploymentException("TargetConflict", relative);
-            }
-        else throw new DeploymentException("SourceUnavailable", source);
-        if (map.Count == 0) throw new DeploymentException("EmptySource", source);
-        return map;
-    }
-
     private static void CheckParents(string target, string root)
     {
         var parent = Path.GetDirectoryName(target);
@@ -144,6 +135,7 @@ public sealed class DeploymentPlanner(WorkspaceStore store)
             foreach (var change in plans.SelectMany(p => p.Changes))
             {
                 if (change.SourcePath is not null) bytes = checked(bytes + new FileInfo(change.SourcePath).Length);
+                if (change.GeneratedContent is not null) bytes = checked(bytes + change.GeneratedContent.LongLength);
                 var target = PathPolicy.Target(targetRoot, change.RelativePath);
                 if (File.Exists(target)) bytes = checked(bytes + new FileInfo(target).Length);
             }

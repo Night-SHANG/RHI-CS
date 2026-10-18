@@ -76,13 +76,17 @@ public sealed partial class DeploymentEngine(WorkspaceStore store, Action<string
             started = true;
             progress?.Report(new("Preparing", library.LibraryName, 0, library.Changes.Length));
             EnsureIdentity(journal);
+            foreach (var input in library.Inputs ?? [])
+                if (BlobStore.Hash(input.Path) != input.Hash)
+                    throw new DeploymentException("ChangedSincePreflight", input.Path);
             foreach (var change in library.Changes)
             {
                 cancellation.ThrowIfCancellationRequested();
                 var target = PathPolicy.Target(batch.TargetRoot, change.RelativePath);
                 if (BlobStore.Hash(target) != change.BeforeHash) throw new DeploymentException("ChangedSincePreflight", target);
                 if (change.BeforeHash is { } before) store.Blobs.Capture(target, before);
-                if (change.SourcePath is { } source) store.Blobs.Capture(source, change.DesiredHash!);
+                if (change.GeneratedContent is { } content) store.Blobs.CaptureGenerated(content, change.DesiredHash!);
+                else if (change.SourcePath is { } source) store.Blobs.Capture(source, change.DesiredHash!);
                 else if (change.DesiredHash is { } desired) store.Blobs.Verify(desired);
             }
             var modified = library.Changes.Where(c => c.ExternalChange && c.BeforeHash is not null)

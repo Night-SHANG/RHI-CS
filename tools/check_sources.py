@@ -70,6 +70,8 @@ if args.published is not None:
         errors.append("missing published WinUI3Localizer.dll")
     if not (args.published / "Licenses/WinUI3Localizer.txt").is_file():
         errors.append("missing published WinUI3Localizer license")
+    if not (args.published / "Licenses/ReShade.txt").is_file():
+        errors.append("missing published ReShade license")
 for path in (root / "src").rglob("*.cs"):
     if not is_source_file(path):
         continue

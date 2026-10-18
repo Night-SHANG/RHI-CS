@@ -23,6 +23,7 @@
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageReference Include="WinUI3Localizer" Version="2.3.0" />
     <ProjectReference Include="../Rhi.Core/Rhi.Core.csproj" />
+    <Content Include="../Rhi.Core/Vendor/ReShade/LICENSE.txt" Link="Licenses/ReShade.txt" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
     <Content Include="Strings/**/*.resw" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
     <Content Include="Vendor/WinUI3Localizer/LICENSE.txt" Link="Licenses/WinUI3Localizer.txt" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
     <Content Include="../../LICENSE" Link="LICENSE" CopyToOutputDirectory="PreserveNewest" />

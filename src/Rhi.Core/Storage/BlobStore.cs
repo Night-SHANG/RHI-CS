@@ -28,6 +28,24 @@ public sealed class BlobStore(string root)
         if (Hash(PathFor(hash)) != hash) throw new DeploymentException("BackupUnavailable", hash);
     }
 
+    public void CaptureGenerated(byte[] content, string expectedHash)
+    {
+        if (Convert.ToHexString(SHA256.HashData(content)) != expectedHash)
+            throw new DeploymentException("ChangedSincePreflight");
+        var dest = PathFor(expectedHash);
+        if (File.Exists(dest)) { Verify(expectedHash); return; }
+        var temp = dest + "." + Guid.NewGuid().ToString("N") + ".pending";
+        using (var output = new FileStream(temp, FileMode.CreateNew, FileAccess.Write, FileShare.None,
+            81920, FileOptions.WriteThrough))
+        {
+            output.Write(content);
+            output.Flush(true);
+        }
+        if (Hash(temp) != expectedHash) throw new DeploymentException("ChangedSincePreflight");
+        File.Move(temp, dest);
+        Verify(expectedHash);
+    }
+
     public void Capture(string source, string expectedHash)
     {
         var dest = PathFor(expectedHash);

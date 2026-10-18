@@ -158,4 +158,9 @@
   <data name="Available" xml:space="preserve"><value>可用</value></data>
   <data name="View" xml:space="preserve"><value>查看</value></data>
   <data name="SearchLibraries" xml:space="preserve"><value>搜索资源库</value></data>
+  <data name="ReShadeUnsupportedApi" xml:space="preserve"><value>ReShade 自动部署仅支持 DirectX 9、DirectX 10/11/12 和 OpenGL。请确认游戏的图形 API。</value></data>
+  <data name="ReShadeInvalidBinary" xml:space="preserve"><value>无法验证所选文件，或 DLL 与游戏 EXE 的位数不一致。未开始部署。</value></data>
+  <data name="ReShadeInvalidArchive" xml:space="preserve"><value>无法读取官方 ReShade 安装包中的 DLL。请使用受支持的官方安装包或已提取的 DLL；不会运行源安装器。</value></data>
+  <data name="ReShadeInvalidIni" xml:space="preserve"><value>现有 ReShade.ini 无法可靠解析，或搜索路径指向游戏部署目录之外。请检查配置后重新预检。</value></data>
+  <data name="ReShadeTargetMustBeRoot" xml:space="preserve"><value>ReShade 必须部署到已确认的游戏部署目录；此版本不能另设目标子目录。</value></data>
 </root>

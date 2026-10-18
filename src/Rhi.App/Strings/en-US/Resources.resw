@@ -158,4 +158,9 @@
   <data name="Available" xml:space="preserve"><value>Available</value></data>
   <data name="View" xml:space="preserve"><value>View</value></data>
   <data name="SearchLibraries" xml:space="preserve"><value>Search libraries</value></data>
+  <data name="ReShadeUnsupportedApi" xml:space="preserve"><value>Automatic ReShade deployment supports only DirectX 9, DirectX 10/11/12, and OpenGL. Confirm the game's graphics API.</value></data>
+  <data name="ReShadeInvalidBinary" xml:space="preserve"><value>The selected file could not be validated, or the DLL architecture does not match the game executable. Deployment has not started.</value></data>
+  <data name="ReShadeInvalidArchive" xml:space="preserve"><value>The DLL could not be read from the official ReShade installer. Use a supported official installer or an extracted DLL; the source installer is never run.</value></data>
+  <data name="ReShadeInvalidIni" xml:space="preserve"><value>The existing ReShade.ini cannot be parsed reliably, or its search paths point outside the game deployment folder. Check the configuration and run preflight again.</value></data>
+  <data name="ReShadeTargetMustBeRoot" xml:space="preserve"><value>ReShade must use the confirmed game deployment folder; this version cannot specify a separate target subfolder.</value></data>
 </root>
