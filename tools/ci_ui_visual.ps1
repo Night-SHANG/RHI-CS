@@ -72,6 +72,31 @@ function Check-Pages([string]$prefix) {
     Capture "$prefix-empty"
     $query.SetValue('')
     Invoke-Control 'Games'
+    $deploy = Find-Control -name (Label 'Deploy') -Action -IncludeOffscreen
+    $gameScroll = (Find-Control -id 'GamesScroll').GetCurrentPattern([Windows.Automation.ScrollPattern]::Pattern)
+    for ($step = 0; $step -lt 15 -and $deploy.Current.IsOffscreen; $step++) {
+        $gameScroll.Scroll([Windows.Automation.ScrollAmount]::NoAmount, [Windows.Automation.ScrollAmount]::SmallIncrement)
+        Start-Sleep -Milliseconds 150
+    }
+    if ($deploy.Current.IsOffscreen) { throw 'Deployment preview cannot be reached by scrolling.' }
+    $deploy.GetCurrentPattern([Windows.Automation.InvokePattern]::Pattern).Invoke()
+    Find-Control -name (Label 'Preflight') | Out-Null
+    $condition = [Windows.Automation.AndCondition]::new(
+        [Windows.Automation.PropertyCondition]::new([Windows.Automation.AutomationElement]::ProcessIdProperty, $process.Id),
+        [Windows.Automation.PropertyCondition]::new([Windows.Automation.AutomationElement]::ControlTypeProperty, [Windows.Automation.ControlType]::Button))
+    $buttons = [Windows.Automation.AutomationElement]::RootElement.FindAll([Windows.Automation.TreeScope]::Descendants, $condition)
+    $action = @('ConfirmExecute', 'BackupAndExecute', 'ProtectAndExecute') | Where-Object {
+        $name = Label $_
+        @($buttons | Where-Object { $_.Current.Name -eq $name -and -not $_.Current.IsOffscreen }).Count -gt 0
+    } | Select-Object -First 1
+    if (-not $action) { throw 'Preflight action is missing.' }
+    $before = Assert-ActionOrder $action
+    Assert-InWindow (Find-Control -name (Label $action) -Action)
+    Capture "$prefix-preflight"
+    Scroll-DialogToEnd $action -IfNeeded
+    Assert-FixedAction $before $action
+    Capture "$prefix-preflight-scrolled"
+    Invoke-Control 'Cancel'
 }
 
 Record-Dpi 'initial' | Out-Null

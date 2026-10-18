@@ -34,25 +34,32 @@ try {
     $selection = $scaleBox.GetCurrentPattern([Windows.Automation.SelectionPattern]::Pattern).Current.GetSelection()
     if ($selection.Count -ne 1) { throw 'Cannot determine original display scale.' }
     $originalScale = $selection[0].Current.Name
-    foreach ($percent in @(150, 200)) {
+    foreach ($percent in @(125, 150, 175, 200)) {
         $scaleBox.GetCurrentPattern([Windows.Automation.ExpandCollapsePattern]::Pattern).Expand()
         Start-Sleep -Milliseconds 300
         $scaleOptions = @(Display-Items) | Where-Object { $_.Current.ControlType -eq [Windows.Automation.ControlType]::ListItem }
         $evidence.Add('Scale choices: ' + (($scaleOptions | ForEach-Object { $_.Current.Name }) -join ' | '))
         $option = $scaleOptions | Where-Object {
             $_.Current.Name -match "^$percent\s*%" } | Select-Object -First 1
-        if ($null -eq $option) { throw "Display scale $percent percent is unavailable." }
+        if ($null -eq $option) {
+            $evidence.Add("NOT VERIFIED: display scale $percent percent is not offered by this runner.")
+            $scaleBox.GetCurrentPattern([Windows.Automation.ExpandCollapsePattern]::Pattern).Collapse()
+            continue
+        }
         $option.GetCurrentPattern([Windows.Automation.SelectionItemPattern]::Pattern).Select()
         $scaleChanged = $true
         Start-Sleep -Seconds 2
         $actual = Record-Dpi "requested-$percent-percent"
         if ($actual -ne (96 * $percent / 100)) { throw "Scale selector did not change application DPI to $percent percent." }
-        $area = [Windows.Forms.Screen]::PrimaryScreen.WorkingArea
-        [SmokeWindow]::SetWindowPos($process.MainWindowHandle, [IntPtr]::Zero, $area.X, $area.Y, $area.Width, $area.Height, 0x0040) | Out-Null
+        $area = [SmokeWindow+Rect]::new()
+        if (-not [SmokeWindow]::SystemParametersInfo(0x0030, 0, [ref]$area, 0)) { throw 'Cannot read the physical work area.' }
+        $evidence.Add("Physical work area: $($area.Right - $area.Left) x $($area.Bottom - $area.Top)")
+        [SmokeWindow]::SetWindowPos($process.MainWindowHandle, [IntPtr]::Zero, $area.Left, $area.Top, ($area.Right - $area.Left), ($area.Bottom - $area.Top), 0x0040) | Out-Null
         Set-Appearance 'Dark' 'en-US'
         Check-Pages "dpi-$actual-Dark"
         Set-Appearance 'Light' 'zh-CN'
         Check-Pages "dpi-$actual-Light"
+        $evidence.Add("PASS: actual $actual DPI / $percent percent; Light and Dark pages, forms and preflight.")
     }
 } catch {
     if ($scaleChanged -or $_.Exception.Message -notmatch 'No enabled display scale selector|Cannot determine original display scale|Display scale .* is unavailable|Cannot find a process with the name') { throw }

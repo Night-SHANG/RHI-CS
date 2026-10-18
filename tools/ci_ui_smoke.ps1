@@ -15,6 +15,7 @@ public static class SmokeWindow {
     [DllImport("user32.dll")] public static extern IntPtr GetWindowDpiAwarenessContext(IntPtr window);
     [DllImport("user32.dll")] public static extern int GetAwarenessFromDpiAwarenessContext(IntPtr context);
     [DllImport("user32.dll")] public static extern IntPtr SetThreadDpiAwarenessContext(IntPtr context);
+    [DllImport("user32.dll", SetLastError=true)] public static extern bool SystemParametersInfo(uint action, uint parameter, out Rect rect, uint flags);
 }
 '@
 [SmokeWindow]::SetThreadDpiAwarenessContext([IntPtr](-4)) | Out-Null
