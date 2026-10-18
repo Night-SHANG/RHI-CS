@@ -34,6 +34,7 @@ internal static class FileReplacement
             if (File.Exists(path) || Directory.Exists(path)) throw new DeploymentException("TargetConflict", path);
         if (BlobStore.Hash(paths.Target) != change.BeforeHash)
             throw new DeploymentException("ChangedSincePreflight", paths.Target);
+        if (change.BeforeHash == change.DesiredHash) return;
 
         using var staged = change.DesiredHash is { } desired
             ? Prepare(blobs, desired, paths.Next, () => fault?.Invoke("StageWriting", index)) : null;

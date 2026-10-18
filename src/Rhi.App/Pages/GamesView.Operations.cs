@@ -16,8 +16,8 @@ public sealed partial class GamesView
         {
             panel.Children.Add(Ui.Text(library.LibraryName + " · " + library.VersionLabel + " · " + Strings.Get(library.Request.Kind.ToString()), 18));
             panel.Children.Add(Ui.Text(Strings.Format("PlanCounts", library.Changes.Count(f => f.BeforeHash is null && f.DesiredHash is not null),
-                library.Changes.Count(f => f.BeforeHash is not null && f.DesiredHash is not null),
-                library.Changes.Count(f => f.DesiredHash is null), library.Changes.Count(f => f.ExternalChange))));
+                library.Changes.Count(f => f.BeforeHash is not null && f.DesiredHash is not null && f.BeforeHash != f.DesiredHash),
+                library.Changes.Count(f => f.DesiredHash is null && f.BeforeHash is not null), library.Changes.Count(f => f.ExternalChange))));
             foreach (var file in library.Changes)
             {
                 var detail = Ui.Stack(Ui.Text(file.RelativePath + " · " + Strings.Get(file.ExternalChange ? "ExternalChange" :

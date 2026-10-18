@@ -21,8 +21,10 @@ function Label([string]$key) {
     if ($null -eq $node) { throw "Missing locale key: $key" }
     return $node.InnerText
 }
+$launchTime = Get-Date
 $process = Start-Process -FilePath (Join-Path $appRoot 'RHI-CS.exe') -PassThru `
     -RedirectStandardOutput (Join-Path $captureRoot 'stdout.txt') -RedirectStandardError (Join-Path $captureRoot 'stderr.txt')
+$processHandle = $process.Handle
 function Find-Control([string]$name = '', [string]$id = '', [switch]$Action) {
     $limit = [Diagnostics.Stopwatch]::StartNew()
     while ($limit.Elapsed.TotalSeconds -lt 25) {
@@ -110,6 +112,24 @@ try {
     [IO.File]::WriteAllText((Join-Path $captureRoot 'result.txt'), 'PASS: application launch, type controls, INI preview, and search retention. Screenshots require visual review.', [Text.Encoding]::UTF8)
 } catch {
     try { Capture 'failure' } catch { Write-Warning $_ }
+    $diagnostic = @(
+        "Interactive: $([Environment]::UserInteractive)",
+        "Process ID: $($process.Id)",
+        "Exited: $($process.HasExited)",
+        "Exit code: $($process.ExitCode)",
+        "Launch: $launchTime"
+    )
+    foreach ($stream in @('stdout.txt', 'stderr.txt')) {
+        $streamPath = Join-Path $captureRoot $stream
+        if (Test-Path -LiteralPath $streamPath) { $diagnostic += [IO.File]::ReadAllText($streamPath, [Text.Encoding]::UTF8) }
+    }
+    try {
+        $diagnostic += Get-WinEvent -FilterHashtable @{LogName='Application'; StartTime=$launchTime.AddSeconds(-5)} -ErrorAction Stop |
+            Where-Object { $_.Message -match 'RHI-CS|Microsoft.UI.Xaml|WinUI3Localizer|WindowsAppRuntime' } |
+            Select-Object -First 15 | ForEach-Object { "$($_.ProviderName): $($_.Message)" }
+    } catch { $diagnostic += "Event log: $_" }
+    [IO.File]::WriteAllLines((Join-Path $captureRoot 'startup-diagnostics.txt'), [string[]]$diagnostic, [Text.Encoding]::UTF8)
+    $diagnostic | Write-Host
     throw
 } finally {
     if (-not $process.HasExited) { $process.Kill(); $process.WaitForExit() }
