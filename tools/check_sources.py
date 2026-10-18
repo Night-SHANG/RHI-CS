@@ -13,6 +13,12 @@ parser.add_argument("--published", type=Path)
 args = parser.parse_args()
 errors = []
 checked = 0
+
+# Windows PowerShell 5.1 interprets BOM-less script files as the system code page.
+for path in (root / "tools").glob("*.ps1"):
+    data = path.read_bytes()
+    if not data.startswith(b"\xef\xbb\xbf") and not data.isascii():
+        errors.append(f"PowerShell script needs UTF-8 BOM or ASCII-only source: {path}")
 def is_source_file(path):
     return path.is_file() and not any(part in {"obj", "bin"} for part in path.relative_to(root).parts)
 

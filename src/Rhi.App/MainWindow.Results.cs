@@ -26,8 +26,9 @@ public sealed partial class MainWindow
             var item = session.TaskContext?.Resources.FirstOrDefault(r => r.LibraryId == result.LibraryId);
             var row = Ui.Stack(Ui.Text((item?.Name ?? result.LibraryId.ToString()) +
                 (string.IsNullOrEmpty(item?.Version) ? "" : " · " + item.Version), 18),
-                Ui.Text(Strings.Get(item?.Action ?? "Unknown") + " · " + Strings.Get(result.Status.ToString())),
-                Ui.Text(Strings.Get(result.Detail)));
+                Ui.Text(Strings.Get(item?.Action ?? "Unknown") + " · " + Strings.Get(result.Status.ToString())));
+            if (Strings.Get(result.Detail) != Strings.Get(result.Status.ToString()))
+                row.Children.Add(Ui.Text(Strings.Get(result.Detail)));
             if (session.Store is { } store && result.OperationId is { } operation)
             {
                 var copies = Path.Combine(store.Root, "protection", operation.ToString("N"), "files");

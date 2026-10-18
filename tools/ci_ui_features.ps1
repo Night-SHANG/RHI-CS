@@ -4,6 +4,7 @@ $fixture = [IO.File]::ReadAllText((Resolve-Path -LiteralPath $FixtureMetadata).P
 $alpha = $fixture.AlphaId.Replace('-', '')
 $beta = $fixture.BetaId.Replace('-', '')
 $reshade = $fixture.ReShadeId.Replace('-', '')
+$taskPrefix = 'CI Game ' + [char]0x00B7 + ' '
 function Reveal-Control([string]$id, [string]$scrollId) {
     $element = Find-Control -id $id -IncludeOffscreen
     if (-not $element.Current.IsOffscreen) { return $element }
@@ -49,7 +50,7 @@ Capture '23-protect-before-clear'
 Invoke-Control 'ProtectAndExecute'
 Find-Control -id "DeployLibrary_$reshade" -Enabled | Out-Null
 Invoke-Control 'TaskResults'
-Find-Control -name ("CI Game · " + (Label 'Clear')) | Out-Null
+Find-Control -name ($taskPrefix + (Label 'Clear')) | Out-Null
 Find-Control -name (Label 'OpenProtectedCopies') -Action | Out-Null
 Capture '24-clear-result-with-backup'
 Invoke-Control 'Close'
@@ -59,7 +60,7 @@ Reveal-Control 'ProtectionUsage' 'SettingsScroll' | Out-Null
 Capture '25-protection-inventory'
 # Results retain their original game/action when opened from another page.
 Invoke-Control 'TaskResults'
-Find-Control -name ("CI Game · " + (Label 'Clear')) | Out-Null
+Find-Control -name ($taskPrefix + (Label 'Clear')) | Out-Null
 Invoke-Control 'Close'
 Invoke-Control 'Games'
 Select-Batch
@@ -84,7 +85,7 @@ Capture '27-batch-rechecked'
 Invoke-Control 'ConfirmExecute'
 Find-Control -id "ClearLibrary_$alpha" -Enabled -IncludeOffscreen | Out-Null
 Invoke-Control 'TaskResults'
-Find-Control -name ("CI Game · " + (Label 'Deploy')) | Out-Null
+Find-Control -name ($taskPrefix + (Label 'Deploy')) | Out-Null
 Find-Control -name (Label 'SkippedByUser') | Out-Null
 Capture '28-batch-result'
 Invoke-Control 'Close'
@@ -111,7 +112,7 @@ $labels = [xml][IO.File]::ReadAllText((Join-Path $appRoot 'Strings/en-US/Resourc
 Reveal-Control 'ProtectionUsage' 'SettingsScroll' | Out-Null
 Capture '31-protection-inventory-en'
 Invoke-Control 'TaskResults'
-Find-Control -name ('CI Game · ' + (Label 'Deploy')) | Out-Null
+Find-Control -name ($taskPrefix + (Label 'Deploy')) | Out-Null
 Find-Control -name (Label 'SkippedByUser') | Out-Null
 Capture '32-batch-result-en'
 Invoke-Control 'Close'
