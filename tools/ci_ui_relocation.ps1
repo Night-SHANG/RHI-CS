@@ -9,6 +9,7 @@ function Assert-Save([bool]$enabled, [string]$key = 'Save') {
     if ((Find-Control -name (Label $key) -Action).Current.IsEnabled -ne $enabled) { throw "Unexpected enabled state: $key" }
 }
 function Invoke-ById([string]$id) {
+    if ($id -eq 'VersionEdit') { Invoke-Control 'View' }
     $node = Find-Control -id $id -Enabled -IncludeOffscreen
     if ($node.Current.IsOffscreen) {
         $scrollId = if ($id -eq 'VersionEdit') { 'LibraryScroll' } else { 'GamesScroll' }
@@ -71,7 +72,7 @@ Assert-FixedAction $position
 Invoke-Control 'Save'
 Invoke-Control 'Libraries'
 Invoke-Control 'AddLibrary'
-Assert-Save $false
+Assert-Save $true
 $position = Assert-ActionOrder 'Save'
 Set-Input 'LibraryNameInput' 'UI temporary library'
 Set-Input 'LibraryTargetInput' '../outside'

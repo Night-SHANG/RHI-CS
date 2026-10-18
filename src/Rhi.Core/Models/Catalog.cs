@@ -9,7 +9,7 @@ public sealed record GameEntry(Guid Id, string Name, string InstallRoot, string 
 public sealed record ResourceVersion(Guid Id, string Label, string SourcePath,
     string? TargetOverride, ResourceKind Kind);
 public sealed record ResourceLibrary(Guid Id, string Name, string TargetRelative,
-    ResourceVersion[] Versions);
+    ResourceVersion[] Versions, string? SourceRoot = null);
 public sealed record ManagedFile(string RelativePath, string InstalledHash, string? OriginalHash);
 public sealed record DeploymentReceipt(Guid GameId, Guid LibraryId, Guid VersionId,
     string VersionLabel, string TargetRoot, string ExeHash, ManagedFile[] Files, string[] CreatedDirectories,

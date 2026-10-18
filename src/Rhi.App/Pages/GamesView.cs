@@ -13,6 +13,10 @@ public sealed partial class GamesView : UserControl
     private readonly PageContext c;
     private readonly Dictionary<Guid, Guid> selected = [];
     private Button? batchButton;
+    private Button? clearBatchButton;
+    private CheckBox? selectAll;
+    private readonly List<CheckBox> selectionBoxes = [];
+    private bool updatingAll;
     public GamesView(PageContext context)
     {
         c = context;
@@ -28,7 +32,7 @@ public sealed partial class GamesView : UserControl
         {
             if (detail.Content is not null && c.GameId == game?.Id) return;
             c.GameId = game?.Id;
-            selected.Clear(); batchButton = null;
+            selected.Clear(); selectionBoxes.Clear(); batchButton = null; clearBatchButton = null; selectAll = null;
             detail.Content = GameBody(game);
         }
         void Filter()
@@ -85,84 +89,151 @@ public sealed partial class GamesView : UserControl
             body.Children.Add(Ui.Label("LocalResources", 20));
             body.Children.Add(Ui.Label("PreflightHelp"));
             var table = new StackPanel();
-            table.Children.Add(Ui.TableLine(TableRow(Ui.Label("Select"), Ui.Label("LibraryName"), Ui.Label("VersionLabel"), Ui.Label("Status"), Ui.Label("Actions")), true));
+            selectAll = new CheckBox();
+            AutomationProperties.SetAutomationId(selectAll, "SelectAllLibraries");
+            AutomationProperties.SetName(selectAll, Strings.Get("SelectAll"));
+            ToolTipService.SetToolTip(selectAll, Strings.Get("SelectAll"));
+            void ToggleAll(object sender, RoutedEventArgs args)
+            {
+                if (updatingAll) return;
+                var value = selectionBoxes.Any(b => b.IsEnabled && b.IsChecked != true);
+                foreach (var check in selectionBoxes.Where(b => b.IsEnabled)) check.IsChecked = value;
+                UpdateSelection();
+            }
+            selectAll.Checked += ToggleAll;
+            selectAll.Unchecked += ToggleAll;
+            selectAll.Indeterminate += ToggleAll;
+            table.Children.Add(Ui.TableLine(TableRow(selectAll, Ui.Label("LibraryName"), Ui.Label("VersionLabel"), Ui.Label("Status"), Ui.Label("Actions")), true));
             foreach (var library in state.Libraries) table.Children.Add(Ui.TableLine(ResourceRow(game, library, pending.Length > 0 || !locationAvailable)));
             body.Children.Add(table);
             if (state.Libraries.Length == 0) body.Children.Add(Ui.Label("NoLibraries"));
         }
         batchButton = c.Button("PreflightSelected", async () =>
         {
-            if (game is not null) await Preflight(game, selected.Select(s => new DeploymentRequest(s.Key, s.Value, OperationKind.Deploy)).ToArray());
+            if (game is not null) await Preflight(game, SelectedRequests(clear: false));
         }, false);
         AutomationProperties.SetAutomationId(batchButton, "BatchPreflight");
+        clearBatchButton = c.Button("ClearDeployment", async () =>
+        {
+            if (game is not null) await Preflight(game, SelectedRequests(clear: true));
+        }, false);
+        AutomationProperties.SetAutomationId(clearBatchButton, "BatchClear");
         UpdateSelection();
         var scroll = Ui.Scroll(body);
         AutomationProperties.SetAutomationId(scroll, "GamesScroll");
-        return Ui.Dock(scroll, batchButton);
+        return Ui.Dock(scroll, Ui.Stack(Ui.Label("BatchSelectionHelp"), Ui.Row(batchButton, clearBatchButton)));
     }
 
     private UIElement ResourceRow(GameEntry game, ResourceLibrary library, bool locked)
     {
         var receipt = c.Session.State!.Receipts.SingleOrDefault(r => r.GameId == game.Id && r.LibraryId == library.Id);
-        if (receipt is not null)
-        {
-            var clear = c.Button("ClearDeployment", () => Preflight(game, [new(library.Id, null, OperationKind.Clear)]), !c.Session.Busy && !locked);
-            AutomationProperties.SetAutomationId(clear, "ClearLibrary_" + library.Id.ToString("N"));
-            var actions = Ui.Stack(c.Button("ChangeVersion", () => ChooseVersion(game, library, receipt),
-                !c.Session.Busy && !locked && library.Versions.Any(v => v.Id != receipt.VersionId && SourceAvailable(v))),
-                clear,
-                c.Button("ViewDifferences", () => ViewDifferences(game, library, receipt), !c.Session.Busy));
-            var snapshot = c.Session.TargetObservation;
-            var health = snapshot?.GameId == game.Id && snapshot.Revision == c.Session.State.Revision
-                ? snapshot.Receipts.FirstOrDefault(r => r.LibraryId == library.Id)?.Health.ToString() : null;
-            var status = Ui.Stack(Ui.Status("Installed"), Ui.Status(health ?? "NotChecked"));
-            if (!library.Versions.Any(v => v.Id != receipt.VersionId && SourceAvailable(v))) status.Children.Add(Ui.Label("NoOtherVersion"));
-            if (!library.Versions.Any(v => v.Id == receipt.VersionId && SourceAvailable(v))) status.Children.Add(Ui.Status("SourceUnavailable"));
-            return TableRow(Ui.Text(""), Ui.Text(library.Name), Ui.Text(receipt.VersionLabel), status, actions);
-        }
         var versions = library.Versions;
         var box = new ComboBox { ItemsSource = versions.Select(ResourcePresentation.VersionName).ToArray(),
             MinWidth = 0, HorizontalAlignment = HorizontalAlignment.Stretch };
-        box.SelectedIndex = Array.FindIndex(versions, SourceAvailable);
+        box.SelectedIndex = receipt is null ? Array.FindIndex(versions, SourceAvailable) : Array.FindIndex(versions, v => v.Id == receipt.VersionId);
+        AutomationProperties.SetAutomationId(box, "VersionChoice_" + library.Id.ToString("N"));
         var check = new CheckBox();
+        selectionBoxes.Add(check);
         AutomationProperties.SetAutomationId(check, "SelectLibrary_" + library.Id.ToString("N"));
-        var deploy = c.Button("Deploy", async () =>
+        AutomationProperties.SetName(check, Strings.Get("Select") + " " + library.Name);
+        var deploy = c.Button(receipt is null ? "Deploy" : "ChangeVersion", async () =>
         {
-            if (box.SelectedIndex >= 0) await Preflight(game, [new(library.Id, versions[box.SelectedIndex].Id, OperationKind.Deploy)]);
+            if (box.SelectedIndex >= 0) await Preflight(game, [new(library.Id, versions[box.SelectedIndex].Id,
+                receipt is null ? OperationKind.Deploy : OperationKind.Change)]);
         });
-        AutomationProperties.SetAutomationId(deploy, "DeployLibrary_" + library.Id.ToString("N"));
-        var statusText = Ui.Label("NotDeployed");
+        AutomationProperties.SetAutomationId(deploy, (receipt is null ? "DeployLibrary_" : "ChangeLibrary_") + library.Id.ToString("N"));
+        var statusText = Ui.Text("");
+        var status = Ui.Stack(Ui.Status(receipt is null ? "NotDeployed" : "Installed"), statusText);
+        status.Spacing = 4;
+        var versionCell = Ui.Stack(box);
+        versionCell.Spacing = 4;
+        var actions = Ui.Row(deploy);
+        if (receipt is not null)
+        {
+            versionCell.Children.Insert(0, Ui.Secondary(Strings.Get("CurrentVersion") + ": " + receipt.VersionLabel));
+            var clear = c.Button("ClearDeployment", () => Preflight(game, [new(library.Id, null, OperationKind.Clear)]), !c.Session.Busy && !locked);
+            AutomationProperties.SetAutomationId(clear, "ClearLibrary_" + library.Id.ToString("N"));
+            Ui.AddToRow(actions, clear);
+            Ui.AddToRow(actions, c.Button("ViewDifferences", () => ViewDifferences(game, library, receipt), !c.Session.Busy));
+            var snapshot = c.Session.TargetObservation;
+            var health = snapshot?.GameId == game.Id && snapshot.Revision == c.Session.State.Revision
+                ? snapshot.Receipts.FirstOrDefault(r => r.LibraryId == library.Id)?.Health.ToString() : null;
+            status.Children.Insert(1, Ui.Status(health ?? "NotChecked"));
+        }
         void Update()
         {
             ToolTipService.SetToolTip(box, box.SelectedIndex >= 0 ? ResourcePresentation.VersionName(versions[box.SelectedIndex]) : null);
             var usable = !c.Session.Busy && !locked && box.SelectedIndex >= 0 && SourceAvailable(versions[box.SelectedIndex]);
-            check.IsEnabled = usable; deploy.IsEnabled = usable; box.IsEnabled = !c.Session.Busy && !locked;
-            if (!usable) check.IsChecked = false;
-            statusText.Text = Strings.Get(box.SelectedIndex >= 0 && SourceAvailable(versions[box.SelectedIndex]) ? "NotDeployed" : "SourceUnavailable");
-            if (check.IsChecked == true) selected[library.Id] = versions[box.SelectedIndex].Id;
+            var same = receipt is not null && box.SelectedIndex >= 0 && versions[box.SelectedIndex].Id == receipt.VersionId;
+            check.IsEnabled = !c.Session.Busy && !locked && (receipt is not null || usable);
+            deploy.IsEnabled = usable && !same; box.IsEnabled = !c.Session.Busy && !locked;
+            if (!check.IsEnabled) check.IsChecked = false;
+            var reason = !usable ? "SourceUnavailable" : same
+                ? versions.Any(v => v.Id != receipt!.VersionId && SourceAvailable(v)) ? "ChooseOtherVersion" : "NoOtherVersion" : null;
+            statusText.Text = reason is null ? "" : Strings.Get(reason);
+            statusText.Visibility = reason is null ? Visibility.Collapsed : Visibility.Visible;
+            if (check.IsChecked == true) selected[library.Id] = box.SelectedIndex >= 0 ? versions[box.SelectedIndex].Id : Guid.Empty;
             else selected.Remove(library.Id);
             UpdateSelection();
         }
         check.Checked += (_, _) => Update(); check.Unchecked += (_, _) => Update();
         box.SelectionChanged += (_, _) => Update(); Update();
-        return TableRow(check, Ui.Text(library.Name), box, statusText, deploy);
+        return TableRow(check, Ui.Text(library.Name), versionCell, status, actions);
     }
 
     private void UpdateSelection()
     {
         if (batchButton is null) return;
-        Ui.ButtonContent(batchButton, Strings.Format("PreflightCount", selected.Count));
+        var deployCount = SelectedRequests(clear: false).Length;
+        var clearCount = SelectedRequests(clear: true).Length;
+        Ui.ButtonContent(batchButton, Strings.Format("BatchDeployCount", deployCount));
         batchButton.Style = (Style)Application.Current.Resources["AccentButtonStyle"];
-        batchButton.IsEnabled = selected.Count > 0 && !c.Session.Busy;
-        batchButton.HorizontalAlignment = HorizontalAlignment.Right;
+        batchButton.IsEnabled = deployCount > 0 && !c.Session.Busy;
+        if (clearBatchButton is not null)
+        {
+            Ui.ButtonContent(clearBatchButton, Strings.Format("BatchClearCount", clearCount));
+            clearBatchButton.IsEnabled = clearCount > 0 && !c.Session.Busy;
+        }
+        if (selectAll is not null)
+        {
+            updatingAll = true;
+            var eligible = selectionBoxes.Where(b => b.IsEnabled).ToArray();
+            var count = eligible.Count(b => b.IsChecked == true);
+            selectAll.IsEnabled = eligible.Length > 0 && !c.Session.Busy;
+            selectAll.IsChecked = count == 0 ? false : count == eligible.Length ? true : null;
+            updatingAll = false;
+        }
+    }
+
+    private DeploymentRequest[] SelectedRequests(bool clear)
+    {
+        var state = c.Session.State!;
+        return selected.Select(pair =>
+        {
+            var receipt = state.Receipts.FirstOrDefault(r => r.GameId == c.GameId && r.LibraryId == pair.Key);
+            if (clear) return receipt is null ? null : new DeploymentRequest(pair.Key, null, OperationKind.Clear);
+            var version = state.Libraries.Single(l => l.Id == pair.Key).Versions.FirstOrDefault(v => v.Id == pair.Value);
+            return version is null || !SourceAvailable(version) || receipt?.VersionId == version.Id ? null :
+                new DeploymentRequest(pair.Key, version.Id, receipt is null ? OperationKind.Deploy : OperationKind.Change);
+        }).OfType<DeploymentRequest>().ToArray();
     }
     private static bool SourceAvailable(ResourceVersion v) => ResourcePresentation.SourceAvailable(v);
     private static Grid TableRow(params FrameworkElement[] cells)
     {
-        var grid = new Grid { ColumnSpacing = 12, Padding = new Thickness(12), MinHeight = 62 };
-        foreach (var width in new[] { 48d, 1.1, 1.6, 1.0, 1.4 })
+        var grid = new Grid { ColumnSpacing = 12, RowSpacing = 8, Padding = new Thickness(12), MinHeight = 62 };
+        grid.RowDefinitions.Add(new() { Height = GridLength.Auto });
+        grid.RowDefinitions.Add(new() { Height = GridLength.Auto });
+        foreach (var width in new[] { 48d, 1.1, 2.2, 1.2, 3.0 })
             grid.ColumnDefinitions.Add(new() { Width = width == 48 ? new GridLength(width) : new GridLength(width, GridUnitType.Star) });
         for (var i = 0; i < cells.Length; i++) { Grid.SetColumn(cells[i], i); grid.Children.Add(cells[i]); }
+        grid.SizeChanged += (_, e) =>
+        {
+            var narrow = e.NewSize.Width < 940;
+            grid.ColumnDefinitions[4].Width = narrow ? new GridLength(0) : new GridLength(3, GridUnitType.Star);
+            Grid.SetRow(cells[4], narrow ? 1 : 0);
+            Grid.SetColumn(cells[4], narrow ? 1 : 4);
+            Grid.SetColumnSpan(cells[4], narrow ? 4 : 1);
+        };
         return grid;
     }
 }

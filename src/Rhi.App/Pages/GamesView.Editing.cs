@@ -36,6 +36,7 @@ public sealed partial class GamesView
         AutomationProperties.SetAutomationId(exe, "GameExeInput");
         AutomationProperties.SetAutomationId(install, "GameInstallInput");
         AutomationProperties.SetAutomationId(target, "GameTargetInput");
+        AutomationProperties.SetAutomationId(api, "GameApiInput");
         var pick = c.Button("SelectExecutable", async () =>
         {
             var path = await c.Windows.PickFile(".exe");
@@ -47,6 +48,10 @@ public sealed partial class GamesView
             var suggestedApi = await Task.Run(() => GraphicsInspection.SuggestApi(path));
             api.SelectedIndex = Math.Max(0, Array.IndexOf(apiNames, suggestedApi));
         });
+        pick.VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Bottom;
+        var executableRow = Ui.Row(exe, pick);
+        executableRow.ColumnDefinitions[0].Width = new Microsoft.UI.Xaml.GridLength(1, Microsoft.UI.Xaml.GridUnitType.Star);
+        executableRow.ColumnDefinitions[1].Width = Microsoft.UI.Xaml.GridLength.Auto;
         var managed = existing is not null && c.Session.State!.Receipts.Any(r => r.GameId == existing.Id);
         exe.IsReadOnly = install.IsReadOnly = target.IsReadOnly = managed;
         pick.IsEnabled = !managed;
@@ -55,7 +60,7 @@ public sealed partial class GamesView
             new(id, name.Text, install.Text, exe.Text, target.Text, apiNames[Math.Max(0, api.SelectedIndex)], "Unknown",
                 existing?.Source ?? discovered?.Source ?? "Manual"));
         await c.Edit(existing is null ? "AddGame" : "Edit",
-            Ui.Stack(name, exe, pick, install, target, api, Ui.Label(managed ? "ManagedPathHelp" : "ExeHelp")),
+            Ui.Stack(name, executableRow, install, target, api, Ui.Label(managed ? "ManagedPathHelp" : "ExeHelp")),
             () => { Read(); }, () =>
             {
                 var game = Read(); var state = c.Session.State!;
@@ -66,11 +71,4 @@ public sealed partial class GamesView
             }, [name, exe, install, target, api, pick]);
     }
 
-    private async Task ChooseVersion(GameEntry game, ResourceLibrary library, DeploymentReceipt receipt)
-    {
-        var versions = library.Versions.Where(v => v.Id != receipt.VersionId && SourceAvailable(v)).ToArray();
-        var box = Ui.Choice("CandidateVersion", versions.Select(ResourcePresentation.VersionName));
-        if (await c.Confirm("ChangeVersion", Ui.Stack(Ui.Text(Strings.Get("CurrentVersion") + ": " + receipt.VersionLabel), box), "Preflight", versions.Length > 0))
-            await Preflight(game, [new(library.Id, versions[box.SelectedIndex].Id, OperationKind.Change)]);
-    }
 }

@@ -117,6 +117,7 @@ function Assert-Destination([string]$key, [string]$folder) {
     }
 }
 function Invoke-LibraryControl([string]$id) {
+    if ($id -eq 'VersionEdit') { Invoke-Control 'View' }
     $node = Find-Control -id $id -Enabled -IncludeOffscreen
     if ($node.Current.IsOffscreen) {
         # Match the existing relocation check: reach the actual button by scrolling its owning view.
@@ -173,9 +174,13 @@ try {
         if ((Find-Control -id 'GameRelocate' -IncludeOffscreen).Current.IsEnabled) { throw 'Pending game can be relocated.' }
         Invoke-Control 'Libraries'
         Find-Control -name (Label 'PendingConfigurationLocked') | Out-Null
-        foreach ($id in @('LibraryEdit', 'LibraryAddVersion', 'VersionEdit')) {
+        foreach ($id in @('LibraryEdit', 'LibraryAddVersion')) {
             if ((Find-Control -id $id -IncludeOffscreen).Current.IsEnabled) { throw "Pending library control is enabled: $id" }
         }
+        Invoke-Control 'View'
+        if ((Find-Control -id 'VersionEdit').Current.IsEnabled) { throw 'Pending version is editable.' }
+        Capture '17-version-locked-zh'
+        Invoke-Control 'Close'
         Capture '17-library-locked-zh'
         $query = (Find-Control -id 'LibrariesSearch').GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern)
         $query.SetValue('Other library')
@@ -204,9 +209,12 @@ try {
         }
         if (-not (Find-Control -id 'GameEdit').Current.IsEnabled) { throw 'Recovered game is still locked.' }
         Invoke-Control 'Libraries'
-        foreach ($id in @('LibraryEdit', 'LibraryAddVersion', 'VersionEdit')) {
+        foreach ($id in @('LibraryEdit', 'LibraryAddVersion')) {
             if (-not (Find-Control -id $id -IncludeOffscreen).Current.IsEnabled) { throw "Recovered library is still locked: $id" }
         }
+        Invoke-Control 'View'
+        if (-not (Find-Control -id 'VersionEdit').Current.IsEnabled) { throw 'Recovered version is locked.' }
+        Invoke-Control 'Close'
         $unlockedBounds = (Find-Control -id 'LibraryEdit').Current.BoundingRectangle
         if ([Math]::Abs($lockedBounds.X - $unlockedBounds.X) -gt 1 -or [Math]::Abs($lockedBounds.Y - $unlockedBounds.Y) -gt 1) {
             throw 'Changing lock state moved the library edit action.'
@@ -232,10 +240,12 @@ try {
     $libraryTarget = (Find-Control -id 'LibraryTargetInput').GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern)
     $originalLibraryTarget = $libraryTarget.Current.Value
     $libraryTarget.SetValue('mods')
+    (Find-Control -id 'LibrarySourceRootInput' -IncludeOffscreen).GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).SetValue([IO.Path]::GetDirectoryName($legacySource))
     Assert-FormReady
     Capture '03-library-subfolder-ready'
     Invoke-Control 'Save'
     Invoke-LibraryControl 'LibraryAddVersion'
+    . (Join-Path $PSScriptRoot 'ci_ui_library_folder.ps1')
     Assert-NoResourceType
     $filesSave = Assert-ActionOrder 'Save'
     Capture '03-version-files'

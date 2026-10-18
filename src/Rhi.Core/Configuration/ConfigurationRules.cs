@@ -13,6 +13,25 @@ public static class ConfigurationRules
     public static ResourceLibrary Library(ResourceLibrary value) => value with
     { Name = Name(value.Name), TargetRelative = TargetFolder(value.TargetRelative) };
 
+    public static ResourceLibrary Library(WorkspaceState state, string dataRoot, ResourceLibrary value)
+    {
+        var library = Library(value);
+        if (string.IsNullOrWhiteSpace(value.SourceRoot)) return library with { SourceRoot = null };
+        var root = SourcePath(value.SourceRoot);
+        if (!Directory.Exists(root)) throw new DeploymentException("LibraryFolderMissing", root);
+        try { PathPolicy.Disjoint(root, dataRoot); }
+        catch (DeploymentException ex) when (ex.Code == "OverlappingPaths")
+        { throw new DeploymentException("SourceOverlapsData", root); }
+        try
+        {
+            foreach (var game in state.Games)
+            { PathPolicy.DisjointSource(root, game.InstallRoot); PathPolicy.DisjointSource(root, game.DeploymentRoot); }
+        }
+        catch (DeploymentException ex) when (ex.Code == "OverlappingPaths")
+        { throw new DeploymentException("SourceOverlapsGame", root); }
+        return library with { SourceRoot = root };
+    }
+
     private static string TargetFolder(string value)
     {
         if (Path.IsPathRooted(value)) throw new DeploymentException("TargetFolderAbsolute", value);
@@ -73,7 +92,8 @@ public static class ConfigurationRules
              !PathPolicy.Comparer.Equals(old.DeploymentRoot, target))) throw new DeploymentException("ManagedLocationLocked");
         PathPolicy.Disjoint(install, dataRoot); PathPolicy.Disjoint(target, dataRoot);
         foreach (var other in state.Games.Where(g => g.Id != value.Id)) PathPolicy.DisjointSource(other.DeploymentRoot, target);
-        foreach (var source in state.Libraries.SelectMany(l => l.Versions).Select(v => v.SourcePath))
+        foreach (var source in state.Libraries.SelectMany(l => l.Versions.Select(v => v.SourcePath)
+                     .Concat(l.SourceRoot is { Length: > 0 } root ? [root] : [])))
         { PathPolicy.DisjointSource(source, install); PathPolicy.DisjointSource(source, target); }
         return value with { Name = name, ExePath = exe, InstallRoot = install, DeploymentRoot = target, Architecture = architecture };
     }

@@ -253,4 +253,12 @@
   <data name="DataLocationChanged" xml:space="preserve"><value>Another instance changed the data location. Close and reopen the application, then try again.</value></data>
   <data name="VersionTargetRule" xml:space="preserve"><value>Leave blank to use the library setting. Subfolders are created during deployment.</value></data>
   <data name="VersionTargetLocation" xml:space="preserve"><value>Destination: {0}</value></data>
+  <data name="LibrarySourceRoot" xml:space="preserve"><value>Library folder</value></data>
+  <data name="LibrarySourceRootHelp" xml:space="preserve"><value>Optional. Start here when choosing version files. Existing files are not moved.</value></data>
+  <data name="LibraryFolderMissing" xml:space="preserve"><value>The library folder is missing or inaccessible. Update it, or enter the version's resource directory manually.</value></data>
+  <data name="ChooseOtherVersion" xml:space="preserve"><value>Select another version to change versions.</value></data>
+  <data name="SelectAll" xml:space="preserve"><value>Select all / clear selection</value></data>
+  <data name="BatchDeployCount" xml:space="preserve"><value>Deploy / change ({0})</value></data>
+  <data name="BatchClearCount" xml:space="preserve"><value>Clear deployment ({0})</value></data>
+  <data name="BatchSelectionHelp" xml:space="preserve"><value>Counts reflect applicable selected resources. Each action opens preflight; deselecting does not clear deployment.</value></data>
 </root>

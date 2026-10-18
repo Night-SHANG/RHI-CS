@@ -32,6 +32,12 @@ internal static class FeatureFixture
             return new(Guid.NewGuid(), name, "", [new(Guid.NewGuid(), "v1", source, null, ResourceKind.Files)]);
         }
         var alpha = Library("Alpha");
+        var secondDirectory = Path.Combine(Path.GetDirectoryName(alpha.Versions[0].SourcePath)!, "v2");
+        Directory.CreateDirectory(secondDirectory);
+        var secondSource = Path.Combine(secondDirectory, "shared.txt");
+        File.WriteAllText(secondSource, "Alpha-v2", System.Text.Encoding.UTF8);
+        alpha = alpha with { SourceRoot = Path.GetDirectoryName(alpha.Versions[0].SourcePath),
+            Versions = [alpha.Versions[0], new(Guid.NewGuid(), "v2", secondSource, null, ResourceKind.Files)] };
         var beta = Library("Beta");
         store.Save(store.State with { Libraries = [reshade, alpha, beta], Preferences = new("Dark", "zh-CN") });
         var plan = new DeploymentPlanner(store).Build(store.State, game.Id,

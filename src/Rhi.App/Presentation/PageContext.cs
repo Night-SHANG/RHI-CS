@@ -14,7 +14,6 @@ public sealed partial class PageContext(AppSession session, WindowsIntegration w
     public Action Refresh { get; } = refresh;
     public Guid? GameId { get; set; }
     public Guid? LibraryId { get; set; }
-    public Guid? VersionId { get; set; }
     public string GameQuery { get; set; } = "";
     public string LibraryQuery { get; set; } = "";
     public OfflineDraft Offline { get; set; } = OfflineDraft.Empty;
@@ -45,13 +44,14 @@ public sealed partial class PageContext(AppSession session, WindowsIntegration w
         return scroll;
     }
     public Task Message(string title, string text) => Show(title, Ui.Text(text));
-    public async Task Show(string title, UIElement content)
+    public async Task Show(string title, UIElement content, Action<ContentDialog>? configure = null)
     {
         var scroll = DialogContent(content);
         var dialog = new ContentDialog { XamlRoot = Root.XamlRoot, Title = Strings.Get(title),
             Content = scroll, CloseButtonText = Strings.Get("Close"),
             RequestedTheme = Root.RequestedTheme };
         TrackDialogSize(dialog, scroll);
+        configure?.Invoke(dialog);
         await dialog.ShowAsync();
     }
     public async Task<bool> Confirm(string title, UIElement content, string primary = "Save", bool enabled = true,

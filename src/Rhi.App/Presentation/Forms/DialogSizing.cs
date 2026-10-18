@@ -11,7 +11,7 @@ public sealed partial class PageContext
         void Resize()
         {
             scroll.Width = Math.Clamp(Root.ActualWidth - 96, 120, 480);
-            scroll.MaxHeight = Math.Clamp(Root.ActualHeight - (feedback is null ? 220 : 324), 64, 480);
+            scroll.MaxHeight = Math.Max(64, Root.ActualHeight - (feedback is null ? 180 : 264));
             if (feedback is not null)
             {
                 scroll.Height = Math.Min(scroll.MaxHeight, preferredHeight);
@@ -26,7 +26,7 @@ public sealed partial class PageContext
             {
                 fields.UpdateLayout();
                 fields.Measure(new Windows.Foundation.Size(scroll.Width, double.PositiveInfinity));
-                preferredHeight = Math.Clamp(fields.DesiredSize.Height, 64, 360);
+                preferredHeight = Math.Max(64, fields.DesiredSize.Height);
             }
             Resize();
             Root.SizeChanged += Changed;

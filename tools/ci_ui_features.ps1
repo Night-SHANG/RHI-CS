@@ -46,24 +46,26 @@ function Select-Batch {
 
 Invoke-Control 'Libraries'
 if ((Find-Control -id 'LibraryRemove').Current.IsEnabled) { throw 'A deployed library can be removed.' }
-if ((Find-Control -id 'VersionRemove' -IncludeOffscreen).Current.IsEnabled) { throw 'A deployed version can be removed.' }
+$listBefore = (Find-Control -id 'LibrariesSearch').GetRuntimeId() -join ','
+Invoke-Control 'View'
+if ((Find-Control -id 'VersionRemove').Current.IsEnabled) { throw 'A deployed version can be removed.' }
+Capture '20-version-details-dialog'
+Invoke-Control 'Close'
+if (((Find-Control -id 'LibrariesSearch').GetRuntimeId() -join ',') -ne $listBefore) { throw 'Viewing a version rebuilt the library list.' }
 Capture '20-referenced-library'
 Invoke-Control 'Games'
 Invoke-Control 'CheckTargets'
 Find-Control -name (Label 'TargetModified') | Out-Null
 Capture '21-target-changes'
 Invoke-Control 'ViewDifferences'
-Find-Control -name (Label 'NextAction') | Out-Null
-(Find-Control -id 'DifferenceNextAction').GetCurrentPattern([Windows.Automation.ExpandCollapsePattern]::Pattern).Expand()
-$clearCondition = [Windows.Automation.AndCondition]::new(
-    [Windows.Automation.PropertyCondition]::new([Windows.Automation.AutomationElement]::ProcessIdProperty, $process.Id),
-    [Windows.Automation.PropertyCondition]::new([Windows.Automation.AutomationElement]::ControlTypeProperty, [Windows.Automation.ControlType]::ListItem),
-    [Windows.Automation.PropertyCondition]::new([Windows.Automation.AutomationElement]::NameProperty, (Label 'ClearDeployment')))
-$clearOption = [Windows.Automation.AutomationElement]::RootElement.FindFirst([Windows.Automation.TreeScope]::Descendants, $clearCondition)
-if (-not $clearOption) { throw 'Clear deployment option is missing from differences.' }
-$clearOption.GetCurrentPattern([Windows.Automation.SelectionItemPattern]::Pattern).Select()
+Find-Control -name (Label 'Close') -Action | Out-Null
 Capture '22-target-differences'
-Invoke-Control 'Preflight'
+Invoke-Control 'Close'
+Reveal-Control 'SelectAllLibraries' 'GamesScroll' | Out-Null
+Invoke-Id 'SelectAllLibraries'
+if ((Find-Control -id "SelectLibrary_$reshade" -IncludeOffscreen).GetCurrentPattern([Windows.Automation.TogglePattern]::Pattern).Current.ToggleState -ne [Windows.Automation.ToggleState]::On) { throw 'Select all omitted deployed library.' }
+Capture '22-all-selected-mixed'
+Invoke-Id 'BatchClear'
 Assert-ActionOrder 'ProtectAndExecute' | Out-Null
 Capture '23-protect-before-clear'
 Invoke-Control 'ProtectAndExecute'
@@ -77,6 +79,19 @@ Invoke-Control 'Settings'
 Find-Control -id 'ProtectionUsage' -IncludeOffscreen | Out-Null
 Reveal-Control 'ProtectionUsage' 'SettingsScroll' | Out-Null
 Capture '25-protection-inventory'
+$settingsIdentity = (Find-Control -id 'SettingsTheme' -IncludeOffscreen).GetRuntimeId() -join ','
+$offlineDraft = (Find-Control -id 'OfflineNameInput' -IncludeOffscreen).GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern)
+$offlineDraft.SetValue('Keep draft across statistics')
+$settingsScroll = (Find-Control -id 'SettingsScroll').GetCurrentPattern([Windows.Automation.ScrollPattern]::Pattern)
+$position = $settingsScroll.Current.VerticalScrollPercent
+Reveal-Control 'RefreshProtection' 'SettingsScroll' | Out-Null
+$position = $settingsScroll.Current.VerticalScrollPercent
+Invoke-Id 'RefreshProtection'
+Find-Control -id 'RefreshProtection' -Enabled | Out-Null
+if (((Find-Control -id 'SettingsTheme' -IncludeOffscreen).GetRuntimeId() -join ',') -ne $settingsIdentity -or
+    $offlineDraft.Current.Value -ne 'Keep draft across statistics' -or
+    [Math]::Abs($settingsScroll.Current.VerticalScrollPercent - $position) -gt 1) { throw 'Statistics refresh replaced page or changed draft/scroll.' }
+Capture '25-statistics-refresh-retained'
 # Results retain their original game/action when opened from another page.
 Invoke-Control 'TaskResults'
 Find-Control -name ($taskPrefix + (Label 'Clear')) | Out-Null
@@ -110,7 +125,10 @@ Capture '28-batch-result'
 Invoke-Control 'Close'
 Invoke-Control 'Libraries'
 (Find-Control -id 'LibrariesSearch').GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).SetValue('Beta')
-Reveal-Control 'VersionRemove' 'LibraryScroll' | Out-Null
+. (Join-Path $PSScriptRoot 'ci_ui_batch_actions.ps1')
+Invoke-Control 'Libraries'
+(Find-Control -id 'LibrariesSearch').GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).SetValue('Beta')
+Find-Control -name (Label 'RemoveVersion') -Action | Out-Null
 Invoke-Control 'RemoveVersion'
 Assert-ActionOrder 'RemoveVersion' | Out-Null
 Capture '29-remove-version-confirmation'

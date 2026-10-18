@@ -48,10 +48,14 @@ public sealed partial class SettingsView : UserControl
         var offline = OfflinePreparationPanel();
         var data = Ui.Card(Ui.Stack(Ui.Label("ApplicationData", 20), Ui.Label("DataLocationHelp"), Ui.Text(root), Ui.Label("NoMigration"),
             c.Action("OpenFolder", () => WindowsIntegration.OpenFolder(root))));
-        var protectionBody = Ui.Stack(Ui.Label("ProtectedCopies", 20), Ui.Text(Path.Combine(root, "protection")),
-            Ui.Label("ProtectionRetention"),
-            Ui.Row(c.Action("OpenProtectedCopies", () => WindowsIntegration.OpenFolder(Path.Combine(root, "protection"))),
-                c.Button("RefreshProtection", c.Session.InspectProtection, !c.Session.Busy)));
+        var inventoryHost = new StackPanel { Spacing = 12 };
+        AutomationProperties.SetAutomationId(inventoryHost, "ProtectionInventory");
+        var refreshProtection = c.Button("RefreshProtection", () => Task.CompletedTask, !c.Session.Busy);
+        AutomationProperties.SetAutomationId(refreshProtection, "RefreshProtection");
+        void RenderInventory()
+        {
+        inventoryHost.Children.Clear();
+        var protectionBody = inventoryHost;
         if (c.Session.ProtectionObservation is { } inventory)
         {
             var usage = Ui.Text(Strings.Format("ProtectionUsage", inventory.Operations.Length, inventory.Bytes));
@@ -69,7 +73,20 @@ public sealed partial class SettingsView : UserControl
             }
         }
         else protectionBody.Children.Add(Ui.Label(c.Session.ProtectionReadAttempted && !c.Session.Busy ? "ProtectionReadFailed" : "ProtectionNotCounted"));
-        var protection = Ui.Card(protectionBody);
+        }
+        async Task RefreshInventory()
+        {
+            refreshProtection.IsEnabled = false;
+            try { await c.Session.InspectProtection(); }
+            finally { RenderInventory(); refreshProtection.IsEnabled = !c.Session.Busy; }
+        }
+        refreshProtection.Click += async (_, _) => await c.Run(RefreshInventory);
+        RenderInventory();
+        var protectionContent = Ui.Stack(Ui.Label("ProtectedCopies", 20), Ui.Text(Path.Combine(root, "protection")),
+            Ui.Label("ProtectionRetention"),
+            Ui.Row(c.Action("OpenProtectedCopies", () => WindowsIntegration.OpenFolder(Path.Combine(root, "protection"))),
+                refreshProtection), inventoryHost);
+        var protection = Ui.Card(protectionContent);
         var license = new HyperlinkButton { Content = Strings.Get("OpenLicenseFolder"),
             HorizontalAlignment = HorizontalAlignment.Left };
         license.Click += async (_, _) => await c.Run(() =>
@@ -102,7 +119,7 @@ public sealed partial class SettingsView : UserControl
         Loaded += async (_, _) =>
         {
             if (!c.Session.Busy && !c.Session.ProtectionReadAttempted)
-                await c.Run(c.Session.InspectProtection);
+                await c.Run(RefreshInventory);
         };
     }
 }

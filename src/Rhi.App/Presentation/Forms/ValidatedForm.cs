@@ -9,7 +9,7 @@ namespace Rhi.App.Presentation;
 public sealed partial class PageContext
 {
     public async Task<bool> Edit(string title, StackPanel fields, Action validate, Func<Task> submit,
-        Control[] inputs, string action = "Save")
+        Control[] inputs, string action = "Save", bool deferNameError = false)
     {
         var error = Ui.Text("");
         AutomationProperties.SetAutomationId(error, "FormValidation");
@@ -26,13 +26,19 @@ public sealed partial class PageContext
         TrackDialogSize(dialog, scroll, feedback);
         var submitting = false;
         var saved = false;
+        var attempted = false;
         string ErrorText(Exception ex) => ex is DeploymentException de ? Strings.Get(de.Code) : Strings.Get("InspectionFailed") + "\n" + ex.Message;
         void Check()
         {
             if (submitting) return;
             try { validate(); error.Text = ""; error.Foreground = Ui.ThemeBrush("SecondaryTextBrush"); dialog.IsSecondaryButtonEnabled = true; }
             catch (Exception ex) when (ex is DeploymentException or IOException or UnauthorizedAccessException or ArgumentException)
-            { error.Text = ErrorText(ex); error.Foreground = Ui.ThemeBrush("ErrorBrush"); dialog.IsSecondaryButtonEnabled = false; }
+            {
+                var defer = deferNameError && !attempted && ex is DeploymentException { Code: "NameRequired" };
+                error.Text = defer ? "" : ErrorText(ex);
+                error.Foreground = Ui.ThemeBrush("ErrorBrush");
+                dialog.IsSecondaryButtonEnabled = defer;
+            }
         }
         foreach (var input in inputs)
         {
@@ -44,6 +50,7 @@ public sealed partial class PageContext
             var deferral = args.GetDeferral();
             args.Cancel = true;
             submitting = true;
+            attempted = true;
             dialog.IsPrimaryButtonEnabled = false; dialog.IsSecondaryButtonEnabled = false;
             var enabled = inputs.ToDictionary(input => input, input => input.IsEnabled);
             foreach (var input in inputs) input.IsEnabled = false;

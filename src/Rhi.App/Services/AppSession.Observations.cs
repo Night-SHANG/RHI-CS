@@ -10,20 +10,20 @@ public sealed partial class AppSession
     public ProtectionInventory? ProtectionObservation { get; private set; }
     public bool ProtectionReadAttempted { get; private set; }
 
-    public async Task<GameObservation> InspectTargets(Guid gameId)
+    public async Task<GameObservation> InspectTargets(Guid gameId, bool refresh = true)
     {
         RequireIdle(); TargetObservation = null;
-        Busy = true; Changed?.Invoke();
+        Busy = true; if (refresh) Changed?.Invoke();
         try { return TargetObservation = await Task.Run(() => DeploymentInspection.Inspect(Store!, gameId)); }
-        finally { Busy = false; Changed?.Invoke(); }
+        finally { Busy = false; if (refresh) Changed?.Invoke(); }
     }
 
     public async Task InspectProtection()
     {
         RequireIdle(); ProtectionObservation = null; ProtectionReadAttempted = true;
-        Busy = true; Changed?.Invoke();
+        Busy = true;
         try { ProtectionObservation = await Task.Run(() => ProtectionCatalog.Read(Store!)); }
-        finally { Busy = false; Changed?.Invoke(); }
+        finally { Busy = false; }
     }
 
     public void RecordSkipped(Guid gameId, DeploymentRequest[] skipped)

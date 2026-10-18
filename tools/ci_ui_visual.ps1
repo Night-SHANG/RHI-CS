@@ -119,6 +119,15 @@ function Check-Pages([string]$prefix) {
     $hover = (Find-Control -id 'GameEdit').Current.BoundingRectangle
     [Windows.Forms.Cursor]::Position = [Drawing.Point]::new([int]($hover.X + $hover.Width / 2), [int]($hover.Y + $hover.Height / 2))
     Capture "$prefix-hover"
+    Invoke-VisualId 'GameEdit'
+    $apiField = Find-Control -id 'GameApiInput' -IncludeOffscreen
+    $dialogViewport = (Find-Control -id 'DialogContentScroll').Current.BoundingRectangle
+    if (([SmokeWindow]::GetDpiForWindow($process.MainWindowHandle) -eq 96) -and
+        ($apiField.Current.BoundingRectangle.Bottom -gt $dialogViewport.Bottom -or $apiField.Current.IsOffscreen)) {
+        throw 'Game API is unnecessarily hidden at normal wide-window size.'
+    }
+    Capture "$prefix-game-form"
+    Invoke-Control 'Cancel'
     Invoke-Control 'Libraries'
     $window = [Windows.Automation.AutomationElement]::FromHandle($process.MainWindowHandle)
     $offlineId = [Windows.Automation.PropertyCondition]::new([Windows.Automation.AutomationElement]::AutomationIdProperty, 'OfflineInstallerInput')
@@ -131,7 +140,11 @@ function Check-Pages([string]$prefix) {
     Capture "$prefix-library"
     Invoke-Control 'AddLibrary'
     $before = Assert-ActionOrder 'Save'
-    if ((Find-Control -name (Label 'Save') -Action).Current.IsEnabled) { throw 'Empty library form is valid.' }
+    Assert-FormReady
+    Capture "$prefix-library-initial"
+    Invoke-Control 'Save'
+    Find-Control -name (Label 'NameRequired') | Out-Null
+    Assert-FixedAction $before
     Capture "$prefix-invalid"
     (Find-Control -id 'LibraryNameInput').GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).SetValue('Visual validation')
     (Find-Control -id 'LibraryTargetInput').GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).SetValue('F:\Resources\OfflineReShade')

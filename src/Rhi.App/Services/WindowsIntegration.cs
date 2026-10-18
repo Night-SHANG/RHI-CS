@@ -7,21 +7,41 @@ namespace Rhi.App.Services;
 
 public sealed class WindowsIntegration(Window window)
 {
-    public async Task<string?> PickFolder()
+    public async Task<string?> PickFolder(string? initialDirectory = null)
     {
+        if (!string.IsNullOrWhiteSpace(initialDirectory))
+        {
+            Rhi.Core.Deployment.PathPolicy.CheckNoLinks(initialDirectory);
+            if (!Directory.Exists(initialDirectory)) throw new Rhi.Core.Models.DeploymentException("LibraryFolderMissing", initialDirectory);
+            using var dialog = new System.Windows.Forms.FolderBrowserDialog
+            { InitialDirectory = initialDirectory, SelectedPath = initialDirectory, ShowNewFolderButton = false };
+            return dialog.ShowDialog(new PickerOwner(window)) == System.Windows.Forms.DialogResult.OK ? dialog.SelectedPath : null;
+        }
         var picker = new FolderPicker();
         picker.FileTypeFilter.Add("*");
         WinRT.Interop.InitializeWithWindow.Initialize(picker, WinRT.Interop.WindowNative.GetWindowHandle(window));
         return (await picker.PickSingleFolderAsync())?.Path;
     }
 
-    public async Task<string?> PickFile(string extension = "*")
+    public async Task<string?> PickFile(string extension = "*", string? initialDirectory = null)
     {
+        if (!string.IsNullOrWhiteSpace(initialDirectory))
+        {
+            Rhi.Core.Deployment.PathPolicy.CheckNoLinks(initialDirectory);
+            if (!Directory.Exists(initialDirectory)) throw new Rhi.Core.Models.DeploymentException("LibraryFolderMissing", initialDirectory);
+            using var dialog = new System.Windows.Forms.OpenFileDialog
+            { InitialDirectory = initialDirectory, RestoreDirectory = true, CheckFileExists = true,
+                Filter = extension == "*" ? "*.*|*.*" : $"*{extension}|*{extension}" };
+            return dialog.ShowDialog(new PickerOwner(window)) == System.Windows.Forms.DialogResult.OK ? dialog.FileName : null;
+        }
         var picker = new FileOpenPicker();
         picker.FileTypeFilter.Add(extension);
         WinRT.Interop.InitializeWithWindow.Initialize(picker, WinRT.Interop.WindowNative.GetWindowHandle(window));
         return (await picker.PickSingleFileAsync())?.Path;
     }
+
+    private sealed class PickerOwner(Window owner) : System.Windows.Forms.IWin32Window
+    { public nint Handle => WinRT.Interop.WindowNative.GetWindowHandle(owner); }
 
     public static DiscoveryResult ScanSteam()
     {
