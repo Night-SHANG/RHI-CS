@@ -18,7 +18,26 @@ public sealed partial class MainWindow : Window
     public MainWindow(AppSession session)
     {
         InitializeComponent();
-        AppWindow.Resize(new Windows.Graphics.SizeInt32(1320, 860));
+        Root.Loaded += (_, _) =>
+        {
+            var scale = Root.XamlRoot.RasterizationScale;
+            var work = Microsoft.UI.Windowing.DisplayArea.GetFromWindowId(AppWindow.Id,
+                Microsoft.UI.Windowing.DisplayAreaFallback.Primary).WorkArea;
+            void UpdateMinimumSize()
+            {
+                if (AppWindow.Presenter is not Microsoft.UI.Windowing.OverlappedPresenter presenter) return;
+                var currentScale = Root.XamlRoot.RasterizationScale;
+                var area = Microsoft.UI.Windowing.DisplayArea.GetFromWindowId(AppWindow.Id,
+                    Microsoft.UI.Windowing.DisplayAreaFallback.Primary).WorkArea;
+                presenter.PreferredMinimumWidth = Math.Min((int)Math.Round(760 * currentScale), area.Width);
+                presenter.PreferredMinimumHeight = Math.Min((int)Math.Round(540 * currentScale), area.Height);
+            }
+            UpdateMinimumSize();
+            Root.XamlRoot.Changed += (_, _) => UpdateMinimumSize();
+            AppWindow.Resize(new Windows.Graphics.SizeInt32(
+                Math.Min((int)Math.Round(1320 * scale), work.Width),
+                Math.Min((int)Math.Round(860 * scale), work.Height)));
+        };
         this.session = session;
         context = new(session, new WindowsIntegration(this), Root, Refresh);
         session.Changed += Refresh;
@@ -57,6 +76,9 @@ public sealed partial class MainWindow : Window
         Ui.CurrentTheme = Root.ActualTheme;
         GamesNav.Content = Strings.Get("Games"); LibrariesNav.Content = Strings.Get("Libraries"); SettingsNav.Content = Strings.Get("Settings");
         GamesNav.IsChecked = page == "Games"; LibrariesNav.IsChecked = page == "Libraries"; SettingsNav.IsChecked = page == "Settings";
+        GamesIndicator.Visibility = page == "Games" ? Visibility.Visible : Visibility.Collapsed;
+        LibrariesIndicator.Visibility = page == "Libraries" ? Visibility.Visible : Visibility.Collapsed;
+        SettingsIndicator.Visibility = page == "Settings" ? Visibility.Visible : Visibility.Collapsed;
         StopButton.Content = Strings.Get(session.StopRequested ? "Stopping" : "StopAndRestore");
         StopButton.Visibility = session.IsWriting ? Visibility.Visible : Visibility.Collapsed;
          StopButton.IsEnabled = !session.StopRequested && !session.Recovering;

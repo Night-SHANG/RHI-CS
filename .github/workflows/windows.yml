@@ -46,6 +46,10 @@ jobs:
         run: powershell.exe -NoProfile -File tools/ci_ui_smoke.ps1 -AppDirectory artifacts/app -OutputDirectory artifacts/ui-relocation -Relocation -FixtureMetadata artifacts/relocation-context.json
       - name: Verify relocated files and records after restart
         run: dotnet run --project tests/Rhi.UiSmoke.Seed/Rhi.UiSmoke.Seed.csproj -c Release -- --verify-relocation artifacts/relocation-context.json
+      - name: Prepare isolated visual fixture
+        run: dotnet run --project tests/Rhi.UiSmoke.Seed/Rhi.UiSmoke.Seed.csproj -c Release -- --visual
+      - name: Verify theme layout and available display scales
+        run: powershell.exe -NoProfile -File tools/ci_ui_smoke.ps1 -AppDirectory artifacts/app -OutputDirectory artifacts/ui-visual -Visual
       - name: Upload UI evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -56,6 +60,7 @@ jobs:
             artifacts/ui-pending/
             artifacts/ui-features/
             artifacts/ui-relocation/
+            artifacts/ui-visual/
           if-no-files-found: warn
       - name: Upload application
         uses: actions/upload-artifact@v4

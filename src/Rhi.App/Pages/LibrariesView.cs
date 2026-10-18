@@ -68,16 +68,18 @@ public sealed partial class LibrariesView : UserControl
             right.Children.Add(Ui.Row(editLibrary, addVersion, removeLibrary));
             AddReferenceNotice(right, selected.Id);
             right.Children.Add(Ui.Label("Versions", 20));
-            right.Children.Add(Ui.Columns([1, 2, 1, 1], Ui.Label("VersionLabel"), Ui.Label("SourcePath"), Ui.Label("Status"), Ui.Label("Actions")));
+            var table = new StackPanel();
+            table.Children.Add(Ui.TableLine(Ui.Columns([1, 2, 1, 1], Ui.Label("VersionLabel"), Ui.Label("SourcePath"), Ui.Label("Status"), Ui.Label("Actions")), true));
             foreach (var version in selected.Versions)
             {
                 var references = state.Receipts.Where(r => r.LibraryId == selected.Id && r.VersionId == version.Id)
                     .Select(r => state.Games.First(g => g.Id == r.GameId).Name);
                 var available = ResourcePresentation.SourceAvailable(version);
-                right.Children.Add(Ui.Columns([1, 2, 1, 1], Ui.Text(ResourcePresentation.VersionName(version)), Ui.Text(version.SourcePath),
-                    Ui.Stack(Ui.Label(available ? "Available" : "SourceUnavailable"), Ui.Text(string.Join(", ", references))),
-                    c.Action("View", () => { c.VersionId = version.Id; c.Refresh(); })));
+                table.Children.Add(Ui.TableLine(Ui.Columns([1, 2, 1, 1], Ui.Text(ResourcePresentation.VersionName(version)), Ui.Text(version.SourcePath),
+                    Ui.Stack(Ui.Status(available ? "Available" : "SourceUnavailable"), Ui.Secondary(string.Join(", ", references))),
+                    c.Action("View", () => { c.VersionId = version.Id; c.Refresh(); }))));
             }
+            right.Children.Add(table);
             var detail = selected.Versions.FirstOrDefault(v => v.Id == c.VersionId) ?? selected.Versions.FirstOrDefault();
             if (detail is not null)
             {

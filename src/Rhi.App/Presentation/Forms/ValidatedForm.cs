@@ -15,7 +15,7 @@ public sealed partial class PageContext
         AutomationProperties.SetAutomationId(error, "FormValidation");
         error.MinHeight = 58;
         var scroll = DialogContent(fields);
-        scroll.Height = Math.Clamp(Root.ActualHeight - 290, 140, 380);
+        scroll.Height = Math.Clamp(Root.ActualHeight - 324, 64, 360);
         var feedback = new ScrollViewer { Content = error, Height = 66,
             HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled, VerticalScrollBarVisibility = ScrollBarVisibility.Auto };
         var dialog = new ContentDialog { XamlRoot = Root.XamlRoot, Title = Strings.Get(title),
@@ -23,15 +23,16 @@ public sealed partial class PageContext
             SecondaryButtonText = Strings.Get(action), DefaultButton = ContentDialogButton.Secondary,
             RequestedTheme = Root.RequestedTheme };
         AutomationProperties.SetAutomationId(dialog, "ValidatedForm");
+        TrackDialogSize(dialog, scroll, feedback);
         var submitting = false;
         var saved = false;
         string ErrorText(Exception ex) => ex is DeploymentException de ? Strings.Get(de.Code) : Strings.Get("InspectionFailed") + "\n" + ex.Message;
         void Check()
         {
             if (submitting) return;
-            try { validate(); error.Text = Strings.Get("FormReady"); dialog.IsSecondaryButtonEnabled = true; }
+            try { validate(); error.Text = Strings.Get("FormReady"); error.Foreground = Ui.ThemeBrush("SecondaryTextBrush"); dialog.IsSecondaryButtonEnabled = true; }
             catch (Exception ex) when (ex is DeploymentException or IOException or UnauthorizedAccessException or ArgumentException)
-            { error.Text = ErrorText(ex); dialog.IsSecondaryButtonEnabled = false; }
+            { error.Text = ErrorText(ex); error.Foreground = Ui.ThemeBrush("ErrorBrush"); dialog.IsSecondaryButtonEnabled = false; }
         }
         foreach (var input in inputs)
         {
@@ -47,8 +48,9 @@ public sealed partial class PageContext
             var enabled = inputs.ToDictionary(input => input, input => input.IsEnabled);
             foreach (var input in inputs) input.IsEnabled = false;
             error.Text = Strings.Get("FormChecking");
+            error.Foreground = Ui.ThemeBrush("SecondaryTextBrush");
             try { validate(); await submit(); saved = true; args.Cancel = false; }
-            catch (Exception ex) { error.Text = ErrorText(ex); }
+            catch (Exception ex) { error.Text = ErrorText(ex); error.Foreground = Ui.ThemeBrush("ErrorBrush"); }
             finally
             {
                 foreach (var input in inputs) input.IsEnabled = enabled[input];

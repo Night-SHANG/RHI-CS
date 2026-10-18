@@ -5,7 +5,7 @@ using Rhi.App.Localization;
 
 namespace Rhi.App.Presentation;
 
-public static class Ui
+public static partial class Ui
 {
     public static ElementTheme CurrentTheme { get; set; } = ElementTheme.Light;
     public static Brush ThemeBrush(string key)
@@ -15,7 +15,9 @@ public static class Ui
         return (Brush)theme[key];
     }
     public static TextBlock Text(string text, double size = 14) => new()
-    { Text = text, FontSize = size, TextWrapping = TextWrapping.Wrap, IsTextSelectionEnabled = true };
+    { Text = text, FontSize = size, TextWrapping = TextWrapping.Wrap, IsTextSelectionEnabled = true,
+        FontWeight = size >= 20 ? Microsoft.UI.Text.FontWeights.SemiBold : Microsoft.UI.Text.FontWeights.Normal,
+        Foreground = ThemeBrush("TextBrush") };
     public static TextBlock Label(string key, double size = 14) => Text(Strings.Get(key), size);
     public static StackPanel Stack(params UIElement[] children)
     {
@@ -23,9 +25,18 @@ public static class Ui
         foreach (var child in children) panel.Children.Add(child);
         return panel;
     }
-    public static StackPanel Row(params UIElement[] children)
+    public static Grid Row(params UIElement[] children)
     {
-        var panel = Stack(children); panel.Orientation = Orientation.Horizontal; return panel;
+        var panel = new Grid { ColumnSpacing = 8 };
+        foreach (var child in children) AddToRow(panel, child);
+        return panel;
+    }
+    public static void AddToRow(Grid panel, UIElement child)
+    {
+        Grid.SetColumn(child, panel.ColumnDefinitions.Count);
+        panel.ColumnDefinitions.Add(new() { Width = new GridLength(1, GridUnitType.Star) });
+        if (child is FrameworkElement element) element.HorizontalAlignment = HorizontalAlignment.Stretch;
+        panel.Children.Add(child);
     }
     public static Grid Columns(double[] widths, params FrameworkElement[] cells)
     {
@@ -38,10 +49,10 @@ public static class Ui
     { Padding = new Thickness(18), BorderThickness = new Thickness(1), BorderBrush = ThemeBrush("LineBrush"),
         Background = ThemeBrush("CardBrush"), CornerRadius = new CornerRadius(8), Child = content };
     public static TextBox Input(string key, string value = "") => new()
-    { Header = Strings.Get(key), Text = value, MinWidth = 250, TextWrapping = TextWrapping.Wrap };
+    { Header = Strings.Get(key), Text = value, MinWidth = 0, TextWrapping = TextWrapping.Wrap };
     public static ComboBox Choice(string key, IEnumerable<string> values, int selected = 0)
     {
-        var box = new ComboBox { Header = Strings.Get(key), HorizontalAlignment = HorizontalAlignment.Stretch, MinWidth = 170 };
+        var box = new ComboBox { Header = Strings.Get(key), HorizontalAlignment = HorizontalAlignment.Stretch, MinWidth = 0 };
         foreach (var value in values) box.Items.Add(value);
         box.SelectedIndex = selected;
         return box;
@@ -59,6 +70,13 @@ public static class Ui
         sidebar.BorderBrush = ThemeBrush("LineBrush");
         var content = new Border { Padding = new Thickness(28), Child = right };
         Grid.SetColumn(content, 1); grid.Children.Add(sidebar); grid.Children.Add(content);
+        grid.SizeChanged += (_, e) =>
+        {
+            var compact = e.NewSize.Width < 1100;
+            grid.ColumnDefinitions[0].Width = new GridLength(compact ? 220 : 250);
+            sidebar.Padding = new Thickness(compact ? 16 : 20);
+            content.Padding = new Thickness(compact ? 20 : 28);
+        };
         return grid;
     }
     public static Grid Dock(UIElement body, UIElement footer)
@@ -67,7 +85,8 @@ public static class Ui
         grid.RowDefinitions.Add(new() { Height = new GridLength(1, GridUnitType.Star) });
         grid.RowDefinitions.Add(new() { Height = GridLength.Auto });
         grid.Children.Add(body);
-        var border = new Border { Padding = new Thickness(0, 16, 0, 0), Child = footer };
+        var border = new Border { Padding = new Thickness(0, 16, 0, 0), Margin = new Thickness(0, 12, 0, 0),
+            BorderBrush = ThemeBrush("LineBrush"), BorderThickness = new Thickness(0, 1, 0, 0), Child = footer };
         Grid.SetRow(border, 1); grid.Children.Add(border); return grid;
     }
 }

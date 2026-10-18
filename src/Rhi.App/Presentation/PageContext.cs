@@ -25,7 +25,8 @@ public sealed partial class PageContext(AppSession session, WindowsIntegration w
     }
     public Button Button(string key, Func<Task> action, bool enabled = true)
     {
-        var button = new Button { Content = Strings.Get(key), IsEnabled = enabled, MinHeight = 36 };
+        var button = new Button { IsEnabled = enabled, MinHeight = 36, Padding = new Thickness(12, 7, 12, 7) };
+        Ui.ButtonContent(button, Strings.Get(key));
         button.Click += async (_, _) => await Run(action);
         return button;
     }
@@ -34,8 +35,8 @@ public sealed partial class PageContext(AppSession session, WindowsIntegration w
     {
         var scroll = new ScrollViewer
         {
-            Content = content, Width = Math.Clamp(Root.ActualWidth - 96, 280, 480),
-            MaxHeight = Math.Clamp(Root.ActualHeight - 180, 180, 480),
+            Content = content, Width = Math.Clamp(Root.ActualWidth - 96, 120, 480),
+            MaxHeight = Math.Clamp(Root.ActualHeight - 220, 80, 480),
             HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
             VerticalScrollBarVisibility = ScrollBarVisibility.Auto
         };
@@ -45,19 +46,23 @@ public sealed partial class PageContext(AppSession session, WindowsIntegration w
     public Task Message(string title, string text) => Show(title, Ui.Text(text));
     public async Task Show(string title, UIElement content)
     {
+        var scroll = DialogContent(content);
         var dialog = new ContentDialog { XamlRoot = Root.XamlRoot, Title = Strings.Get(title),
-            Content = DialogContent(content), CloseButtonText = Strings.Get("Close"),
+            Content = scroll, CloseButtonText = Strings.Get("Close"),
             RequestedTheme = Root.RequestedTheme };
+        TrackDialogSize(dialog, scroll);
         await dialog.ShowAsync();
     }
     public async Task<bool> Confirm(string title, UIElement content, string primary = "Save", bool enabled = true,
         Action<ContentDialog>? configure = null)
     {
+        var scroll = DialogContent(content);
         var dialog = new ContentDialog { XamlRoot = Root.XamlRoot, Title = Strings.Get(title),
-            Content = DialogContent(content),
+            Content = scroll,
             PrimaryButtonText = Strings.Get("Cancel"), SecondaryButtonText = Strings.Get(primary),
             IsSecondaryButtonEnabled = enabled, DefaultButton = ContentDialogButton.Secondary,
             RequestedTheme = Root.RequestedTheme };
+        TrackDialogSize(dialog, scroll);
         configure?.Invoke(dialog);
         return await dialog.ShowAsync() == ContentDialogResult.Secondary;
     }

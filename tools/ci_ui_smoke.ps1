@@ -1,5 +1,5 @@
 param([Parameter(Mandatory)][string]$AppDirectory, [Parameter(Mandatory)][string]$OutputDirectory,
-    [switch]$PendingConfiguration, [switch]$Features, [switch]$Relocation, [string]$FixtureMetadata)
+    [switch]$PendingConfiguration, [switch]$Features, [switch]$Relocation, [switch]$Visual, [string]$FixtureMetadata)
 $ErrorActionPreference = 'Stop'
 if ($env:GITHUB_ACTIONS -ne 'true') { throw 'UI smoke runs only on disposable GitHub Actions runners.' }
 Add-Type -AssemblyName UIAutomationClient, UIAutomationTypes, System.Windows.Forms, System.Drawing
@@ -11,8 +11,13 @@ public static class SmokeWindow {
     [DllImport("user32.dll")] public static extern bool GetWindowRect(IntPtr window, out Rect rect);
     [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr window);
     [DllImport("user32.dll")] public static extern bool SetWindowPos(IntPtr window, IntPtr after, int x, int y, int w, int h, uint flags);
+    [DllImport("user32.dll")] public static extern uint GetDpiForWindow(IntPtr window);
+    [DllImport("user32.dll")] public static extern IntPtr GetWindowDpiAwarenessContext(IntPtr window);
+    [DllImport("user32.dll")] public static extern int GetAwarenessFromDpiAwarenessContext(IntPtr context);
+    [DllImport("user32.dll")] public static extern IntPtr SetThreadDpiAwarenessContext(IntPtr context);
 }
 '@
+[SmokeWindow]::SetThreadDpiAwarenessContext([IntPtr](-4)) | Out-Null
 $appRoot = (Resolve-Path -LiteralPath $AppDirectory).Path
 $captureRoot = [IO.Path]::GetFullPath($OutputDirectory)
 [IO.Directory]::CreateDirectory($captureRoot) | Out-Null
@@ -127,6 +132,7 @@ try {
         [Math]::Min(1320, $screen.Width), [Math]::Min(860, $screen.Height), 0x0040) | Out-Null
     if ($Features) { . (Join-Path $PSScriptRoot 'ci_ui_features.ps1'); return }
     if ($Relocation) { . (Join-Path $PSScriptRoot 'ci_ui_relocation.ps1'); return }
+    if ($Visual) { . (Join-Path $PSScriptRoot 'ci_ui_visual.ps1'); return }
     if ($PendingConfiguration) {
         if ((Find-Control -id 'GameEdit').Current.IsEnabled) { throw 'Pending game configuration is editable.' }
         if ((Find-Control -id 'GameRelocate' -IncludeOffscreen).Current.IsEnabled) { throw 'Pending game can be relocated.' }

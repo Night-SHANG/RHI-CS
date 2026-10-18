@@ -32,6 +32,6 @@ public sealed class SetupView : UserControl
         }));
         content.MaxWidth = 720; content.HorizontalAlignment = HorizontalAlignment.Center;
         content.VerticalAlignment = VerticalAlignment.Center;
-        Content = new Border { Padding = new Thickness(40), Child = content };
+        Content = Ui.Scroll(new Border { Padding = new Thickness(28), Child = content });
     }
 }

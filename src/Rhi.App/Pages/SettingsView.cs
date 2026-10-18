@@ -15,6 +15,7 @@ public sealed class SettingsView : UserControl
         var themes = new[] { "Light", "Dark", "System" };
         var languages = new[] { "System" }.Concat(Strings.AvailableLanguages).ToArray();
         var theme = Ui.Choice("Appearance", themes.Select(Strings.Get), Math.Max(0, Array.IndexOf(themes, state.Preferences.Theme)));
+        AutomationProperties.SetAutomationId(theme, "SettingsTheme");
         var language = Ui.Choice("Language", languages.Select(Strings.LanguageName), Math.Max(0, Array.IndexOf(languages, state.Preferences.Language)));
         AutomationProperties.SetAutomationId(language, "SettingsLanguage");
         theme.IsEnabled = !c.Session.Busy; language.IsEnabled = !c.Session.Busy;
@@ -59,7 +60,7 @@ public sealed class SettingsView : UserControl
             c.Action("General", () => general.StartBringIntoView()),
             c.Action("DataBackups", () => data.StartBringIntoView()),
             c.Action("DevelopmentScope", () => scope.StartBringIntoView()));
-        Content = Ui.Split(left, scroll);
+        Content = Ui.Split(Ui.Scroll(left), scroll);
         Loaded += async (_, _) =>
         {
             if (!c.Session.Busy && !c.Session.ProtectionReadAttempted)

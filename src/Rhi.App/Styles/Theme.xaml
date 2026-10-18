@@ -6,20 +6,44 @@
    <SolidColorBrush x:Key="PanelBrush" Color="#F2F5F8" />
    <SolidColorBrush x:Key="CardBrush" Color="#FFFFFF" />
    <SolidColorBrush x:Key="LineBrush" Color="#DDE3EC" />
+   <SolidColorBrush x:Key="TextBrush" Color="#17213B" />
+   <SolidColorBrush x:Key="SecondaryTextBrush" Color="#53627B" />
+   <SolidColorBrush x:Key="SuccessBrush" Color="#16713C" />
+   <SolidColorBrush x:Key="WarningBrush" Color="#946000" />
+   <SolidColorBrush x:Key="ErrorBrush" Color="#B42330" />
   </ResourceDictionary>
   <ResourceDictionary x:Key="Dark">
    <SolidColorBrush x:Key="CanvasBrush" Color="#101827" />
    <SolidColorBrush x:Key="PanelBrush" Color="#162133" />
    <SolidColorBrush x:Key="CardBrush" Color="#1D293D" />
    <SolidColorBrush x:Key="LineBrush" Color="#35445D" />
+   <SolidColorBrush x:Key="TextBrush" Color="#F0F4FC" />
+   <SolidColorBrush x:Key="SecondaryTextBrush" Color="#C0CCE0" />
+   <SolidColorBrush x:Key="SuccessBrush" Color="#7DDEA0" />
+   <SolidColorBrush x:Key="WarningBrush" Color="#FFD17B" />
+   <SolidColorBrush x:Key="ErrorBrush" Color="#FFB4B4" />
   </ResourceDictionary>
   <ResourceDictionary x:Key="Default">
    <SolidColorBrush x:Key="CanvasBrush" Color="#101827" />
    <SolidColorBrush x:Key="PanelBrush" Color="#162133" />
    <SolidColorBrush x:Key="CardBrush" Color="#1D293D" />
    <SolidColorBrush x:Key="LineBrush" Color="#35445D" />
+   <SolidColorBrush x:Key="TextBrush" Color="#F0F4FC" />
+   <SolidColorBrush x:Key="SecondaryTextBrush" Color="#C0CCE0" />
+   <SolidColorBrush x:Key="SuccessBrush" Color="#7DDEA0" />
+   <SolidColorBrush x:Key="WarningBrush" Color="#FFD17B" />
+   <SolidColorBrush x:Key="ErrorBrush" Color="#FFB4B4" />
   </ResourceDictionary>
  </ResourceDictionary.ThemeDictionaries>
+ <Style x:Key="NavigationTab" TargetType="ToggleButton">
+  <Setter Property="Background" Value="Transparent" />
+  <Setter Property="BorderThickness" Value="0" />
+  <Setter Property="CornerRadius" Value="4" />
+  <Setter Property="FontSize" Value="16" />
+  <Setter Property="FontWeight" Value="SemiBold" />
+  <Setter Property="MinWidth" Value="110" />
+  <Setter Property="MinHeight" Value="42" />
+ </Style>
  <Style x:Key="PageTitle" TargetType="TextBlock">
   <Setter Property="FontSize" Value="28" /><Setter Property="FontWeight" Value="SemiBold" />
   <Setter Property="Margin" Value="0,0,0,12" />

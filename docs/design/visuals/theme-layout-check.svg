@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="680" viewBox="0 0 1200 680">
+ <style>text{font-family:Segoe UI,Microsoft YaHei,sans-serif;font-size:14px}.title{font-size:24px;font-weight:600}.section{font-size:20px;font-weight:600}</style>
+ <rect width="1200" height="680" fill="#e6eaf0"/>
+ <g transform="translate(20 20)">
+  <rect width="570" height="640" rx="8" fill="#fafaf8" stroke="#dde3ec"/>
+  <path d="M0 56H570M0 590H570M150 56V590" fill="none" stroke="#dde3ec"/>
+  <text x="20" y="35" class="section" fill="#17213b">RHI-CS</text><text x="235" y="35" fill="#17213b">游戏　　资源库　　设置</text><path d="M232 53h38" stroke="#0067c0" stroke-width="3"/>
+  <text x="20" y="95" class="section" fill="#17213b">游戏</text><rect x="12" y="120" width="126" height="42" rx="4" fill="#e0efff"/><text x="24" y="147" fill="#17213b">◉ 示例游戏</text>
+  <text x="174" y="100" class="title" fill="#17213b">示例游戏</text><text x="174" y="127" fill="#53627b">DirectX 12 · 64 位</text><text x="174" y="154" fill="#53627b">部署位置 · 长路径在内容区换行</text>
+  <rect x="174" y="173" width="370" height="38" rx="4" fill="#fff" stroke="#dde3ec"/><text x="188" y="197" fill="#17213b">修改　　 核对目标　　 重新定位</text>
+  <text x="174" y="249" class="section" fill="#17213b">本地资源</text>
+  <rect x="174" y="267" width="370" height="170" rx="6" fill="#fff" stroke="#dde3ec"/><path d="M174 307H544M174 372H544" stroke="#dde3ec"/>
+  <text x="190" y="293" fill="#53627b">资源库　　 版本　　 状态　　 操作</text><text x="190" y="343" fill="#17213b">ReShade　6.8</text><text x="355" y="343" fill="#16713c">● 已部署</text><text x="190" y="408" fill="#17213b">预设　　 版本 B</text><text x="355" y="408" fill="#946000">● 待核对</text>
+  <text x="174" y="475" fill="#53627b">标题 28 / 分组 20 / 正文 14 DIP</text><text x="174" y="503" fill="#53627b">统一边框、状态标记和自动换行按钮</text>
+  <text x="20" y="621" fill="#53627b">当前没有正在执行的任务</text>
+ </g>
+ <g transform="translate(610 20)">
+  <rect width="570" height="640" rx="8" fill="#101827" stroke="#35445d"/>
+  <path d="M0 56H570M0 590H570M150 56V590" fill="none" stroke="#35445d"/>
+  <text x="20" y="35" class="section" fill="#f0f4fc">RHI-CS</text><text x="235" y="35" fill="#f0f4fc">游戏　　资源库　　设置</text><path d="M232 53h38" stroke="#75baff" stroke-width="3"/>
+  <text x="20" y="95" class="section" fill="#f0f4fc">游戏</text><rect x="12" y="120" width="126" height="42" rx="4" fill="#253d5d"/><text x="24" y="147" fill="#f0f4fc">◉ 示例游戏</text>
+  <rect x="172" y="86" width="374" height="470" rx="8" fill="#1d293d" stroke="#35445d"/>
+  <text x="196" y="126" class="section" fill="#f0f4fc">编辑版本</text><text x="196" y="170" fill="#f0f4fc">版本标签</text><rect x="196" y="183" width="326" height="38" rx="4" fill="#162133" stroke="#53627b"/><text x="206" y="208" fill="#f0f4fc">6.8</text>
+  <text x="196" y="256" fill="#f0f4fc">本地来源</text><rect x="196" y="269" width="326" height="38" rx="4" fill="#162133" stroke="#53627b"/><text x="206" y="294" fill="#c0cce0">完整路径允许换行</text>
+  <text x="196" y="353" fill="#c0cce0">内容独立滚动 · 反馈区高度固定</text>
+  <rect x="196" y="412" width="326" height="66" rx="4" fill="#162133"/><text x="208" y="439" fill="#ffb4b4">⚠ 来源不存在</text><text x="208" y="461" fill="#ffb4b4">保留输入，修正后可以保存。</text>
+  <path d="M172 495H546" stroke="#35445d"/><rect x="196" y="510" width="150" height="32" rx="4" fill="#26364e"/><rect x="360" y="510" width="162" height="32" rx="4" fill="#26364e"/><text x="255" y="531" fill="#f0f4fc">取消</text><text x="425" y="531" fill="#a8b4c8">保存</text>
+  <text x="20" y="621" fill="#c0cce0">深浅色布局与按钮位置一致</text>
+ </g>
+</svg>

@@ -5,6 +5,15 @@ using Rhi.UiSmoke.Seed;
 
 if (Environment.GetEnvironmentVariable("GITHUB_ACTIONS") != "true")
     throw new InvalidOperationException("This fixture is restricted to disposable GitHub Actions runners.");
+if (args.FirstOrDefault() == "--visual")
+{
+    var pointer = Bootstrap.Read() ?? throw new InvalidOperationException("Missing CI fixture.");
+    if (!Rhi.Core.Deployment.PathPolicy.Within(pointer.Root, Path.Combine(Path.GetTempPath(), "RhiTests")))
+        throw new InvalidOperationException("Not a CI fixture.");
+    using var store = Rhi.Core.Storage.WorkspaceStore.Open(pointer.Root, expectedId: pointer.Id);
+    store.Save(store.State with { Preferences = new("Light", "zh-CN") });
+    return;
+}
 if (args.FirstOrDefault() is "--relocation" or "--verify-relocation")
 {
     if (args.Length != 2) throw new ArgumentException("Expected explicit fixture metadata path.");

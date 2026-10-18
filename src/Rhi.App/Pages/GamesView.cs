@@ -60,8 +60,8 @@ public sealed partial class GamesView : UserControl
         {
             c.GameId = game.Id;
             body.Children.Add(Ui.Text(game.Name, 28));
-            body.Children.Add(Ui.Text($"{game.Api} · {game.Architecture}"));
-            body.Children.Add(Ui.Text(Strings.Get("DeploymentRoot") + ": " + game.DeploymentRoot));
+            body.Children.Add(Ui.Secondary($"{game.Api} · {game.Architecture}"));
+            body.Children.Add(Ui.Secondary(Strings.Get("DeploymentRoot") + ": " + game.DeploymentRoot));
             var pending = c.Session.Store!.Pending().Where(j => j.GameId == game.Id).ToArray();
             var locationAvailable = Directory.Exists(game.InstallRoot) && Directory.Exists(game.DeploymentRoot) && File.Exists(game.ExePath);
             var edit = c.Button("Edit", () => EditGame(game), !c.Session.Busy && pending.Length == 0);
@@ -73,7 +73,7 @@ public sealed partial class GamesView : UserControl
             {
                 var relocate = c.Button("RelocateGame", () => Relocate(game), !c.Session.Busy && pending.Length == 0);
                 AutomationProperties.SetAutomationId(relocate, "GameRelocate");
-                headerActions.Children.Add(relocate);
+                Ui.AddToRow(headerActions, relocate);
                 if (pending.Length > 0) body.Children.Add(Ui.Label("PendingConfigurationLocked"));
             }
             if (!locationAvailable) body.Children.Add(Ui.Label("GameLocationMissing"));
@@ -84,8 +84,10 @@ public sealed partial class GamesView : UserControl
                     c.Button("CheckRecovery", () => Recover(operation), !c.Session.Busy)));
             body.Children.Add(Ui.Label("LocalResources", 20));
             body.Children.Add(Ui.Label("PreflightHelp"));
-            body.Children.Add(TableRow(Ui.Label("Select"), Ui.Label("LibraryName"), Ui.Label("VersionLabel"), Ui.Label("Status"), Ui.Label("Actions")));
-            foreach (var library in state.Libraries) body.Children.Add(ResourceRow(game, library, pending.Length > 0 || !locationAvailable));
+            var table = new StackPanel();
+            table.Children.Add(Ui.TableLine(TableRow(Ui.Label("Select"), Ui.Label("LibraryName"), Ui.Label("VersionLabel"), Ui.Label("Status"), Ui.Label("Actions")), true));
+            foreach (var library in state.Libraries) table.Children.Add(Ui.TableLine(ResourceRow(game, library, pending.Length > 0 || !locationAvailable)));
+            body.Children.Add(table);
             if (state.Libraries.Length == 0) body.Children.Add(Ui.Label("NoLibraries"));
         }
         batchButton = c.Button("PreflightSelected", async () =>
@@ -113,9 +115,9 @@ public sealed partial class GamesView : UserControl
             var snapshot = c.Session.TargetObservation;
             var health = snapshot?.GameId == game.Id && snapshot.Revision == c.Session.State.Revision
                 ? snapshot.Receipts.FirstOrDefault(r => r.LibraryId == library.Id)?.Health.ToString() : null;
-            var status = Ui.Stack(Ui.Label("Installed"), Ui.Label(health ?? "NotChecked"));
+            var status = Ui.Stack(Ui.Status("Installed"), Ui.Status(health ?? "NotChecked"));
             if (!library.Versions.Any(v => v.Id != receipt.VersionId && SourceAvailable(v))) status.Children.Add(Ui.Label("NoOtherVersion"));
-            if (!library.Versions.Any(v => v.Id == receipt.VersionId && SourceAvailable(v))) status.Children.Add(Ui.Label("SourceUnavailable"));
+            if (!library.Versions.Any(v => v.Id == receipt.VersionId && SourceAvailable(v))) status.Children.Add(Ui.Status("SourceUnavailable"));
             return TableRow(Ui.Text(""), Ui.Text(library.Name), Ui.Text(receipt.VersionLabel), status, actions);
         }
         var versions = library.Versions;
@@ -149,7 +151,8 @@ public sealed partial class GamesView : UserControl
     private void UpdateSelection()
     {
         if (batchButton is null) return;
-        batchButton.Content = Strings.Format("PreflightCount", selected.Count);
+        Ui.ButtonContent(batchButton, Strings.Format("PreflightCount", selected.Count));
+        batchButton.Style = (Style)Application.Current.Resources["AccentButtonStyle"];
         batchButton.IsEnabled = selected.Count > 0 && !c.Session.Busy;
         batchButton.HorizontalAlignment = HorizontalAlignment.Right;
     }
@@ -157,8 +160,8 @@ public sealed partial class GamesView : UserControl
     private static Grid TableRow(params FrameworkElement[] cells)
     {
         var grid = new Grid { ColumnSpacing = 12, Padding = new Thickness(12), MinHeight = 62 };
-        foreach (var width in new[] { 36d, 1.1, 1.6, 1.0, 1.4 })
-            grid.ColumnDefinitions.Add(new() { Width = width == 36 ? new GridLength(width) : new GridLength(width, GridUnitType.Star) });
+        foreach (var width in new[] { 48d, 1.1, 1.6, 1.0, 1.4 })
+            grid.ColumnDefinitions.Add(new() { Width = width == 48 ? new GridLength(width) : new GridLength(width, GridUnitType.Star) });
         for (var i = 0; i < cells.Length; i++) { Grid.SetColumn(cells[i], i); grid.Children.Add(cells[i]); }
         return grid;
     }
