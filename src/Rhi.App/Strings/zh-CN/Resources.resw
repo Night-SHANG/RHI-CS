@@ -196,4 +196,20 @@
   <data name="ProtectionNotCounted" xml:space="preserve"><value>正在读取保护副本信息。</value></data>
   <data name="ProtectionReadFailed" xml:space="preserve"><value>无法完整统计保护副本，请检查数据目录后重新统计。</value></data>
   <data name="ProtectionMeasuredAt" xml:space="preserve"><value>统计时间：{0:g}</value></data>
+  <data name="FormReady" xml:space="preserve"><value>输入有效。提交时会再次核对；保存配置不会部署文件。</value></data>
+  <data name="FormChecking" xml:space="preserve"><value>正在核对，请稍候。</value></data>
+  <data name="RelocateGame" xml:space="preserve"><value>重新定位游戏</value></data>
+  <data name="CheckLocation" xml:space="preserve"><value>核对位置</value></data>
+  <data name="ConfirmLocation" xml:space="preserve"><value>确认更新位置</value></data>
+  <data name="OldLocation" xml:space="preserve"><value>原部署位置</value></data>
+  <data name="NewLocation" xml:space="preserve"><value>新部署位置</value></data>
+  <data name="RelocationHelp" xml:space="preserve"><value>选择搬迁后的原游戏，保持 EXE、安装根和部署目录的相对结构。仅核对并更新记录，不搬动文件。旧位置仍存在、原磁盘离线、文件或备份无法核对时不会接管。</value></data>
+  <data name="RelocationConfirmHelp" xml:space="preserve"><value>已核对 EXE、已管理文件和原件备份。确认时会再次核对，再统一更新游戏及部署记录；不会部署或清除文件。复制到新目录时，不继承空目录清理权限。</value></data>
+  <data name="RelocationCounts" xml:space="preserve"><value>已核对 {0} 个资源库、{1} 个已管理文件。</value></data>
+  <data name="RelocationNoDeployment" xml:space="preserve"><value>此游戏没有部署记录，请通过修改游戏信息更新路径。</value></data>
+  <data name="RelocationLayoutChanged" xml:space="preserve"><value>新位置的 EXE 和部署目录相对结构与原记录不同。请检查安装根及部署位置。</value></data>
+  <data name="RelocationOldLocationExists" xml:space="preserve"><value>原部署位置仍存在，不能将管理记录转到另一份游戏。请先核对实际搬迁情况。</value></data>
+  <data name="RelocationFilesChanged" xml:space="preserve"><value>新位置的已管理文件与部署记录不一致。原记录保持不变；请核对搬迁文件。</value></data>
+  <data name="GameLocationMissing" xml:space="preserve"><value>游戏路径失联。部署记录仍保留，请重新定位并核对，不能直接视为已清除。</value></data>
+  <data name="ManagedPathHelp" xml:space="preserve"><value>已有部署时，普通修改锁定路径。游戏搬迁后请使用“重新定位游戏”；待修复时须先完成恢复。</value></data>
 </root>

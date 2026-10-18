@@ -40,6 +40,12 @@ jobs:
         run: powershell.exe -NoProfile -File tools/ci_ui_smoke.ps1 -AppDirectory artifacts/app -OutputDirectory artifacts/ui-features -Features -FixtureMetadata artifacts/feature-context.json
       - name: Verify feature results against files and receipts
         run: dotnet run --project tests/Rhi.UiSmoke.Seed/Rhi.UiSmoke.Seed.csproj -c Release -- --verify-features artifacts/feature-context.json
+      - name: Prepare moved game fixture
+        run: dotnet run --project tests/Rhi.UiSmoke.Seed/Rhi.UiSmoke.Seed.csproj -c Release -- --relocation artifacts/relocation-context.json
+      - name: Verify relocation forms and related states
+        run: powershell.exe -NoProfile -File tools/ci_ui_smoke.ps1 -AppDirectory artifacts/app -OutputDirectory artifacts/ui-relocation -Relocation -FixtureMetadata artifacts/relocation-context.json
+      - name: Verify relocated files and records after restart
+        run: dotnet run --project tests/Rhi.UiSmoke.Seed/Rhi.UiSmoke.Seed.csproj -c Release -- --verify-relocation artifacts/relocation-context.json
       - name: Upload UI evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -49,6 +55,7 @@ jobs:
             artifacts/ui/
             artifacts/ui-pending/
             artifacts/ui-features/
+            artifacts/ui-relocation/
           if-no-files-found: warn
       - name: Upload application
         uses: actions/upload-artifact@v4

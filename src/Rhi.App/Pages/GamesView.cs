@@ -67,6 +67,14 @@ public sealed partial class GamesView : UserControl
             AutomationProperties.SetAutomationId(edit, "GameEdit");
             body.Children.Add(Ui.Row(edit, c.Button("CheckTargets", async () => { await c.Session.InspectTargets(game.Id); },
                 !c.Session.Busy && state.Receipts.Any(r => r.GameId == game.Id))));
+            if (state.Receipts.Any(r => r.GameId == game.Id) || pending.Length > 0)
+            {
+                var relocate = c.Button("RelocateGame", () => Relocate(game), !c.Session.Busy && pending.Length == 0);
+                AutomationProperties.SetAutomationId(relocate, "GameRelocate");
+                body.Children.Add(relocate);
+                if (!Directory.Exists(game.DeploymentRoot) || !File.Exists(game.ExePath)) body.Children.Add(Ui.Label("GameLocationMissing"));
+                body.Children.Add(Ui.Label(pending.Length > 0 ? "PendingConfigurationLocked" : "ManagedPathHelp"));
+            }
             if (c.Session.TargetObservation is { } observed && observed.GameId == game.Id && observed.Revision == state.Revision)
                 body.Children.Add(Ui.Text(Strings.Format("LastChecked", observed.CheckedAt.ToLocalTime())));
             foreach (var operation in pending)

@@ -29,6 +29,7 @@ public sealed partial class MainWindow : Window
         };
         AppWindow.Closing += async (_, e) =>
         {
+            if (session.SavingConfiguration) { e.Cancel = true; return; }
             if (!session.IsWriting) return;
             e.Cancel = true;
             if (closingDialog) return;

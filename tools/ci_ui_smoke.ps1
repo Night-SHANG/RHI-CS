@@ -1,5 +1,5 @@
 param([Parameter(Mandatory)][string]$AppDirectory, [Parameter(Mandatory)][string]$OutputDirectory,
-    [switch]$PendingConfiguration, [switch]$Features, [string]$FixtureMetadata)
+    [switch]$PendingConfiguration, [switch]$Features, [switch]$Relocation, [string]$FixtureMetadata)
 $ErrorActionPreference = 'Stop'
 if ($env:GITHUB_ACTIONS -ne 'true') { throw 'UI smoke runs only on disposable GitHub Actions runners.' }
 Add-Type -AssemblyName UIAutomationClient, UIAutomationTypes, System.Windows.Forms, System.Drawing
@@ -98,7 +98,7 @@ function Assert-FixedAction($before, [string]$action = 'Save') {
     }
 }
 function Scroll-DialogToEnd([string]$action, [switch]$IfNeeded) {
-    (Find-Control -name (Label $action) -Action).SetFocus()
+    (Find-Control -name (Label 'Cancel') -Action).SetFocus()
     $node = Find-Control -id 'DialogContentScroll'
     $pattern = $node.GetCurrentPattern([Windows.Automation.ScrollPattern]::Pattern)
     if (-not $pattern.Current.VerticallyScrollable) {
@@ -126,8 +126,10 @@ try {
     [SmokeWindow]::SetWindowPos($process.MainWindowHandle, [IntPtr]::Zero, $screen.X, $screen.Y,
         [Math]::Min(1320, $screen.Width), [Math]::Min(860, $screen.Height), 0x0040) | Out-Null
     if ($Features) { . (Join-Path $PSScriptRoot 'ci_ui_features.ps1'); return }
+    if ($Relocation) { . (Join-Path $PSScriptRoot 'ci_ui_relocation.ps1'); return }
     if ($PendingConfiguration) {
         if ((Find-Control -id 'GameEdit').Current.IsEnabled) { throw 'Pending game configuration is editable.' }
+        if ((Find-Control -id 'GameRelocate' -IncludeOffscreen).Current.IsEnabled) { throw 'Pending game can be relocated.' }
         Invoke-Control 'Libraries'
         Find-Control -name (Label 'PendingConfigurationLocked') | Out-Null
         foreach ($id in @('LibraryEdit', 'LibraryAddVersion', 'VersionEdit')) {

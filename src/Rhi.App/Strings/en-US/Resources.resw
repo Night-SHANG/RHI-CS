@@ -196,4 +196,20 @@
   <data name="ProtectionNotCounted" xml:space="preserve"><value>Reading protection copy information.</value></data>
   <data name="ProtectionReadFailed" xml:space="preserve"><value>Protection copies could not be fully counted. Check the data folder and refresh usage.</value></data>
   <data name="ProtectionMeasuredAt" xml:space="preserve"><value>Measured at: {0:g}</value></data>
+  <data name="FormReady" xml:space="preserve"><value>Inputs are valid and will be checked again on submission. Saving configuration does not deploy files.</value></data>
+  <data name="FormChecking" xml:space="preserve"><value>Checking. Please wait.</value></data>
+  <data name="RelocateGame" xml:space="preserve"><value>Locate moved game</value></data>
+  <data name="CheckLocation" xml:space="preserve"><value>Check location</value></data>
+  <data name="ConfirmLocation" xml:space="preserve"><value>Confirm new location</value></data>
+  <data name="OldLocation" xml:space="preserve"><value>Previous deployment folder</value></data>
+  <data name="NewLocation" xml:space="preserve"><value>New deployment folder</value></data>
+  <data name="RelocationHelp" xml:space="preserve"><value>Select the original game after moving it. Keep the same relative layout of the executable, installation root and deployment folder. Only records are updated; files are not moved. An existing old location, offline original drive, or unverifiable files or backups prevents reconnection.</value></data>
+  <data name="RelocationConfirmHelp" xml:space="preserve"><value>The executable, managed files and original backups have been checked. Confirmation checks them again before updating the game and deployment records together; no files are deployed or cleared. A copied folder does not inherit empty-directory cleanup rights.</value></data>
+  <data name="RelocationCounts" xml:space="preserve"><value>Checked {0} libraries and {1} managed files.</value></data>
+  <data name="RelocationNoDeployment" xml:space="preserve"><value>This game has no deployment records. Edit its game information to update paths.</value></data>
+  <data name="RelocationLayoutChanged" xml:space="preserve"><value>The executable or deployment folder has a different relative layout. Check the installation root and deployment folder.</value></data>
+  <data name="RelocationOldLocationExists" xml:space="preserve"><value>The previous deployment location still exists. Records cannot be transferred to another game copy. Check how the game was moved.</value></data>
+  <data name="RelocationFilesChanged" xml:space="preserve"><value>Managed files at the new location do not match the deployment records. Existing records are unchanged; check the moved files.</value></data>
+  <data name="GameLocationMissing" xml:space="preserve"><value>The game location is unavailable. Deployment records are retained. Locate and verify the moved game; it has not been cleared.</value></data>
+  <data name="ManagedPathHelp" xml:space="preserve"><value>Paths are locked in ordinary editing while deployments exist. Use Locate moved game after moving the game. Pending recovery must be completed first.</value></data>
 </root>

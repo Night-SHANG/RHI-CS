@@ -6,7 +6,7 @@ using Rhi.App.Services;
 
 namespace Rhi.App.Presentation;
 
-public sealed class PageContext(AppSession session, WindowsIntegration windows, FrameworkElement root, Action refresh)
+public sealed partial class PageContext(AppSession session, WindowsIntegration windows, FrameworkElement root, Action refresh)
 {
     public AppSession Session { get; } = session;
     public WindowsIntegration Windows { get; } = windows;

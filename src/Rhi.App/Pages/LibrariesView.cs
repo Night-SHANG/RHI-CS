@@ -5,6 +5,7 @@ using Rhi.App.Localization;
 using Rhi.App.Presentation;
 using Rhi.Core.Deployment;
 using Rhi.Core.Models;
+using Rhi.Core.Configuration;
 
 namespace Rhi.App.Pages;
 
@@ -99,12 +100,19 @@ public sealed partial class LibrariesView : UserControl
     {
         var name = Ui.Input("LibraryName", existing?.Name ?? "");
         var target = Ui.Input("TargetRelative", existing?.TargetRelative ?? "");
-        if (!await c.Confirm(existing is null ? "AddLibrary" : "Edit", Ui.Stack(name, target, Ui.Label("ConfigOnly")))) return;
-        if (string.IsNullOrWhiteSpace(name.Text)) throw new DeploymentException("NameRequired");
-        var library = new ResourceLibrary(existing?.Id ?? Guid.NewGuid(), name.Text.Trim(), PathPolicy.Relative(target.Text), existing?.Versions ?? []);
-        var state = c.Session.State!;
-        c.LibraryId = library.Id;
-        c.Session.Save(state with { Libraries = state.Libraries.Where(l => l.Id != library.Id).Append(library).ToArray() });
+        AutomationProperties.SetAutomationId(name, "LibraryNameInput");
+        AutomationProperties.SetAutomationId(target, "LibraryTargetInput");
+        var id = existing?.Id ?? Guid.NewGuid();
+        ResourceLibrary Read() => ConfigurationRules.Library(new(id, name.Text, target.Text, existing?.Versions ?? []));
+        await c.Edit(existing is null ? "AddLibrary" : "Edit", Ui.Stack(name, target, Ui.Label("ConfigOnly")),
+            () => { Read(); }, () =>
+            {
+                var library = Read(); var state = c.Session.State!;
+                c.Session.Save(state with { Libraries = state.Libraries.Where(l => l.Id != library.Id).Append(library).ToArray() });
+                c.LibraryId = library.Id;
+                c.Refresh();
+                return Task.CompletedTask;
+            }, [name, target]);
     }
 
     private async Task EditVersion(ResourceLibrary library, ResourceVersion? existing = null)
@@ -116,6 +124,8 @@ public sealed partial class LibrariesView : UserControl
         var kind = Ui.Choice("ResourceType", kinds.Select(ResourcePresentation.KindName),
             Math.Max(0, Array.IndexOf(kinds, existing?.Kind ?? ResourceKind.Files)));
         AutomationProperties.SetAutomationId(kind, "VersionResourceType");
+        AutomationProperties.SetAutomationId(label, "VersionLabelInput");
+        AutomationProperties.SetAutomationId(source, "VersionSourceInput");
         AutomationProperties.SetAutomationId(target, "VersionTargetOverride");
         var chooseFolder = c.Button("ChooseFolder", async () => { var p = await c.Windows.PickFolder(); if (p is not null) source.Text = p; });
         AutomationProperties.SetAutomationId(chooseFolder, "VersionChooseFolder");
@@ -138,22 +148,16 @@ public sealed partial class LibrariesView : UserControl
         UpdateKind();
         var form = Ui.Stack(label, kind, source, Ui.Row(chooseFolder, chooseFile), target, targetHelp,
             Ui.Label("ConfigOnly"), help);
-        form.MinHeight = 480;
-        if (!await c.Confirm(existing is null ? "AddVersion" : "Edit", form)) return;
-        if (string.IsNullOrWhiteSpace(label.Text)) throw new DeploymentException("NameRequired");
-        var path = PathPolicy.Full(source.Text);
-        if (!Directory.Exists(path) && !File.Exists(path)) throw new DeploymentException("SourceUnavailable", path);
-        var resourceKind = kinds[Math.Max(0, kind.SelectedIndex)];
-        if (resourceKind != ResourceKind.Files && (!File.Exists(path) ||
-            !(Path.GetExtension(path).Equals(".exe", StringComparison.OrdinalIgnoreCase) ||
-              Path.GetExtension(path).Equals(".dll", StringComparison.OrdinalIgnoreCase))))
-            throw new DeploymentException("ReShadeInvalidBinary", path);
-        PathPolicy.Disjoint(path, c.Session.Store!.Root);
-        foreach (var game in c.Session.State!.Games)
-        { PathPolicy.Disjoint(path, game.InstallRoot); PathPolicy.Disjoint(path, game.DeploymentRoot); }
-        var version = new ResourceVersion(existing?.Id ?? Guid.NewGuid(), label.Text.Trim(), path,
-            resourceKind != ResourceKind.Files ? "" : string.IsNullOrWhiteSpace(target.Text) ? null : PathPolicy.Relative(target.Text), resourceKind);
-        var updated = library with { Versions = library.Versions.Where(v => v.Id != version.Id).Append(version).ToArray() };
-        c.Session.Save(c.Session.State with { Libraries = c.Session.State.Libraries.Select(l => l.Id == library.Id ? updated : l).ToArray() });
+        var id = existing?.Id ?? Guid.NewGuid();
+        ResourceVersion Read() => ConfigurationRules.Version(c.Session.State!, c.Session.Store!.Root,
+            new(id, label.Text, source.Text, target.Text, kinds[Math.Max(0, kind.SelectedIndex)]));
+        await c.Edit(existing is null ? "AddVersion" : "Edit", form, () => { Read(); }, () =>
+        {
+            var version = Read();
+            var current = c.Session.State!.Libraries.Single(l => l.Id == library.Id);
+            var updated = current with { Versions = current.Versions.Where(v => v.Id != version.Id).Append(version).ToArray() };
+            c.Session.Save(c.Session.State with { Libraries = c.Session.State.Libraries.Select(l => l.Id == library.Id ? updated : l).ToArray() });
+            return Task.CompletedTask;
+        }, [label, source, target, kind, chooseFolder, chooseFile]);
     }
 }

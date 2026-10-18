@@ -6,6 +6,8 @@ using Rhi.App.Services.Discovery;
 using Rhi.Core.Deployment;
 using Rhi.Core.Discovery;
 using Rhi.Core.Models;
+using Rhi.Core.Configuration;
+using Microsoft.UI.Xaml.Automation;
 
 namespace Rhi.App.Pages;
 
@@ -13,11 +15,12 @@ public sealed partial class GamesView
 {
     private async Task Scan()
     {
-        var found = await Task.Run(RhiGameDiscovery.Scan);
+        var found = await c.Session.ScanGames();
         var list = new ListView { ItemsSource = found.Games, DisplayMemberPath = "Name", MaxHeight = 260 };
         var panel = Ui.Stack(Ui.Label("SteamScanScope"), list, Ui.Text(string.Join("\n", found.Warnings)));
         if (found.Games.Length == 0) panel.Children.Add(Ui.Label("NoGames"));
-        if (await c.Confirm("DiscoveredGames", panel, "SelectExecutable", found.Games.Length > 0) && list.SelectedItem is DiscoveredGame game)
+        if (await c.Confirm("DiscoveredGames", panel, "SelectExecutable", false, dialog =>
+            list.SelectionChanged += (_, _) => dialog.IsSecondaryButtonEnabled = list.SelectedItem is DiscoveredGame) && list.SelectedItem is DiscoveredGame game)
             await EditGame(discovered: game);
     }
 
@@ -29,6 +32,10 @@ public sealed partial class GamesView
         var target = Ui.Input("DeploymentRoot", existing?.DeploymentRoot ?? discovered?.SuggestedDeploymentRoot ?? "");
         var apiNames = new[] { "Unknown", "DirectX 9", "DirectX 10/11/12", "OpenGL", "Vulkan" };
         var api = Ui.Choice("GraphicsApi", apiNames.Select(Strings.Get), Math.Max(0, Array.IndexOf(apiNames, existing?.Api)));
+        AutomationProperties.SetAutomationId(name, "GameNameInput");
+        AutomationProperties.SetAutomationId(exe, "GameExeInput");
+        AutomationProperties.SetAutomationId(install, "GameInstallInput");
+        AutomationProperties.SetAutomationId(target, "GameTargetInput");
         var pick = c.Button("SelectExecutable", async () =>
         {
             var path = await c.Windows.PickFile(".exe");
@@ -40,27 +47,23 @@ public sealed partial class GamesView
             var suggestedApi = await Task.Run(() => GraphicsInspection.SuggestApi(path));
             api.SelectedIndex = Math.Max(0, Array.IndexOf(apiNames, suggestedApi));
         });
-        if (!await c.Confirm(existing is null ? "AddGame" : "Edit", Ui.Stack(name, exe, pick, install, target, api, Ui.Label("ExeHelp")))) return;
-        if (string.IsNullOrWhiteSpace(name.Text)) throw new DeploymentException("NameRequired");
-        var exePath = PathPolicy.Full(exe.Text);
-        if (!File.Exists(exePath) || !exePath.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)) throw new DeploymentException("GameUnavailable", exePath);
-        var root = PathPolicy.Full(target.Text); var installRoot = PathPolicy.Full(install.Text);
-        if (!Directory.Exists(root) || !Directory.Exists(installRoot) || !PathPolicy.Within(exePath, installRoot))
-            throw new DeploymentException("GameUnavailable", root);
-        var architecture = PeInspector.Architecture(exePath);
-        if (architecture == "Unknown") throw new DeploymentException("InvalidExecutable", exePath);
-        var state = c.Session.State!;
-        if (existing is not null && state.Receipts.Any(r => r.GameId == existing.Id) &&
-            (!PathPolicy.Comparer.Equals(existing.ExePath, exePath) || !PathPolicy.Comparer.Equals(existing.DeploymentRoot, root) ||
-             !PathPolicy.Comparer.Equals(existing.InstallRoot, installRoot))) throw new DeploymentException("ManagedLocationLocked");
-        PathPolicy.Disjoint(root, c.Session.Store!.Root); PathPolicy.Disjoint(installRoot, c.Session.Store.Root);
-        foreach (var other in state.Games.Where(g => g.Id != existing?.Id)) PathPolicy.Disjoint(root, other.DeploymentRoot);
-        foreach (var source in state.Libraries.SelectMany(l => l.Versions).Select(v => v.SourcePath))
-        { PathPolicy.Disjoint(source, root); PathPolicy.Disjoint(source, installRoot); }
-        var game = new GameEntry(existing?.Id ?? Guid.NewGuid(), name.Text.Trim(), installRoot, exePath, root,
-            apiNames[Math.Max(0, api.SelectedIndex)], architecture, existing?.Source ?? discovered?.Source ?? "Manual");
-        c.GameId = game.Id;
-        c.Session.Save(state with { Games = state.Games.Where(g => g.Id != game.Id).Append(game).ToArray() });
+        var managed = existing is not null && c.Session.State!.Receipts.Any(r => r.GameId == existing.Id);
+        exe.IsReadOnly = install.IsReadOnly = target.IsReadOnly = managed;
+        pick.IsEnabled = !managed;
+        var id = existing?.Id ?? Guid.NewGuid();
+        GameEntry Read() => ConfigurationRules.Game(c.Session.State!, c.Session.Store!.Root,
+            new(id, name.Text, install.Text, exe.Text, target.Text, apiNames[Math.Max(0, api.SelectedIndex)], "Unknown",
+                existing?.Source ?? discovered?.Source ?? "Manual"));
+        await c.Edit(existing is null ? "AddGame" : "Edit",
+            Ui.Stack(name, exe, pick, install, target, api, Ui.Label(managed ? "ManagedPathHelp" : "ExeHelp")),
+            () => { Read(); }, () =>
+            {
+                var game = Read(); var state = c.Session.State!;
+                c.Session.Save(state with { Games = state.Games.Where(g => g.Id != game.Id).Append(game).ToArray() });
+                c.GameId = game.Id;
+                c.Refresh();
+                return Task.CompletedTask;
+            }, [name, exe, install, target, api, pick]);
     }
 
     private async Task ChooseVersion(GameEntry game, ResourceLibrary library, DeploymentReceipt receipt)
