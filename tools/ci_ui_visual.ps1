@@ -42,8 +42,14 @@ function Reveal-SettingsControl([string]$id) {
         $viewport = $viewer.Current.BoundingRectangle
         if (-not $node.Current.IsOffscreen -and $bounds.Height -gt 0 -and $bounds.Top -ge $viewport.Top -and $bounds.Bottom -le $viewport.Bottom) { return $node }
         $scroll = $viewer.GetCurrentPattern([Windows.Automation.ScrollPattern]::Pattern)
-        if ($bounds.Top -lt $viewport.Top) { $scroll.SetScrollPercent([Windows.Automation.ScrollPattern]::NoScroll, 0) }
-        elseif ($scroll.Current.VerticallyScrollable) { $scroll.Scroll([Windows.Automation.ScrollAmount]::NoAmount, [Windows.Automation.ScrollAmount]::SmallIncrement) }
+        if ($scroll.Current.VerticallyScrollable) {
+            $viewSize = $scroll.Current.VerticalViewSize
+            if ($viewSize -le 0 -or $viewSize -ge 100) { throw "Invalid Settings viewport size: $viewSize" }
+            $travel = $viewport.Height * (100 / $viewSize - 1)
+            $delta = if ($bounds.Top -lt $viewport.Top) { $bounds.Top - $viewport.Top - 8 } else { $bounds.Bottom - $viewport.Bottom + 8 }
+            $target = [Math]::Max(0, [Math]::Min(100, $scroll.Current.VerticalScrollPercent + 100 * $delta / $travel))
+            $scroll.SetScrollPercent([Windows.Automation.ScrollPattern]::NoScroll, $target)
+        }
         Start-Sleep -Milliseconds 150
     }
     throw "Settings control is not fully visible: $id"
@@ -144,6 +150,7 @@ function Check-Pages([string]$prefix) {
 }
 
 Record-Dpi 'initial' | Out-Null
+. (Join-Path $PSScriptRoot 'ci_ui_display.ps1') -PrepareWideOnly
 . (Join-Path $PSScriptRoot 'ci_ui_offline.ps1')
 foreach ($language in @('zh-CN', 'en-US')) {
     foreach ($theme in @('Light', 'Dark')) {

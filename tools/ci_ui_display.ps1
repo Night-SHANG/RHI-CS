@@ -1,3 +1,4 @@
+param([switch]$PrepareWideOnly)
 # Windows display settings on the disposable hosted runner only. No registry hacks.
 if ($env:GITHUB_ACTIONS -ne 'true' -or -not $Visual) { throw 'CI visual harness required.' }
 $scaleChanged = $false
@@ -27,6 +28,18 @@ try {
             if ($null -ne $keep) { $keep.GetCurrentPattern([Windows.Automation.InvokePattern]::Pattern).Invoke() }
             Start-Sleep -Seconds 1
         } else { $resolution.GetCurrentPattern([Windows.Automation.ExpandCollapsePattern]::Pattern).Collapse() }
+    }
+    if ($PrepareWideOnly) {
+        $wideArea = [SmokeWindow+Rect]::new()
+        if (-not [SmokeWindow]::SystemParametersInfo(0x0030, 0, [ref]$wideArea, 0)) { throw 'Cannot read wide work area.' }
+        $wideScale = [SmokeWindow]::GetDpiForWindow($process.MainWindowHandle) / 96.0
+        if (($wideArea.Right - $wideArea.Left) / $wideScale -lt 1200) { throw 'Runner cannot provide a wide Settings layout.' }
+        [SmokeWindow]::SetWindowPos($process.MainWindowHandle, [IntPtr]::Zero, $wideArea.Left, $wideArea.Top,
+            [int][Math]::Min(1440 * $wideScale, $wideArea.Right - $wideArea.Left),
+            [int][Math]::Min(960 * $wideScale, $wideArea.Bottom - $wideArea.Top), 0x0040) | Out-Null
+        $evidence.Add("Wide layout: physical work area $($wideArea.Right - $wideArea.Left) x $($wideArea.Bottom - $wideArea.Top); DPI scale $wideScale")
+        Start-Sleep -Milliseconds 300
+        return
     }
     $scaleBox = $nodes | Where-Object { $_.Current.ControlType -eq [Windows.Automation.ControlType]::ComboBox -and
         ($_.Current.Name -match '(?i)scale' -or $_.Current.AutomationId -match '(?i)scale') -and $_.Current.IsEnabled } | Select-Object -First 1
