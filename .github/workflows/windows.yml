@@ -24,6 +24,8 @@ jobs:
         run: dotnet test tests/Rhi.Core.Tests/Rhi.Core.Tests.csproj -c Release --logger "trx;LogFileName=core.trx" --results-directory artifacts/tests
       - name: Publish self-contained WinUI application
         run: dotnet publish src/Rhi.App/Rhi.App.csproj -c Release -r win-x64 -p:Platform=x64 --self-contained true -o artifacts/app -bl:artifacts/winui.binlog
+      - name: Verify published language resources and license
+        run: python tools/check_sources.py --published artifacts/app
       - name: Upload application
         uses: actions/upload-artifact@v4
         with:

@@ -16,7 +16,7 @@
   "SelectExecutable": "选择游戏 EXE",
   "ExeHelp": "请选择实际游戏程序。安装根目录与 EXE 所在目录可能不同；图形 API 由你确认，位数从文件读取。",
   "DiscoveredGames": "发现的游戏",
-  "SteamScanScope": "当前开发版扫描 Steam。选择游戏后确认实际 EXE，其余商店暂可手动添加。",
+  "SteamScanScope": "扫描 Steam、GOG、Epic、EA、Xbox、Ubisoft、Battle.net 和 Rockstar 的本地安装记录。结果仅供选择，请确认实际游戏 EXE 和部署目录。",
   "LocalResources": "本地资源",
   "PreflightHelp": "先预检，再写入游戏目录。取消勾选不会清除已部署资源。",
   "Select": "选择",

@@ -16,7 +16,7 @@
   "SelectExecutable": "Select game EXE",
   "ExeHelp": "Select the actual game executable. Its directory may differ from the installation root. Confirm the graphics API; architecture is read from the file.",
   "DiscoveredGames": "Discovered games",
-  "SteamScanScope": "This development build scans Steam. Select the game and confirm its EXE. Other stores can be added manually.",
+  "SteamScanScope": "Scan local installation records from Steam, GOG, Epic, EA, Xbox, Ubisoft, Battle.net, and Rockstar. Results are candidates only; confirm the game executable and deployment folder.",
   "LocalResources": "Local resources",
   "PreflightHelp": "Check first, then write to the game. Unchecking a library does not remove its deployment.",
   "Select": "Select",

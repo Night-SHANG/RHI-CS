@@ -2,6 +2,7 @@ using Microsoft.UI.Xaml.Controls;
 using Rhi.App.Localization;
 using Rhi.App.Presentation;
 using Rhi.App.Services;
+using Rhi.App.Services.Discovery;
 using Rhi.Core.Deployment;
 using Rhi.Core.Discovery;
 using Rhi.Core.Models;
@@ -12,7 +13,7 @@ public sealed partial class GamesView
 {
     private async Task Scan()
     {
-        var found = await Task.Run(WindowsIntegration.ScanSteam);
+        var found = await Task.Run(RhiGameDiscovery.Scan);
         var list = new ListView { ItemsSource = found.Games, DisplayMemberPath = "Name", MaxHeight = 260 };
         var panel = Ui.Stack(Ui.Label("SteamScanScope"), list, Ui.Text(string.Join("\n", found.Warnings)));
         if (found.Games.Length == 0) panel.Children.Add(Ui.Label("NoGames"));

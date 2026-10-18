@@ -15,11 +15,11 @@ public sealed partial class MainWindow : Window
     private bool closingDialog;
     private bool refreshing;
 
-    public MainWindow()
+    public MainWindow(AppSession session)
     {
         InitializeComponent();
         AppWindow.Resize(new Windows.Graphics.SizeInt32(1320, 860));
-        session = new();
+        this.session = session;
         context = new(session, new WindowsIntegration(this), Root, Refresh);
         session.Changed += Refresh;
         session.Progress += p =>
@@ -52,7 +52,6 @@ public sealed partial class MainWindow : Window
         {
         session.InspectConnection();
         var preferences = session.State?.Preferences ?? new Rhi.Core.Models.Preferences();
-        Strings.Use(preferences.Language);
         Root.RequestedTheme = preferences.Theme switch { "Dark" => ElementTheme.Dark, "System" => ElementTheme.Default, _ => ElementTheme.Light };
         Ui.CurrentTheme = Root.ActualTheme;
         GamesNav.Content = Strings.Get("Games"); LibrariesNav.Content = Strings.Get("Libraries"); SettingsNav.Content = Strings.Get("Settings");

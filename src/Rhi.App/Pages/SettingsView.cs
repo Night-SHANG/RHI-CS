@@ -12,11 +12,16 @@ public sealed class SettingsView : UserControl
     {
         var state = c.Session.State!;
         var themes = new[] { "Light", "Dark", "System" };
-        var languages = new[] { "System", "zh-CN", "en-US" };
+        var languages = new[] { "System" }.Concat(Strings.AvailableLanguages).ToArray();
         var theme = Ui.Choice("Appearance", themes.Select(Strings.Get), Math.Max(0, Array.IndexOf(themes, state.Preferences.Theme)));
-        var language = Ui.Choice("Language", languages.Select(Strings.Get), Math.Max(0, Array.IndexOf(languages, state.Preferences.Language)));
+        var language = Ui.Choice("Language", languages.Select(Strings.LanguageName), Math.Max(0, Array.IndexOf(languages, state.Preferences.Language)));
         theme.IsEnabled = !c.Session.Busy; language.IsEnabled = !c.Session.Busy;
-        var save = c.Action("Save", () => c.Session.Save(state with { Preferences = new(themes[theme.SelectedIndex], languages[language.SelectedIndex]) }), !c.Session.Busy);
+        var save = c.Button("Save", async () =>
+        {
+            c.Session.Save(state with { Preferences = new(themes[theme.SelectedIndex], languages[language.SelectedIndex]) });
+            await Strings.UseAsync(c.Session.State!.Preferences.Language);
+            c.Refresh();
+        }, !c.Session.Busy);
         var root = c.Session.Store!.Root;
         var general = Ui.Card(Ui.Stack(theme, language, save));
         var data = Ui.Card(Ui.Stack(Ui.Label("ApplicationData", 20), Ui.Text(root), Ui.Label("NoMigration"),

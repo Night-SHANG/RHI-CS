@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <data name="Games" xml:space="preserve"><value>Games</value></data>
+  <data name="Libraries" xml:space="preserve"><value>Libraries</value></data>
+  <data name="Settings" xml:space="preserve"><value>Settings</value></data>
+  <data name="SearchGames" xml:space="preserve"><value>Search games</value></data>
+  <data name="Refresh" xml:space="preserve"><value>Refresh</value></data>
+  <data name="AddGame" xml:space="preserve"><value>Add game</value></data>
+  <data name="NoGames" xml:space="preserve"><value>No games added. Scan Steam or select an executable manually.</value></data>
+  <data name="NoMatches" xml:space="preserve"><value>No matching games.</value></data>
+  <data name="AddGameHelp" xml:space="preserve"><value>Add a game to select and check local resources.</value></data>
+  <data name="GameName" xml:space="preserve"><value>Game name</value></data>
+  <data name="Executable" xml:space="preserve"><value>Game executable</value></data>
+  <data name="InstallRoot" xml:space="preserve"><value>Game installation root</value></data>
+  <data name="DeploymentRoot" xml:space="preserve"><value>Deployment location</value></data>
+  <data name="GraphicsApi" xml:space="preserve"><value>Graphics API</value></data>
+  <data name="SelectExecutable" xml:space="preserve"><value>Select game EXE</value></data>
+  <data name="ExeHelp" xml:space="preserve"><value>Select the actual game executable. Its directory may differ from the installation root. Confirm the graphics API; architecture is read from the file.</value></data>
+  <data name="DiscoveredGames" xml:space="preserve"><value>Discovered games</value></data>
+  <data name="SteamScanScope" xml:space="preserve"><value>Scan local installation records from Steam, GOG, Epic, EA, Xbox, Ubisoft, Battle.net, and Rockstar. Results are candidates only; confirm the game executable and deployment folder.</value></data>
+  <data name="LocalResources" xml:space="preserve"><value>Local resources</value></data>
+  <data name="PreflightHelp" xml:space="preserve"><value>Check first, then write to the game. Unchecking a library does not remove its deployment.</value></data>
+  <data name="Select" xml:space="preserve"><value>Select</value></data>
+  <data name="LibraryName" xml:space="preserve"><value>Library</value></data>
+  <data name="VersionLabel" xml:space="preserve"><value>Version</value></data>
+  <data name="Status" xml:space="preserve"><value>Status</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="Installed" xml:space="preserve"><value>Deployed</value></data>
+  <data name="NotDeployed" xml:space="preserve"><value>Not deployed</value></data>
+  <data name="NotChecked" xml:space="preserve"><value>Not checked yet</value></data>
+  <data name="NoOtherVersion" xml:space="preserve"><value>No other available version</value></data>
+  <data name="ChangeVersion" xml:space="preserve"><value>Change version</value></data>
+  <data name="ClearDeployment" xml:space="preserve"><value>Clear deployment</value></data>
+  <data name="Deploy" xml:space="preserve"><value>Deploy</value></data>
+  <data name="Change" xml:space="preserve"><value>Change version</value></data>
+  <data name="Clear" xml:space="preserve"><value>Clear deployment</value></data>
+  <data name="CurrentVersion" xml:space="preserve"><value>Current version</value></data>
+  <data name="CandidateVersion" xml:space="preserve"><value>Candidate version</value></data>
+  <data name="PreflightSelected" xml:space="preserve"><value>Check selected</value></data>
+  <data name="PreflightCount" xml:space="preserve"><value>Check selected ({0})</value></data>
+  <data name="Preflight" xml:space="preserve"><value>Preflight and confirmation</value></data>
+  <data name="NotWrittenYet" xml:space="preserve"><value>Game files have not been modified. Review the actual changes below.</value></data>
+  <data name="PlanCounts" xml:space="preserve"><value>New {0} · Write/restore {1} · Remove {2} · Changed targets {3}</value></data>
+  <data name="ExternalChange" xml:space="preserve"><value>Target changed</value></data>
+  <data name="Write" xml:space="preserve"><value>Write/restore</value></data>
+  <data name="Remove" xml:space="preserve"><value>Remove</value></data>
+  <data name="OverwriteConsent" xml:space="preserve"><value>Continuing backs up existing originals before deploying the entire library. Identical contents are not silently claimed.</value></data>
+  <data name="ProtectionConsent" xml:space="preserve"><value>Continuing saves and verifies changed targets before changing or clearing the deployment. Copies are not written back to sources, merged into the new version, or kept active in the game automatically.</value></data>
+  <data name="SkipLibraryHelp" xml:space="preserve"><value>To skip a library, cancel this confirmation, uncheck that library and run preflight again.</value></data>
+  <data name="ProtectAndExecute" xml:space="preserve"><value>Protect changes and execute</value></data>
+  <data name="BackupAndExecute" xml:space="preserve"><value>Back up originals and deploy</value></data>
+  <data name="ConfirmExecute" xml:space="preserve"><value>Confirm and execute</value></data>
+  <data name="CheckRecovery" xml:space="preserve"><value>Check recovery</value></data>
+  <data name="Recover" xml:space="preserve"><value>Restore and verify</value></data>
+  <data name="RecoveryHelp" xml:space="preserve"><value>Check the interrupted operation and restore its previous state. New target changes or unavailable protection data stop recovery and keep the game locked.</value></data>
+  <data name="AddLibrary" xml:space="preserve"><value>Add library</value></data>
+  <data name="AddVersion" xml:space="preserve"><value>Add version</value></data>
+  <data name="LibraryExplanation" xml:space="preserve"><value>Libraries reference your local sources. Saving configuration does not deploy, move or modify source files.</value></data>
+  <data name="NoLibraries" xml:space="preserve"><value>No libraries yet. Add a library and version on the Libraries page.</value></data>
+  <data name="TargetRelative" xml:space="preserve"><value>Target subdirectory (blank: deployment location)</value></data>
+  <data name="TargetOverride" xml:space="preserve"><value>Version target override (blank: library default)</value></data>
+  <data name="SourcePath" xml:space="preserve"><value>Read-only source path</value></data>
+  <data name="ReferencedBy" xml:space="preserve"><value>Deployed in</value></data>
+  <data name="ConfigOnly" xml:space="preserve"><value>Saving affects future plans. Existing receipts retain the actual locations previously written.</value></data>
+  <data name="ReShadePending" xml:space="preserve"><value>This development build supports ordinary files and folders. ReShade EXE extraction and INI adaptation are not connected yet. Source executables are never run.</value></data>
+  <data name="ChooseFolder" xml:space="preserve"><value>Choose folder</value></data>
+  <data name="ChooseFile" xml:space="preserve"><value>Choose file</value></data>
+  <data name="Edit" xml:space="preserve"><value>Edit</value></data>
+  <data name="Save" xml:space="preserve"><value>Save</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="Close" xml:space="preserve"><value>Close</value></data>
+  <data name="Error" xml:space="preserve"><value>Operation incomplete</value></data>
+  <data name="Appearance" xml:space="preserve"><value>Appearance</value></data>
+  <data name="Language" xml:space="preserve"><value>Language</value></data>
+  <data name="Light" xml:space="preserve"><value>Light</value></data>
+  <data name="Dark" xml:space="preserve"><value>Dark</value></data>
+  <data name="System" xml:space="preserve"><value>Follow system</value></data>
+  <data name="zh-CN" xml:space="preserve"><value>简体中文</value></data>
+  <data name="en-US" xml:space="preserve"><value>English</value></data>
+  <data name="ApplicationData" xml:space="preserve"><value>Application data</value></data>
+  <data name="NoMigration" xml:space="preserve"><value>Data is stored here. Automatic migration is not available. If disconnected, reconnect the same data set.</value></data>
+  <data name="OpenFolder" xml:space="preserve"><value>Open folder</value></data>
+  <data name="ProtectedCopies" xml:space="preserve"><value>Protected modifications</value></data>
+  <data name="ProtectionRetention" xml:space="preserve"><value>Modified copies and their path records are retained without automatic expiry. Originals and recovery snapshots are separate and must not be treated as disposable cache.</value></data>
+  <data name="OpenProtectedCopies" xml:space="preserve"><value>Open protected copies</value></data>
+  <data name="DevelopmentScope" xml:space="preserve"><value>Development build scope</value></data>
+  <data name="CurrentScope" xml:space="preserve"><value>Ordinary file deployment, version changes and clearing; manual games and Steam discovery. Dedicated ReShade adaptation and other store scanners are pending. Automatic Vulkan ReShade management is excluded from v1; ordinary resources are unaffected. OptiScaler is copied as ordinary files; BAT files are not run.</value></data>
+  <data name="License" xml:space="preserve"><value>Sources and license</value></data>
+  <data name="LicenseNotice" xml:space="preserve"><value>RHI-CS includes code adapted from RankFTW/RHI under GPL-3.0. Provided without warranty. You may modify and redistribute it under the license conditions. The license and source notices are included with the application.</value></data>
+  <data name="OpenLicenseFolder" xml:space="preserve"><value>Open license location</value></data>
+  <data name="Welcome" xml:space="preserve"><value>Choose application data location</value></data>
+  <data name="DataExplanation" xml:space="preserve"><value>Choose an empty folder for configuration, deployment receipts, original backups and protected modifications. Do not choose a game or resource source directory. Cancelling leaves deployment disabled.</value></data>
+  <data name="BootstrapExplanation" xml:space="preserve"><value>Only a data-location pointer is stored in your system user directory. Deployment data and backups stay in the location you choose.</value></data>
+  <data name="ChooseData" xml:space="preserve"><value>Choose data folder</value></data>
+  <data name="ReconnectData" xml:space="preserve"><value>Reconnect original data</value></data>
+  <data name="Retry" xml:space="preserve"><value>Retry</value></data>
+  <data name="TaskResults" xml:space="preserve"><value>Task results</value></data>
+  <data name="TaskProgress" xml:space="preserve"><value>{0} · {1} · {2}/{3}</value></data>
+  <data name="Idle" xml:space="preserve"><value>Ready · Sources remain read-only</value></data>
+  <data name="Busy" xml:space="preserve"><value>Working. Wait or request a stop. Other pages remain viewable.</value></data>
+  <data name="TaskEnded" xml:space="preserve"><value>Task ended. Results can be reopened.</value></data>
+  <data name="TaskRunning" xml:space="preserve"><value>Task in progress</value></data>
+  <data name="CloseDuringTask" xml:space="preserve"><value>Wait for completion, or request a stop and restore the current library. Completed libraries stay deployed; remaining libraries will not run. Close the window after recovery finishes.</value></data>
+  <data name="StopAndRestore" xml:space="preserve"><value>Stop and restore</value></data>
+  <data name="Stopping" xml:space="preserve"><value>Stopping</value></data>
+  <data name="Preparing" xml:space="preserve"><value>Preparing protection</value></data>
+  <data name="Executing" xml:space="preserve"><value>Executing</value></data>
+  <data name="Recovering" xml:space="preserve"><value>Restoring</value></data>
+  <data name="Succeeded" xml:space="preserve"><value>Succeeded and verified</value></data>
+  <data name="Cancelled" xml:space="preserve"><value>Cancelled; game files not modified</value></data>
+  <data name="Restored" xml:space="preserve"><value>Restored and verified</value></data>
+  <data name="StoppedRestored" xml:space="preserve"><value>Stopped; restored and verified</value></data>
+  <data name="FailedRestored" xml:space="preserve"><value>Failed; restored and verified</value></data>
+  <data name="NeedsRepair" xml:space="preserve"><value>Repair required; changes to this game are locked</value></data>
+  <data name="NotExecuted" xml:space="preserve"><value>Not executed</value></data>
+  <data name="CommittedJournalPending" xml:space="preserve"><value>Deployment committed; operation journal needs reconciliation.</value></data>
+  <data name="Unknown" xml:space="preserve"><value>Unconfirmed</value></data>
+  <data name="DataUnavailable" xml:space="preserve"><value>Application data is disconnected or incomplete. Reconnect the original data.</value></data>
+  <data name="DataChanged" xml:space="preserve"><value>Application data differs from this session. Reopen the application.</value></data>
+  <data name="WrongDataSet" xml:space="preserve"><value>This is not the original data set.</value></data>
+  <data name="EmptyDataFolderRequired" xml:space="preserve"><value>Initialization requires an empty data folder.</value></data>
+  <data name="MigrationNotSupported" xml:space="preserve"><value>Automatic data migration is not supported.</value></data>
+  <data name="BootstrapInvalid" xml:space="preserve"><value>The data pointer is damaged. Initialization stopped to avoid creating an empty ledger.</value></data>
+  <data name="LocalAbsolutePathRequired" xml:space="preserve"><value>Choose a fully qualified path on a local drive.</value></data>
+  <data name="OverlappingPaths" xml:space="preserve"><value>Data, source or game target locations overlap.</value></data>
+  <data name="UnsafeRelativePath" xml:space="preserve"><value>The relative path is unsafe or contains a reserved Windows name.</value></data>
+  <data name="ReparsePoint" xml:space="preserve"><value>The path contains a link or reparse point and is blocked.</value></data>
+  <data name="FileDirectoryConflict" xml:space="preserve"><value>A file conflicts with a directory at the target.</value></data>
+  <data name="TargetConflict" xml:space="preserve"><value>Different libraries cannot own the same target file.</value></data>
+  <data name="GameExecutableTarget" xml:space="preserve"><value>This development build cannot replace the selected game EXE.</value></data>
+  <data name="GameUnavailable" xml:space="preserve"><value>The game directory or executable is unavailable.</value></data>
+  <data name="GameIdentityChanged" xml:space="preserve"><value>The game location or EXE changed. Old originals cannot be restored automatically.</value></data>
+  <data name="GameRunning" xml:space="preserve"><value>The game may be running. Close it and run preflight again.</value></data>
+  <data name="InvalidExecutable" xml:space="preserve"><value>Cannot verify the selected executable's architecture.</value></data>
+  <data name="ManagedLocationLocked" xml:space="preserve"><value>Clear or repair existing deployments before changing game locations.</value></data>
+  <data name="SourceUnavailable" xml:space="preserve"><value>Source unavailable</value></data>
+  <data name="EmptySource" xml:space="preserve"><value>The source directory has no files to deploy.</value></data>
+  <data name="AdapterNotAvailable" xml:space="preserve"><value>This resource adapter is not connected yet.</value></data>
+  <data name="BackupUnavailable" xml:space="preserve"><value>A required backup is missing or failed verification. Operation blocked.</value></data>
+  <data name="ChangedSincePreflight" xml:space="preserve"><value>Sources, targets or configuration changed after preflight. Check again.</value></data>
+  <data name="StateChanged" xml:space="preserve"><value>Deployment state changed. Check again.</value></data>
+  <data name="DuplicateLibrary" xml:space="preserve"><value>A batch cannot include the same library twice.</value></data>
+  <data name="InsufficientSpace" xml:space="preserve"><value>Insufficient free space for protection data.</value></data>
+  <data name="SpaceCheckFailed" xml:space="preserve"><value>Cannot confirm free space. Operation blocked.</value></data>
+  <data name="InspectionFailed" xml:space="preserve"><value>Inspection failed; deployment has not started.</value></data>
+  <data name="PreflightBlocked" xml:space="preserve"><value>Preflight has blocking issues.</value></data>
+  <data name="ConsentRequired" xml:space="preserve"><value>Confirm original backup or modification protection.</value></data>
+  <data name="VerificationFailed" xml:space="preserve"><value>File verification failed.</value></data>
+  <data name="RecoveryTargetChanged" xml:space="preserve"><value>Recovery target has new, unknown changes. Overwriting stopped.</value></data>
+  <data name="NameRequired" xml:space="preserve"><value>Name or version label cannot be empty.</value></data>
+  <data name="HardLinkTarget" xml:space="preserve"><value>The target has multiple hard links. Overwriting is blocked.</value></data>
+  <data name="General" xml:space="preserve"><value>General</value></data>
+  <data name="DataBackups" xml:space="preserve"><value>Data and backups</value></data>
+  <data name="Versions" xml:space="preserve"><value>Versions</value></data>
+  <data name="VersionDetails" xml:space="preserve"><value>Version details</value></data>
+  <data name="Available" xml:space="preserve"><value>Available</value></data>
+  <data name="View" xml:space="preserve"><value>View</value></data>
+  <data name="SearchLibraries" xml:space="preserve"><value>Search libraries</value></data>
+</root>

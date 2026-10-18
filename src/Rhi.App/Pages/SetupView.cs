@@ -17,9 +17,19 @@ public sealed class SetupView : UserControl
         content.Children.Add(context.Button(reconnect ? "ReconnectData" : "ChooseData", async () =>
         {
             var folder = await context.Windows.PickFolder();
-            if (folder is not null) session.Connect(folder, create: !reconnect);
+            if (folder is not null)
+            {
+                session.Connect(folder, create: !reconnect);
+                await Strings.UseAsync(session.State!.Preferences.Language);
+                context.Refresh();
+            }
         }, !(session.StartupError is not null && session.Pointer is null)));
-        if (reconnect) content.Children.Add(context.Action("Retry", () => session.Connect(session.Pointer!.Root, false)));
+        if (reconnect) content.Children.Add(context.Button("Retry", async () =>
+        {
+            session.Connect(session.Pointer!.Root, false);
+            await Strings.UseAsync(session.State!.Preferences.Language);
+            context.Refresh();
+        }));
         content.MaxWidth = 720; content.HorizontalAlignment = HorizontalAlignment.Center;
         content.VerticalAlignment = VerticalAlignment.Center;
         Content = new Border { Padding = new Thickness(40), Child = content };

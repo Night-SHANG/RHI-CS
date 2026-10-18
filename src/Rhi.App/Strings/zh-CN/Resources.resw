@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <data name="Games" xml:space="preserve"><value>游戏</value></data>
+  <data name="Libraries" xml:space="preserve"><value>资源库</value></data>
+  <data name="Settings" xml:space="preserve"><value>设置</value></data>
+  <data name="SearchGames" xml:space="preserve"><value>搜索游戏</value></data>
+  <data name="Refresh" xml:space="preserve"><value>刷新</value></data>
+  <data name="AddGame" xml:space="preserve"><value>添加游戏</value></data>
+  <data name="NoGames" xml:space="preserve"><value>尚未添加游戏。可以扫描 Steam 或手动选择 EXE。</value></data>
+  <data name="NoMatches" xml:space="preserve"><value>没有匹配的游戏。</value></data>
+  <data name="AddGameHelp" xml:space="preserve"><value>添加游戏后，在这里选择本地资源并预检。</value></data>
+  <data name="GameName" xml:space="preserve"><value>游戏名称</value></data>
+  <data name="Executable" xml:space="preserve"><value>游戏 EXE</value></data>
+  <data name="InstallRoot" xml:space="preserve"><value>游戏安装根目录</value></data>
+  <data name="DeploymentRoot" xml:space="preserve"><value>部署位置</value></data>
+  <data name="GraphicsApi" xml:space="preserve"><value>图形 API</value></data>
+  <data name="SelectExecutable" xml:space="preserve"><value>选择游戏 EXE</value></data>
+  <data name="ExeHelp" xml:space="preserve"><value>请选择实际游戏程序。安装根目录与 EXE 所在目录可能不同；图形 API 由你确认，位数从文件读取。</value></data>
+  <data name="DiscoveredGames" xml:space="preserve"><value>发现的游戏</value></data>
+  <data name="SteamScanScope" xml:space="preserve"><value>扫描 Steam、GOG、Epic、EA、Xbox、Ubisoft、Battle.net 和 Rockstar 的本地安装记录。结果仅供选择，请确认实际游戏 EXE 和部署目录。</value></data>
+  <data name="LocalResources" xml:space="preserve"><value>本地资源</value></data>
+  <data name="PreflightHelp" xml:space="preserve"><value>先预检，再写入游戏目录。取消勾选不会清除已部署资源。</value></data>
+  <data name="Select" xml:space="preserve"><value>选择</value></data>
+  <data name="LibraryName" xml:space="preserve"><value>资源库名称</value></data>
+  <data name="VersionLabel" xml:space="preserve"><value>版本标签</value></data>
+  <data name="Status" xml:space="preserve"><value>状态</value></data>
+  <data name="Actions" xml:space="preserve"><value>操作</value></data>
+  <data name="Installed" xml:space="preserve"><value>已部署</value></data>
+  <data name="NotDeployed" xml:space="preserve"><value>未部署</value></data>
+  <data name="NotChecked" xml:space="preserve"><value>尚未核对</value></data>
+  <data name="NoOtherVersion" xml:space="preserve"><value>暂无其他可用版本</value></data>
+  <data name="ChangeVersion" xml:space="preserve"><value>更换版本</value></data>
+  <data name="ClearDeployment" xml:space="preserve"><value>清除部署</value></data>
+  <data name="Deploy" xml:space="preserve"><value>部署</value></data>
+  <data name="Change" xml:space="preserve"><value>更换版本</value></data>
+  <data name="Clear" xml:space="preserve"><value>清除部署</value></data>
+  <data name="CurrentVersion" xml:space="preserve"><value>当前版本</value></data>
+  <data name="CandidateVersion" xml:space="preserve"><value>候选版本</value></data>
+  <data name="PreflightSelected" xml:space="preserve"><value>预检所选</value></data>
+  <data name="PreflightCount" xml:space="preserve"><value>预检所选（{0}）</value></data>
+  <data name="Preflight" xml:space="preserve"><value>预检与确认</value></data>
+  <data name="NotWrittenYet" xml:space="preserve"><value>尚未修改游戏文件。请核对以下实际影响。</value></data>
+  <data name="PlanCounts" xml:space="preserve"><value>新增 {0} · 写入/恢复 {1} · 移除 {2} · 目标变化 {3}</value></data>
+  <data name="ExternalChange" xml:space="preserve"><value>目标已变化</value></data>
+  <data name="Write" xml:space="preserve"><value>写入/恢复</value></data>
+  <data name="Remove" xml:space="preserve"><value>移除</value></data>
+  <data name="OverwriteConsent" xml:space="preserve"><value>继续后会先备份已有原件，再部署整个资源库。即使内容相同，也不会静默认领。</value></data>
+  <data name="ProtectionConsent" xml:space="preserve"><value>继续后会先备份并核验目标修改，再更换或清除。修改副本不会写回源库，不会自动合并到新版，也不代表修改继续生效。</value></data>
+  <data name="SkipLibraryHelp" xml:space="preserve"><value>如需跳过某个库，请取消本次确认、取消勾选该库后重新预检。</value></data>
+  <data name="ProtectAndExecute" xml:space="preserve"><value>备份修改并执行</value></data>
+  <data name="BackupAndExecute" xml:space="preserve"><value>备份原件并部署</value></data>
+  <data name="ConfirmExecute" xml:space="preserve"><value>确认执行</value></data>
+  <data name="CheckRecovery" xml:space="preserve"><value>检查并恢复</value></data>
+  <data name="Recover" xml:space="preserve"><value>恢复并核验</value></data>
+  <data name="RecoveryHelp" xml:space="preserve"><value>将检查未完成操作并尝试恢复操作前状态。若目标再次变化或保护资料不足，会停止并保留待修复状态。</value></data>
+  <data name="AddLibrary" xml:space="preserve"><value>添加资源库</value></data>
+  <data name="AddVersion" xml:space="preserve"><value>添加版本</value></data>
+  <data name="LibraryExplanation" xml:space="preserve"><value>资源库只记录你选择的本地来源。保存配置不会部署，也不会移动或修改源文件。</value></data>
+  <data name="NoLibraries" xml:space="preserve"><value>还没有资源库，请到资源库页面添加库和版本。</value></data>
+  <data name="TargetRelative" xml:space="preserve"><value>目标相对目录（留空为部署位置）</value></data>
+  <data name="TargetOverride" xml:space="preserve"><value>本版本目标覆盖（留空沿用资源库）</value></data>
+  <data name="SourcePath" xml:space="preserve"><value>只读来源路径</value></data>
+  <data name="ReferencedBy" xml:space="preserve"><value>已部署于</value></data>
+  <data name="ConfigOnly" xml:space="preserve"><value>保存只影响后续计划。已部署记录继续指向当时实际写入的位置。</value></data>
+  <data name="ReShadePending" xml:space="preserve"><value>当前开发版仅接入普通文件/目录。ReShade 专用 EXE 解包与 INI 适配尚未接入；源 EXE 不会被运行。</value></data>
+  <data name="ChooseFolder" xml:space="preserve"><value>选择文件夹</value></data>
+  <data name="ChooseFile" xml:space="preserve"><value>选择文件</value></data>
+  <data name="Edit" xml:space="preserve"><value>修改</value></data>
+  <data name="Save" xml:space="preserve"><value>保存</value></data>
+  <data name="Cancel" xml:space="preserve"><value>取消</value></data>
+  <data name="Close" xml:space="preserve"><value>关闭</value></data>
+  <data name="Error" xml:space="preserve"><value>操作未完成</value></data>
+  <data name="Appearance" xml:space="preserve"><value>外观</value></data>
+  <data name="Language" xml:space="preserve"><value>语言</value></data>
+  <data name="Light" xml:space="preserve"><value>浅色</value></data>
+  <data name="Dark" xml:space="preserve"><value>深色</value></data>
+  <data name="System" xml:space="preserve"><value>跟随系统</value></data>
+  <data name="zh-CN" xml:space="preserve"><value>简体中文</value></data>
+  <data name="en-US" xml:space="preserve"><value>English</value></data>
+  <data name="ApplicationData" xml:space="preserve"><value>应用数据</value></data>
+  <data name="NoMigration" xml:space="preserve"><value>数据保存在此位置。当前不提供自动搬迁；数据失联时可重新连接同一数据集合。</value></data>
+  <data name="OpenFolder" xml:space="preserve"><value>打开目录</value></data>
+  <data name="ProtectedCopies" xml:space="preserve"><value>修改保护副本</value></data>
+  <data name="ProtectionRetention" xml:space="preserve"><value>修改副本与路径说明长期保留，不自动过期。原件和恢复快照另存于数据目录，不能当作缓存清理。</value></data>
+  <data name="OpenProtectedCopies" xml:space="preserve"><value>打开修改备份</value></data>
+  <data name="DevelopmentScope" xml:space="preserve"><value>当前开发版范围</value></data>
+  <data name="CurrentScope" xml:space="preserve"><value>普通文件部署、换版与清除；手动游戏和 Steam 发现。ReShade 专用适配及其他商店扫描尚未接入。Vulkan ReShade 自动管理不在首版范围；普通资源不受此限制。OptiScaler 仅按普通文件复制，不执行 BAT。</value></data>
+  <data name="License" xml:space="preserve"><value>来源与许可</value></data>
+  <data name="LicenseNotice" xml:space="preserve"><value>RHI-CS 含 RankFTW/RHI 的 GPL-3.0 适配代码。软件按 GPL-3.0 提供，无担保；你可按许可证条件修改和再分发。许可证和来源说明随程序提供。</value></data>
+  <data name="OpenLicenseFolder" xml:space="preserve"><value>查看许可证所在目录</value></data>
+  <data name="Welcome" xml:space="preserve"><value>选择应用数据位置</value></data>
+  <data name="DataExplanation" xml:space="preserve"><value>选择一个空文件夹，用来保存资源配置、部署记录、原件备份和修改保护副本。不要选择游戏目录或资源来源目录。取消后不会进入部署。</value></data>
+  <data name="BootstrapExplanation" xml:space="preserve"><value>系统用户目录仅保存用于下次找到数据的定位文件；部署数据和备份保存在你选择的位置。</value></data>
+  <data name="ChooseData" xml:space="preserve"><value>选择数据文件夹</value></data>
+  <data name="ReconnectData" xml:space="preserve"><value>重新定位原数据</value></data>
+  <data name="Retry" xml:space="preserve"><value>重试</value></data>
+  <data name="TaskResults" xml:space="preserve"><value>查看任务结果</value></data>
+  <data name="TaskProgress" xml:space="preserve"><value>{0} · {1} · {2}/{3}</value></data>
+  <data name="Idle" xml:space="preserve"><value>就绪 · 只读源库</value></data>
+  <data name="Busy" xml:space="preserve"><value>正在处理，请等待或请求停止。其他页面仍可查看。</value></data>
+  <data name="TaskEnded" xml:space="preserve"><value>任务已结束，可重新打开结果。</value></data>
+  <data name="TaskRunning" xml:space="preserve"><value>任务正在执行</value></data>
+  <data name="CloseDuringTask" xml:space="preserve"><value>请等待任务结束，或请求停止并恢复当前库。已经完成的库会保留，后续库不会继续执行。恢复完成后再关闭窗口。</value></data>
+  <data name="StopAndRestore" xml:space="preserve"><value>停止并恢复</value></data>
+  <data name="Stopping" xml:space="preserve"><value>正在停止</value></data>
+  <data name="Preparing" xml:space="preserve"><value>准备保护资料</value></data>
+  <data name="Executing" xml:space="preserve"><value>正在执行</value></data>
+  <data name="Recovering" xml:space="preserve"><value>正在恢复</value></data>
+  <data name="Succeeded" xml:space="preserve"><value>成功，已核验</value></data>
+  <data name="Cancelled" xml:space="preserve"><value>已取消，尚未修改游戏文件</value></data>
+  <data name="Restored" xml:space="preserve"><value>已恢复并核验</value></data>
+  <data name="StoppedRestored" xml:space="preserve"><value>已停止，已恢复并核验</value></data>
+  <data name="FailedRestored" xml:space="preserve"><value>失败，已恢复并核验</value></data>
+  <data name="NeedsRepair" xml:space="preserve"><value>待修复：该游戏暂不能继续变更</value></data>
+  <data name="NotExecuted" xml:space="preserve"><value>未执行</value></data>
+  <data name="CommittedJournalPending" xml:space="preserve"><value>部署状态已提交；操作记录待下次核对。</value></data>
+  <data name="Unknown" xml:space="preserve"><value>未确认</value></data>
+  <data name="DataUnavailable" xml:space="preserve"><value>应用数据失联或不完整，请重新定位原数据。</value></data>
+  <data name="DataChanged" xml:space="preserve"><value>应用数据与当前会话不一致，请重新打开应用。</value></data>
+  <data name="WrongDataSet" xml:space="preserve"><value>所选位置不是原来的数据集合。</value></data>
+  <data name="EmptyDataFolderRequired" xml:space="preserve"><value>初始化需要一个空的数据文件夹。</value></data>
+  <data name="MigrationNotSupported" xml:space="preserve"><value>当前不支持自动搬迁应用数据。</value></data>
+  <data name="BootstrapInvalid" xml:space="preserve"><value>定位文件损坏，已停止初始化，避免建立空账本。</value></data>
+  <data name="LocalAbsolutePathRequired" xml:space="preserve"><value>请选择本机磁盘的完整路径。</value></data>
+  <data name="OverlappingPaths" xml:space="preserve"><value>数据、来源或游戏目标路径存在重叠。</value></data>
+  <data name="UnsafeRelativePath" xml:space="preserve"><value>相对路径不安全或包含 Windows 保留名称。</value></data>
+  <data name="ReparsePoint" xml:space="preserve"><value>路径包含链接或重解析点，已阻止。</value></data>
+  <data name="FileDirectoryConflict" xml:space="preserve"><value>目标路径发生文件与目录冲突。</value></data>
+  <data name="TargetConflict" xml:space="preserve"><value>不同资源库不能管理同一目标文件。</value></data>
+  <data name="GameExecutableTarget" xml:space="preserve"><value>当前开发版不允许覆盖所选游戏 EXE。</value></data>
+  <data name="GameUnavailable" xml:space="preserve"><value>游戏目录或 EXE 不可用。</value></data>
+  <data name="GameIdentityChanged" xml:space="preserve"><value>游戏位置或 EXE 已变化，不能自动恢复旧原件。</value></data>
+  <data name="GameRunning" xml:space="preserve"><value>游戏可能正在运行，请关闭游戏后重新预检。</value></data>
+  <data name="InvalidExecutable" xml:space="preserve"><value>无法验证所选 EXE 的架构。</value></data>
+  <data name="ManagedLocationLocked" xml:space="preserve"><value>已有部署时不能直接修改游戏位置；请先完成原位置的清除或修复。</value></data>
+  <data name="SourceUnavailable" xml:space="preserve"><value>来源不可用</value></data>
+  <data name="EmptySource" xml:space="preserve"><value>来源目录没有可部署文件。</value></data>
+  <data name="AdapterNotAvailable" xml:space="preserve"><value>此资源适配器尚未接入。</value></data>
+  <data name="BackupUnavailable" xml:space="preserve"><value>必要备份缺失或校验失败，已阻止操作。</value></data>
+  <data name="ChangedSincePreflight" xml:space="preserve"><value>预检后的来源、目标或配置已变化，请重新预检。</value></data>
+  <data name="StateChanged" xml:space="preserve"><value>部署状态已变化，请重新预检。</value></data>
+  <data name="DuplicateLibrary" xml:space="preserve"><value>同一批次不能重复选择资源库。</value></data>
+  <data name="InsufficientSpace" xml:space="preserve"><value>可用空间不足以准备保护资料。</value></data>
+  <data name="SpaceCheckFailed" xml:space="preserve"><value>无法确认可用空间，已阻止操作。</value></data>
+  <data name="InspectionFailed" xml:space="preserve"><value>检查失败，未开始部署。</value></data>
+  <data name="PreflightBlocked" xml:space="preserve"><value>预检存在阻塞项，不能执行。</value></data>
+  <data name="ConsentRequired" xml:space="preserve"><value>需要确认原件或修改保护处理。</value></data>
+  <data name="VerificationFailed" xml:space="preserve"><value>文件核验失败。</value></data>
+  <data name="RecoveryTargetChanged" xml:space="preserve"><value>恢复目标存在新的未知变化，已停止覆盖。</value></data>
+  <data name="NameRequired" xml:space="preserve"><value>名称或版本标签不能为空。</value></data>
+  <data name="HardLinkTarget" xml:space="preserve"><value>目标文件有多个硬链接，已阻止覆盖。</value></data>
+  <data name="General" xml:space="preserve"><value>常规</value></data>
+  <data name="DataBackups" xml:space="preserve"><value>数据与备份</value></data>
+  <data name="Versions" xml:space="preserve"><value>版本</value></data>
+  <data name="VersionDetails" xml:space="preserve"><value>版本详情</value></data>
+  <data name="Available" xml:space="preserve"><value>可用</value></data>
+  <data name="View" xml:space="preserve"><value>查看</value></data>
+  <data name="SearchLibraries" xml:space="preserve"><value>搜索资源库</value></data>
+</root>
