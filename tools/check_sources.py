@@ -14,6 +14,29 @@ args = parser.parse_args()
 errors = []
 checked = 0
 
+# Check the actual shared foreground tokens against every surface they appear on.
+theme_xml = ET.parse(root / "src/Rhi.App/Styles/Theme.xaml")
+xaml_key = "{http://schemas.microsoft.com/winfx/2006/xaml}Key"
+def luminance(hex_color):
+    rgb = [int(hex_color[i:i + 2], 16) / 255 for i in (1, 3, 5)]
+    linear = [v / 12.92 if v <= 0.04045 else ((v + 0.055) / 1.055) ** 2.4 for v in rgb]
+    return sum(v * weight for v, weight in zip(linear, (0.2126, 0.7152, 0.0722)))
+
+for dictionary in theme_xml.getroot().iter():
+    theme = dictionary.get(xaml_key)
+    if theme not in {"Light", "Dark", "Default"}:
+        continue
+    colors = {brush.get(xaml_key): brush.get("Color") for brush in dictionary}
+    for foreground in ("TextBrush", "SecondaryTextBrush", "SuccessBrush", "WarningBrush", "ErrorBrush"):
+        for background in ("CanvasBrush", "PanelBrush", "CardBrush"):
+            if foreground not in colors or background not in colors:
+                errors.append(f"missing theme token: {theme}: {foreground}/{background}")
+                continue
+            a, b = sorted((luminance(colors[foreground]), luminance(colors[background])))
+            contrast = (b + 0.05) / (a + 0.05)
+            if contrast < 4.5:
+                errors.append(f"insufficient text contrast: {theme}: {foreground}/{background}: {contrast:.2f}")
+
 # Windows PowerShell 5.1 interprets BOM-less script files as the system code page.
 for path in (root / "tools").glob("*.ps1"):
     data = path.read_bytes()

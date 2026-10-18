@@ -33,7 +33,7 @@ internal static class FeatureFixture
         }
         var alpha = Library("Alpha");
         var beta = Library("Beta");
-        store.Save(store.State with { Libraries = [reshade, alpha, beta], Preferences = new("Light", "zh-CN") });
+        store.Save(store.State with { Libraries = [reshade, alpha, beta], Preferences = new("Dark", "zh-CN") });
         var plan = new DeploymentPlanner(store).Build(store.State, game.Id,
             [new(reshade.Id, reshade.Versions.Single().Id, OperationKind.Deploy)]);
         if (new DeploymentEngine(store).Execute(plan, new(true, true)).Single().Status != OperationStatus.Succeeded)
