@@ -95,12 +95,18 @@ function Assert-FixedAction($before, [string]$action = 'Save') {
         }
     }
 }
-function Scroll-DialogToEnd {
+function Scroll-DialogToEnd([string]$action) {
+    (Find-Control -name (Label $action) -Action).SetFocus()
     $node = Find-Control -id 'DialogContentScroll'
     $pattern = $node.GetCurrentPattern([Windows.Automation.ScrollPattern]::Pattern)
     if (-not $pattern.Current.VerticallyScrollable) { throw 'Long dialog content is not scrollable.' }
+    Write-Host "Dialog scroll before: $($pattern.Current.VerticalScrollPercent), view size: $($pattern.Current.VerticalViewSize)"
     $pattern.SetScrollPercent([Windows.Automation.ScrollPattern]::NoScroll, 100)
-    Start-Sleep -Milliseconds 350
+    $scrollWait = [Diagnostics.Stopwatch]::StartNew()
+    while ($pattern.Current.VerticalScrollPercent -lt 99 -and $scrollWait.Elapsed.TotalSeconds -lt 5) {
+        Start-Sleep -Milliseconds 100
+    }
+    Write-Host "Dialog scroll after: $($pattern.Current.VerticalScrollPercent), view size: $($pattern.Current.VerticalViewSize)"
     if ($pattern.Current.VerticalScrollPercent -lt 99) { throw 'Dialog content did not scroll to its end.' }
 }
 try {
@@ -163,7 +169,7 @@ try {
     Select-ResourceKind 'ReShadeAddon'
     Assert-FixedAction $englishSave
     Capture '11-version-reshade-en'
-    Scroll-DialogToEnd
+    Scroll-DialogToEnd 'Save'
     Assert-FixedAction $englishSave
     Capture '13-version-reshade-en-scrolled'
     Invoke-Control 'Cancel'
@@ -175,7 +181,7 @@ try {
     $configurationChanges = Find-Control -name (Label 'ConfigurationChanges')
     $englishConfirm = Assert-ActionOrder 'ConfirmExecute'
     Capture '12-reshade-preflight-en'
-    Scroll-DialogToEnd
+    Scroll-DialogToEnd 'ConfirmExecute'
     Assert-FixedAction $englishConfirm 'ConfirmExecute'
     Capture '14-reshade-preflight-en-scrolled'
     Invoke-Control 'ConfirmExecute'
