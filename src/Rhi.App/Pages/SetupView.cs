@@ -15,7 +15,7 @@ public sealed class SetupView : UserControl
             Ui.Label(session.InitializationBlocked ? "BootstrapInvalid" : reconnect ? "ReconnectDataHelp" : "DefaultDataUnavailable"),
             Ui.Label("BootstrapExplanation"),
             Ui.Text(session.Pointer?.Root ?? ""), Ui.Text(session.StartupError ?? ""));
-        content.Children.Add(context.Button(reconnect ? "ReconnectData" : "ChooseData", async () =>
+        var actions = Ui.Row(context.Button(reconnect ? "ReconnectData" : "ChooseData", async () =>
         {
             var folder = await context.Windows.PickFolder();
             if (folder is not null)
@@ -25,13 +25,32 @@ public sealed class SetupView : UserControl
                 context.Refresh();
             }
         }, !session.InitializationBlocked));
-        if (reconnect) content.Children.Add(context.Button("Retry", async () =>
+        if (reconnect) Ui.AddToRow(actions, context.Button("Retry", async () =>
         {
             session.Connect(session.Pointer!.Root, false);
             await Strings.UseAsync(session.State!.Preferences.Language);
             context.Refresh();
         }));
-        content.MaxWidth = 720; content.HorizontalAlignment = HorizontalAlignment.Center;
+        if (reconnect && !session.InitializationBlocked)
+            Ui.AddToRow(actions, context.Button("StartNewData", async () =>
+            {
+                var target = Path.Combine(AppContext.BaseDirectory, "Data");
+                var location = Ui.Text(target);
+                var browse = context.Button("ChooseEmptyDataFolder", async () =>
+                {
+                    var selected = await context.Windows.PickFolder();
+                    if (selected is not null) { target = selected; location.Text = target; }
+                });
+                var preview = Ui.Stack(Ui.Label("StartNewDataHelp"), location, browse);
+                if (!await context.Confirm("StartNewData", preview, "CreateNewData",
+                    configure: dialog => dialog.DefaultButton = ContentDialogButton.Primary)) return;
+                session.StartNewWorkspace(target);
+                await Strings.UseAsync(session.State!.Preferences.Language);
+                context.Refresh();
+            }));
+        foreach (var action in actions.Children.OfType<Button>()) action.MinHeight = 44;
+        content.Children.Add(actions);
+        content.MaxWidth = 720; content.HorizontalAlignment = HorizontalAlignment.Stretch;
         content.VerticalAlignment = VerticalAlignment.Center;
         Content = Ui.Scroll(new Border { Padding = new Thickness(28), Child = content });
     }

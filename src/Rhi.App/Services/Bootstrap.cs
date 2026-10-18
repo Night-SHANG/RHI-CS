@@ -1,5 +1,6 @@
 using Rhi.Core.Deployment;
 using Rhi.Core.Storage;
+using Rhi.Core.Models;
 
 namespace Rhi.App.Services;
 
@@ -19,5 +20,23 @@ public static class Bootstrap
         PathPolicy.CheckNoLinks(Folder);
         Directory.CreateDirectory(Folder);
         AtomicJson.Write(Path.Combine(Folder, "bootstrap.json"), pointer);
+    }
+
+    public static WorkspaceStore StartNew(string root, DataPointer expected)
+    {
+        if (Read() != expected) throw new DeploymentException("DataLocationChanged");
+        // Explicit creation rejects existing contents; it never resets an old ledger.
+        var store = WorkspaceStore.Open(root, create: true);
+        try
+        {
+            if (Read() != expected) throw new DeploymentException("DataLocationChanged");
+            var history = Path.Combine(Folder, "previous-locations");
+            PathPolicy.CheckNoLinks(history);
+            Directory.CreateDirectory(history);
+            AtomicJson.Write(Path.Combine(history, DateTime.UtcNow.ToString("yyyyMMddTHHmmssZ") + "_" + Guid.NewGuid().ToString("N") + ".json"), expected);
+            Save(new(store.Root, store.State.Id));
+            return store;
+        }
+        catch { store.Dispose(); throw; }
     }
 }

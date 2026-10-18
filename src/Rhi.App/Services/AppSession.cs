@@ -60,6 +60,18 @@ public sealed partial class AppSession : ObservableObject, IDisposable
         Changed?.Invoke();
     }
 
+    public void StartNewWorkspace(string path)
+    {
+        RequireIdle();
+        if (Store is not null) throw new DeploymentException("MigrationNotSupported");
+        if (InitializationBlocked || Pointer is null) throw new DeploymentException("BootstrapInvalid");
+        Store = Bootstrap.StartNew(path, Pointer);
+        Pointer = new(Store.Root, Store.State.Id);
+        StartupError = null;
+        TargetObservation = null; ProtectionObservation = null; ProtectionReadAttempted = false;
+        Changed?.Invoke();
+    }
+
     public void Save(WorkspaceState state)
     {
         RequireIdle();

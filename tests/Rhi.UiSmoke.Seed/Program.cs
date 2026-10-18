@@ -5,6 +5,18 @@ using Rhi.UiSmoke.Seed;
 
 if (Environment.GetEnvironmentVariable("GITHUB_ACTIONS") != "true")
     throw new InvalidOperationException("This fixture is restricted to disposable GitHub Actions runners.");
+if (args.FirstOrDefault() == "--startup")
+{
+    if (args.Length != 3) throw new ArgumentException("Expected metadata and application directory.");
+    StartupFixture.Prepare(args[1], args[2]);
+    return;
+}
+if (args.FirstOrDefault() == "--verify-startup")
+{
+    if (args.Length != 2) throw new ArgumentException("Expected metadata path.");
+    StartupFixture.Verify(args[1]);
+    return;
+}
 if (args.FirstOrDefault() is "--offline" or "--verify-offline")
 {
     if (args.Length != 2) throw new ArgumentException("Expected explicit fixture metadata path.");

@@ -1,5 +1,5 @@
 param([Parameter(Mandatory)][string]$AppDirectory, [Parameter(Mandatory)][string]$OutputDirectory,
-    [switch]$PendingConfiguration, [switch]$Features, [switch]$Relocation, [switch]$Visual, [string]$FixtureMetadata)
+    [switch]$PendingConfiguration, [switch]$Features, [switch]$Relocation, [switch]$Visual, [switch]$Startup, [string]$FixtureMetadata)
 $ErrorActionPreference = 'Stop'
 if ($env:GITHUB_ACTIONS -ne 'true') { throw 'UI smoke runs only on disposable GitHub Actions runners.' }
 Add-Type -AssemblyName UIAutomationClient, UIAutomationTypes, System.Windows.Forms, System.Drawing
@@ -23,7 +23,8 @@ public static class SmokeWindow {
 $appRoot = (Resolve-Path -LiteralPath $AppDirectory).Path
 $captureRoot = [IO.Path]::GetFullPath($OutputDirectory)
 [IO.Directory]::CreateDirectory($captureRoot) | Out-Null
-$labels = [xml][IO.File]::ReadAllText((Join-Path $appRoot 'Strings/zh-CN/Resources.resw'), [Text.Encoding]::UTF8)
+$initialLanguage = if ($Startup) { 'en-US' } else { 'zh-CN' }
+$labels = [xml][IO.File]::ReadAllText((Join-Path $appRoot "Strings/$initialLanguage/Resources.resw"), [Text.Encoding]::UTF8)
 function Label([string]$key) {
     $node = $labels.SelectSingleNode("/root/data[@name='$key']/value")
     if ($null -eq $node) { throw "Missing locale key: $key" }
@@ -135,6 +136,7 @@ try {
     if ($Features) { . (Join-Path $PSScriptRoot 'ci_ui_features.ps1'); return }
     if ($Relocation) { . (Join-Path $PSScriptRoot 'ci_ui_relocation.ps1'); return }
     if ($Visual) { . (Join-Path $PSScriptRoot 'ci_ui_visual.ps1'); return }
+    if ($Startup) { . (Join-Path $PSScriptRoot 'ci_ui_startup.ps1'); return }
     if ($PendingConfiguration) {
         if ((Find-Control -id 'GameEdit').Current.IsEnabled) { throw 'Pending game configuration is editable.' }
         if ((Find-Control -id 'GameRelocate' -IncludeOffscreen).Current.IsEnabled) { throw 'Pending game can be relocated.' }

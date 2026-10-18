@@ -225,9 +225,14 @@
   <data name="OfflineOutputExists" xml:space="preserve"><value>输出名称已存在，请换一个名称。不会覆盖已有文件。</value></data>
   <data name="OfflineReady" xml:space="preserve"><value>离线 ReShade 已制作</value></data>
   <data name="OfflineNextStep" xml:space="preserve"><value>可将着色器放入 reshade-shaders/Shaders、纹理放入 reshade-shaders/Textures，并自行补充预设。然后添加资源库和版本，选择“普通文件”，以此输出文件夹为来源。文件应部署到实际游戏程序对应的位置；预设仍需在游戏内选择。当前未修改游戏或资源库配置。</value></data>
-  <data name="ReconnectDataHelp" xml:space="preserve"><value>请重新连接保存原配置、部署记录和备份的数据文件夹。不会创建空数据替代原记录，也不会自动迁移文件。</value></data>
+  <data name="ReconnectDataHelp" xml:space="preserve"><value>请重新连接保存原配置、部署记录和备份的数据文件夹。若旧数据已不再需要，可选择“创建新数据，重新开始”；不会自动迁移文件。</value></data>
   <data name="ResetOffline" xml:space="preserve"><value>重置</value></data>
   <data name="BrowseFolder" xml:space="preserve"><value>浏览文件夹</value></data>
   <data name="OfflineFillForm" xml:space="preserve"><value>请选择本地官方安装包和输出位置，再确认游戏位数、图形 API 和新文件夹名称。</value></data>
   <data name="OfflineReadyToCreate" xml:space="preserve"><value>输入有效。点击“制作”生成离线文件，不会向游戏部署。</value></data>
+  <data name="StartNewData" xml:space="preserve"><value>创建新数据，重新开始</value></data>
+  <data name="CreateNewData" xml:space="preserve"><value>创建新数据</value></data>
+  <data name="ChooseEmptyDataFolder" xml:space="preserve"><value>选择其他空文件夹</value></data>
+  <data name="StartNewDataHelp" xml:space="preserve"><value>仅在旧数据已不再需要时继续。将创建独立的空数据，不导入旧配置、部署记录或备份，也不能用新数据恢复旧部署。旧目录不会被修改，旧定位记录会留档。默认使用程序旁的 Data；若无法写入或已有内容，请选择其他独立空文件夹，不要选择游戏目录或资源来源目录。</value></data>
+  <data name="DataLocationChanged" xml:space="preserve"><value>数据位置已被其他实例修改，请关闭并重新打开软件后再试。</value></data>
 </root>

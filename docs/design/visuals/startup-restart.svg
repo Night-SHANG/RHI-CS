@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1320" height="860" viewBox="0 0 1320 860">
+ <rect width="1320" height="860" fill="#fafafa"/>
+ <g font-family="Microsoft YaHei UI,Segoe UI,sans-serif" fill="#19253f">
+  <text x="24" y="37" font-size="24">▦ RHI-CS</text>
+  <rect x="475" y="7" width="110" height="44" rx="4" fill="#0067a8"/>
+  <text x="514" y="36" font-size="16" fill="white">游戏</text><text x="630" y="36" font-size="16">资源库</text><text x="770" y="36" font-size="16">设置</text>
+  <path d="M0 56H1320 M0 808H1320" stroke="#dce1e8"/>
+  <g transform="translate(300,330)">
+   <text y="28" font-size="28" font-weight="600">应用数据失联或不完整，请重新定位原数据。</text>
+   <text y="62" font-size="14">请重新连接原数据。若旧数据已不再需要，可明确确认后创建新数据。</text>
+   <text y="89" font-size="14">系统用户目录仅保存数据定位文件；配置和备份保存在数据目录。</text>
+   <text y="116" font-size="14">旧数据位置</text><text y="143" font-size="14">DataUnavailable：旧目录不可用</text>
+   <rect y="162" width="234.67" height="44" rx="4" fill="white" stroke="#ddd"/><text x="117.33" y="190" font-size="14" text-anchor="middle">重新定位原数据</text>
+   <rect x="242.67" y="162" width="234.67" height="44" rx="4" fill="white" stroke="#ddd"/><text x="360" y="190" font-size="14" text-anchor="middle">重试</text>
+   <rect x="485.33" y="162" width="234.67" height="44" rx="4" fill="white" stroke="#ddd"/><text x="602.67" y="190" font-size="14" text-anchor="middle">创建新数据，重新开始</text>
+  </g>
+  <text x="24" y="840" font-size="12">就绪 · 只读源库</text>
+ </g>
+ <!-- Confirmation uses the existing shared ContentDialog: 480 DIP content,
+      12 DIP stack spacing, theme resources, fixed Cancel-left/Create-right footer.
+      Content: explanation, default app/Data path, native empty-folder picker.
+      Cancel writes nothing. Existing nonempty targets are rejected. -->
+</svg>

@@ -225,9 +225,14 @@
   <data name="OfflineOutputExists" xml:space="preserve"><value>The output name already exists. Choose another name; existing files are never overwritten.</value></data>
   <data name="OfflineReady" xml:space="preserve"><value>Offline ReShade created</value></data>
   <data name="OfflineNextStep" xml:space="preserve"><value>Add shaders under reshade-shaders/Shaders, textures under reshade-shaders/Textures, and any presets you need. Then add a library and version, choose Ordinary files, and select this output folder as its source. Deploy to the location used by the actual game executable; select the preset in-game. No game files or library configuration have been changed.</value></data>
-  <data name="ReconnectDataHelp" xml:space="preserve"><value>Reconnect the original folder containing your configuration, deployment records, and backups. Existing records will not be replaced with empty data, and files will not be migrated automatically.</value></data>
+  <data name="ReconnectDataHelp" xml:space="preserve"><value>Reconnect the folder containing the original configuration, deployment records, and backups. If the old data is no longer needed, choose "Create new data and start over". Files are not migrated automatically.</value></data>
   <data name="ResetOffline" xml:space="preserve"><value>Reset</value></data>
   <data name="BrowseFolder" xml:space="preserve"><value>Browse folder</value></data>
   <data name="OfflineFillForm" xml:space="preserve"><value>Select a local official installer and output location, then confirm the game architecture, graphics API, and new folder name.</value></data>
   <data name="OfflineReadyToCreate" xml:space="preserve"><value>Ready to create the offline files. This does not deploy anything to a game.</value></data>
+  <data name="StartNewData" xml:space="preserve"><value>Create new data and start over</value></data>
+  <data name="CreateNewData" xml:space="preserve"><value>Create new data</value></data>
+  <data name="ChooseEmptyDataFolder" xml:space="preserve"><value>Choose another empty folder</value></data>
+  <data name="StartNewDataHelp" xml:space="preserve"><value>Continue only if the old data is no longer needed. This creates separate empty data without importing old configuration, deployment records, or backups. New data cannot restore old deployments. The old folder is unchanged and its location record is archived. The default is Data beside the application. If it is not writable or already contains files, choose another separate empty folder outside game and resource source folders.</value></data>
+  <data name="DataLocationChanged" xml:space="preserve"><value>Another instance changed the data location. Close and reopen the application, then try again.</value></data>
 </root>
