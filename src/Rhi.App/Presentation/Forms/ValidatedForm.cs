@@ -30,7 +30,7 @@ public sealed partial class PageContext
         void Check()
         {
             if (submitting) return;
-            try { validate(); error.Text = Strings.Get("FormReady"); error.Foreground = Ui.ThemeBrush("SecondaryTextBrush"); dialog.IsSecondaryButtonEnabled = true; }
+            try { validate(); error.Text = ""; error.Foreground = Ui.ThemeBrush("SecondaryTextBrush"); dialog.IsSecondaryButtonEnabled = true; }
             catch (Exception ex) when (ex is DeploymentException or IOException or UnauthorizedAccessException or ArgumentException)
             { error.Text = ErrorText(ex); error.Foreground = Ui.ThemeBrush("ErrorBrush"); dialog.IsSecondaryButtonEnabled = false; }
         }

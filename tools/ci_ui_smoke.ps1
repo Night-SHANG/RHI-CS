@@ -100,6 +100,22 @@ function Assert-FormError([string]$key) {
     if ((Find-Control -id 'FormValidation' -IncludeOffscreen).Current.Name -ne (Label $key)) { throw "Wrong form guidance: $key" }
     if ((Find-Control -name (Label 'Save') -Action).Current.IsEnabled) { throw 'Invalid form can be saved.' }
 }
+function Assert-FormReady {
+    Start-Sleep -Milliseconds 250
+    if (-not (Find-Control -name (Label 'Save') -Action).Current.IsEnabled) { throw 'Valid form cannot be saved.' }
+    $window = [Windows.Automation.AutomationElement]::FromHandle($process.MainWindowHandle)
+    $selector = [Windows.Automation.PropertyCondition]::new([Windows.Automation.AutomationElement]::AutomationIdProperty, 'FormValidation')
+    $feedback = $window.FindFirst([Windows.Automation.TreeScope]::Descendants, $selector)
+    if ($feedback -and $feedback.Current.Name) { throw 'Valid form still displays validation prose.' }
+}
+function Assert-Destination([string]$key, [string]$folder) {
+    Start-Sleep -Milliseconds 250
+    $location = if ($folder) { (Label 'GameDeploymentSubfolder') -f $folder } else { Label 'GameDeploymentFolder' }
+    $expected = (Label $key) -f $location
+    if ((Find-Control -id 'VersionTargetHint' -IncludeOffscreen).Current.Name -ne $expected) {
+        throw "Incorrect destination guidance: $expected"
+    }
+}
 function Invoke-LibraryControl([string]$id) {
     $node = Find-Control -id $id -Enabled -IncludeOffscreen
     if ($node.Current.IsOffscreen) {
@@ -212,6 +228,13 @@ try {
     Scroll-DialogToEnd 'Save' -IfNeeded
     Capture '04-version-legacy'
     Invoke-Control 'Save'
+    Invoke-LibraryControl 'LibraryEdit'
+    $libraryTarget = (Find-Control -id 'LibraryTargetInput').GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern)
+    $originalLibraryTarget = $libraryTarget.Current.Value
+    $libraryTarget.SetValue('mods')
+    Assert-FormReady
+    Capture '03-library-subfolder-ready'
+    Invoke-Control 'Save'
     Invoke-LibraryControl 'LibraryAddVersion'
     Assert-NoResourceType
     $filesSave = Assert-ActionOrder 'Save'
@@ -228,12 +251,22 @@ try {
     Assert-FormError 'SourcePathMissing'
     $sourceInput.SetValue([IO.Path]::GetDirectoryName($legacySource))
     $targetInput = (Find-Control -id 'VersionTargetOverride' -IncludeOffscreen).GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern)
+    Assert-Destination 'VersionTargetHelp' 'mods'
+    Assert-FormReady
+    $targetInput.SetValue('mods\textures')
+    Assert-Destination 'VersionTargetLocation' 'mods\textures'
+    Assert-FormReady
+    Assert-FixedAction $filesSave
+    Scroll-DialogToEnd 'Save' -IfNeeded
+    Capture '07-version-explicit-destination'
     $targetInput.SetValue('F:\Resources\OfflineReShade')
     Assert-FormError 'TargetFolderAbsolute'
     Assert-FixedAction $filesSave
     Scroll-DialogToEnd 'Save' -IfNeeded
     Capture '07-version-path-error'
     $targetInput.SetValue('')
+    Assert-Destination 'VersionTargetHelp' 'mods'
+    Assert-FormReady
     Assert-FixedAction $filesSave
     Capture '08-version-folder-ready'
     Invoke-Control 'Save'
@@ -243,6 +276,9 @@ try {
     if ($savedVersion.Count -ne 1 -or $savedVersion[0].Kind -notin @('Files', 0) -or $null -ne $savedVersion[0].TargetOverride) {
         throw 'New folder version was not saved as ordinary files following the library setting.'
     }
+    Invoke-LibraryControl 'LibraryEdit'
+    (Find-Control -id 'LibraryTargetInput').GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).SetValue($originalLibraryTarget)
+    Invoke-Control 'Save'
     Invoke-Control 'Games'
     Invoke-Control 'Deploy'
     Find-Control -name (Label 'ConfigurationChanges') | Out-Null
@@ -274,6 +310,10 @@ try {
     $englishSave = Assert-ActionOrder 'Save'
     Assert-NoResourceType
     Assert-FixedAction $englishSave
+    (Find-Control -id 'VersionLabelInput').GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).SetValue('1.0')
+    (Find-Control -id 'VersionSourceInput').GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).SetValue([IO.Path]::GetDirectoryName($legacySource))
+    Assert-Destination 'VersionTargetHelp' $originalLibraryTarget
+    Assert-FormReady
     Capture '11-version-files-en'
     Scroll-DialogToEnd 'Save' -IfNeeded
     Assert-FixedAction $englishSave

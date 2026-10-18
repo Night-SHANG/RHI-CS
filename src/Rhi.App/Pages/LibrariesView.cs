@@ -55,9 +55,9 @@ public sealed partial class LibrariesView : UserControl
     private UIElement LibraryBody(ResourceLibrary? selected)
     {
         var state = c.Session.State!;
-        var right = Ui.Stack(Ui.Label("Libraries", 28), Ui.Label("LibraryExplanation"));
+        var right = Ui.Stack(Ui.Label("Libraries", 28));
         var locked = selected is not null && c.Session.Store!.Pending().Any(j => j.LibraryId == selected.Id);
-        if (selected is null) right.Children.Add(Ui.Label(state.Libraries.Length == 0 ? "NoLibraries" : "NoMatches"));
+        if (selected is null) right.Children.Add(Ui.Label(state.Libraries.Length == 0 ? "LibraryExplanation" : "NoMatches"));
         else
         {
             right.Children.Add(Ui.Text(selected.Name, 23));
@@ -114,7 +114,7 @@ public sealed partial class LibrariesView : UserControl
         var id = existing?.Id ?? Guid.NewGuid();
         ResourceLibrary Read() => ConfigurationRules.Library(new(id, name.Text, target.Text, existing?.Versions ?? []));
         await c.Edit(existing is null ? "AddLibrary" : "Edit",
-            Ui.Stack(Ui.Label("LibraryFormHelp"), name, Ui.Stack(target, Ui.Label("LibraryTargetHelp")), Ui.Label("ConfigOnly")),
+            Ui.Stack(name, Ui.Stack(target, Ui.Label("LibraryTargetHelp")), Ui.Label("ConfigOnly")),
             () => { Read(); }, () =>
             {
                 var library = Read(); var state = c.Session.State!;
@@ -146,12 +146,20 @@ public sealed partial class LibrariesView : UserControl
         target.IsEnabled = ordinary;
         if (!ordinary) target.Text = "";
         var sourceGroup = Ui.Stack(source, Ui.Row(chooseFolder, chooseFile), Ui.Label(ordinary ? "VersionSourceHelp" : "ReShadePending"));
-        var targetGroup = Ui.Stack(target, ordinary
-            ? Ui.Text(Strings.Format("VersionTargetHelp", ResourcePresentation.TargetLocation(library.TargetRelative)))
-            : Ui.Label("ReShadeTargetMustBeRoot"));
+        var destination = Ui.Text("");
+        AutomationProperties.SetAutomationId(destination, "VersionTargetHint");
+        if (ordinary)
+        {
+            void UpdateDestination() => destination.Text = ResourcePresentation.VersionDestination(target.Text, library.TargetRelative);
+            target.TextChanged += (_, _) => UpdateDestination();
+            UpdateDestination();
+        }
+        var targetGroup = ordinary
+            ? Ui.Stack(target, Ui.Label("VersionTargetRule"), destination)
+            : Ui.Stack(target, Ui.Label("ReShadeTargetMustBeRoot"));
         sourceGroup.Spacing = 6;
         targetGroup.Spacing = 6;
-        var form = Ui.Stack(label, sourceGroup, targetGroup);
+        var form = Ui.Stack(label, sourceGroup, targetGroup, Ui.Label("ConfigOnly"));
         var id = existing?.Id ?? Guid.NewGuid();
         ResourceVersion Read() => ConfigurationRules.Version(c.Session.State!, c.Session.Store!.Root,
             new(id, label.Text, source.Text, target.Text, kind));

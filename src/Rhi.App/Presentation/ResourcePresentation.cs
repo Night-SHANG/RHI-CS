@@ -1,4 +1,5 @@
 using Rhi.App.Localization;
+using Rhi.Core.Deployment;
 using Rhi.Core.Models;
 
 namespace Rhi.App.Presentation;
@@ -10,6 +11,16 @@ public static class ResourcePresentation
         ? version.Label : version.Label + " · " + KindName(version.Kind);
     public static string TargetLocation(string folder) => string.IsNullOrWhiteSpace(folder)
         ? Strings.Get("GameDeploymentFolder") : Strings.Format("GameDeploymentSubfolder", folder);
+    public static string VersionDestination(string value, string libraryFolder)
+    {
+        try
+        {
+            var folder = PathPolicy.Relative(value);
+            return Strings.Format(folder.Length == 0 ? "VersionTargetHelp" : "VersionTargetLocation",
+                TargetLocation(folder.Length == 0 ? libraryFolder : folder));
+        }
+        catch (DeploymentException) { return ""; } // Invalid input is explained by the shared form validator.
+    }
     public static bool SourceAvailable(ResourceVersion version) => version.Kind switch
     {
         ResourceKind.Files => File.Exists(version.SourcePath) || Directory.Exists(version.SourcePath),

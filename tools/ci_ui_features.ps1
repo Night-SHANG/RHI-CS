@@ -54,6 +54,14 @@ Find-Control -name (Label 'TargetModified') | Out-Null
 Capture '21-target-changes'
 Invoke-Control 'ViewDifferences'
 Find-Control -name (Label 'NextAction') | Out-Null
+(Find-Control -id 'DifferenceNextAction').GetCurrentPattern([Windows.Automation.ExpandCollapsePattern]::Pattern).Expand()
+$clearCondition = [Windows.Automation.AndCondition]::new(
+    [Windows.Automation.PropertyCondition]::new([Windows.Automation.AutomationElement]::ProcessIdProperty, $process.Id),
+    [Windows.Automation.PropertyCondition]::new([Windows.Automation.AutomationElement]::ControlTypeProperty, [Windows.Automation.ControlType]::ListItem),
+    [Windows.Automation.PropertyCondition]::new([Windows.Automation.AutomationElement]::NameProperty, (Label 'ClearDeployment')))
+$clearOption = [Windows.Automation.AutomationElement]::RootElement.FindFirst([Windows.Automation.TreeScope]::Descendants, $clearCondition)
+if (-not $clearOption) { throw 'Clear deployment option is missing from differences.' }
+$clearOption.GetCurrentPattern([Windows.Automation.SelectionItemPattern]::Pattern).Select()
 Capture '22-target-differences'
 Invoke-Control 'Preflight'
 Assert-ActionOrder 'ProtectAndExecute' | Out-Null

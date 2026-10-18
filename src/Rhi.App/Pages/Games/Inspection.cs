@@ -1,4 +1,5 @@
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Automation;
 using Rhi.App.Localization;
 using Rhi.App.Presentation;
 using Rhi.Core.Models;
@@ -20,6 +21,7 @@ public sealed partial class GamesView
         var actions = library.Versions.Any(v => v.Id != receipt.VersionId && SourceAvailable(v))
             ? new[] { "ChangeVersion", "ClearDeployment" } : new[] { "ClearDeployment" };
         var action = Ui.Choice("NextAction", actions.Select(Strings.Get));
+        AutomationProperties.SetAutomationId(action, "DifferenceNextAction");
         panel.Children.Add(action);
         var locked = c.Session.Store!.Pending().Any(j => j.GameId == game.Id);
         if (locked) panel.Children.Add(Ui.Label("NeedsRepair"));

@@ -10,18 +10,18 @@
   <data name="AddGame" xml:space="preserve"><value>Add game</value></data>
   <data name="NoGames" xml:space="preserve"><value>No games added. Scan local game platforms or select an executable manually.</value></data>
   <data name="NoMatches" xml:space="preserve"><value>No matching items.</value></data>
-  <data name="AddGameHelp" xml:space="preserve"><value>Add a game to select and check local resources.</value></data>
+  <data name="AddGameHelp" xml:space="preserve"><value>Add a game, then choose a library.</value></data>
   <data name="GameName" xml:space="preserve"><value>Game name</value></data>
   <data name="Executable" xml:space="preserve"><value>Game executable</value></data>
-  <data name="InstallRoot" xml:space="preserve"><value>Game installation root</value></data>
-  <data name="DeploymentRoot" xml:space="preserve"><value>Deployment location</value></data>
+  <data name="InstallRoot" xml:space="preserve"><value>Game installation folder</value></data>
+  <data name="DeploymentRoot" xml:space="preserve"><value>Deployment folder</value></data>
   <data name="GraphicsApi" xml:space="preserve"><value>Graphics API</value></data>
   <data name="SelectExecutable" xml:space="preserve"><value>Select game EXE</value></data>
-  <data name="ExeHelp" xml:space="preserve"><value>Select the actual game executable. Its directory may differ from the installation root. Confirm the graphics API; architecture is read from the file.</value></data>
+  <data name="ExeHelp" xml:space="preserve"><value>Select the game EXE and confirm its graphics API; architecture is detected. The installation folder may differ from the EXE folder.</value></data>
   <data name="DiscoveredGames" xml:space="preserve"><value>Discovered games</value></data>
   <data name="SteamScanScope" xml:space="preserve"><value>Scan local installation records from Steam, GOG, Epic, EA, Xbox, Ubisoft, Battle.net, and Rockstar. Results are candidates only; confirm the game executable and deployment folder.</value></data>
   <data name="LocalResources" xml:space="preserve"><value>Local resources</value></data>
-  <data name="PreflightHelp" xml:space="preserve"><value>Check first, then write to the game. Unchecking a library does not remove its deployment.</value></data>
+  <data name="PreflightHelp" xml:space="preserve"><value>Files are checked before deployment. Unchecking a library does not clear it.</value></data>
   <data name="Select" xml:space="preserve"><value>Select</value></data>
   <data name="LibraryName" xml:space="preserve"><value>Library</value></data>
   <data name="VersionLabel" xml:space="preserve"><value>Version name</value></data>
@@ -41,14 +41,14 @@
   <data name="PreflightSelected" xml:space="preserve"><value>Check selected</value></data>
   <data name="PreflightCount" xml:space="preserve"><value>Check selected ({0})</value></data>
   <data name="Preflight" xml:space="preserve"><value>Preflight and confirmation</value></data>
-  <data name="NotWrittenYet" xml:space="preserve"><value>Game files have not been modified. Review the actual changes below.</value></data>
+  <data name="NotWrittenYet" xml:space="preserve"><value>No game files changed yet. Review the changes below.</value></data>
   <data name="PlanCounts" xml:space="preserve"><value>New {0} · Write/restore {1} · Remove {2} · Changed targets {3}</value></data>
   <data name="ExternalChange" xml:space="preserve"><value>Target changed</value></data>
   <data name="Write" xml:space="preserve"><value>Write/restore</value></data>
   <data name="Remove" xml:space="preserve"><value>Remove</value></data>
-  <data name="OverwriteConsent" xml:space="preserve"><value>Continuing backs up existing originals before deploying the entire library. Identical contents are not silently claimed.</value></data>
-  <data name="ProtectionConsent" xml:space="preserve"><value>Continuing saves and verifies changed targets before changing or clearing the deployment. Copies are not written back to sources, merged into the new version, or kept active in the game automatically.</value></data>
-  <data name="SkipLibraryHelp" xml:space="preserve"><value>You can skip whole libraries for this operation. Changed selections require a new preflight; game files remain unchanged until the new plan is confirmed.</value></data>
+  <data name="OverwriteConsent" xml:space="preserve"><value>Existing originals will be backed up before deploying the whole library. Identical existing files also require confirmation.</value></data>
+  <data name="ProtectionConsent" xml:space="preserve"><value>Modified files will be saved and verified as protected copies before changing versions or clearing deployment. Copies are not written to the source or merged into the new version; saved changes will not remain active.</value></data>
+  <data name="SkipLibraryHelp" xml:space="preserve"><value>Skip whole libraries as needed. Recheck after changing the selection.</value></data>
   <data name="ProtectAndExecute" xml:space="preserve"><value>Protect changes and execute</value></data>
   <data name="BackupAndExecute" xml:space="preserve"><value>Back up originals and deploy</value></data>
   <data name="ConfirmExecute" xml:space="preserve"><value>Confirm and execute</value></data>
@@ -57,29 +57,29 @@
   <data name="RecoveryHelp" xml:space="preserve"><value>Check the interrupted operation and restore its previous state. New target changes or unavailable protection data stop recovery and keep the game locked.</value></data>
   <data name="AddLibrary" xml:space="preserve"><value>Add library</value></data>
   <data name="AddVersion" xml:space="preserve"><value>Add version</value></data>
-  <data name="LibraryExplanation" xml:space="preserve"><value>Add a library, then add a version and select its files. Saving only records settings; files are copied after you confirm deployment on the Games page. Source files stay unchanged.</value></data>
-  <data name="NoLibraries" xml:space="preserve"><value>No libraries yet. Add a library and version on the Libraries page.</value></data>
-  <data name="TargetRelative" xml:space="preserve"><value>Game subfolder path (blank: game's deployment folder)</value></data>
-  <data name="TargetOverride" xml:space="preserve"><value>Game subfolder path (blank: follow library setting)</value></data>
+  <data name="LibraryExplanation" xml:space="preserve"><value>Add a library, then add a version and select its files.</value></data>
+  <data name="NoLibraries" xml:space="preserve"><value>No libraries yet. Add one on the Libraries page.</value></data>
+  <data name="TargetRelative" xml:space="preserve"><value>Deployment subfolder</value></data>
+  <data name="TargetOverride" xml:space="preserve"><value>Deployment subfolder</value></data>
   <data name="SourcePath" xml:space="preserve"><value>Resource directory</value></data>
-  <data name="LibraryFormHelp" xml:space="preserve"><value>Name the library first. After saving, use Add version to select its resource files.</value></data>
-  <data name="LibraryTargetPlaceholder" xml:space="preserve"><value>Leave blank, or enter a folder name such as mods</value></data>
-  <data name="LibraryTargetHelp" xml:space="preserve"><value>Enter a path inside the deployment folder set on the Games page, such as mods or mods\textures, not a full path such as F:\… Required folders are created during deployment if missing. Saving settings does not create folders.</value></data>
-  <data name="SourcePlaceholder" xml:space="preserve"><value>Choose below, or paste a full path</value></data>
-  <data name="VersionSourceHelp" xml:space="preserve"><value>Select a resource folder or a single file. Deployment copies the folder contents or the selected file without modifying the source.</value></data>
-  <data name="VersionTargetPlaceholder" xml:space="preserve"><value>Leave blank to follow the library setting</value></data>
-  <data name="VersionTargetHelp" xml:space="preserve"><value>Blank follows the library setting, currently: {0}. Enter mods or mods\textures to specify a different path inside the game's deployment folder, not a full path. Required folders are created during deployment.</value></data>
-  <data name="GameDeploymentFolder" xml:space="preserve"><value>the deployment folder confirmed on the Games page</value></data>
-  <data name="GameDeploymentSubfolder" xml:space="preserve"><value>the {0} subfolder inside the game's deployment folder</value></data>
-  <data name="TargetFolderAbsolute" xml:space="preserve"><value>Enter a path inside the game's deployment folder, such as mods, not a full path such as F:\… Select the source under “Resource directory” in Add version.</value></data>
-  <data name="TargetFolderInvalid" xml:space="preserve"><value>Enter a deployment path such as mods or mods\textures. Avoid .., reserved names such as CON, repeated slashes, trailing spaces or periods, and characters such as &lt; &gt; : &quot; | ? *.</value></data>
-  <data name="SourcePathRequired" xml:space="preserve"><value>Choose a folder or file under “Resource directory”, or paste its full path.</value></data>
-  <data name="SourcePathInvalid" xml:space="preserve"><value>The resource directory needs a full local path, such as F:\Resources\Assets. Use the buttons below to choose the folder or file again.</value></data>
-  <data name="SourcePathMissing" xml:space="preserve"><value>The source file or folder was not found. Check that the drive and folder are available, or select it again using the buttons below.</value></data>
-  <data name="SourceOverlapsData" xml:space="preserve"><value>The source overlaps the app's data folder (Data or your chosen location). Choose a separate resource folder, outside the data folder and not containing it.</value></data>
-  <data name="SourceOverlapsGame" xml:space="preserve"><value>The source overlaps an added game's installation or deployment folder. Choose a separate resource folder outside the game.</value></data>
+  <data name="LibraryFormHelp" xml:space="preserve"><value>Add versions after saving.</value></data>
+  <data name="LibraryTargetPlaceholder" xml:space="preserve"><value>e.g. mods\textures</value></data>
+  <data name="LibraryTargetHelp" xml:space="preserve"><value>Leave blank to use the game's deployment folder. Missing subfolders are created during deployment.</value></data>
+  <data name="SourcePlaceholder" xml:space="preserve"><value>Select a folder or file, or paste its full path</value></data>
+  <data name="VersionSourceHelp" xml:space="preserve"><value>Copies the folder contents or selected file. The source stays unchanged.</value></data>
+  <data name="VersionTargetPlaceholder" xml:space="preserve"><value>e.g. mods\textures</value></data>
+  <data name="VersionTargetHelp" xml:space="preserve"><value>From library: {0}</value></data>
+  <data name="GameDeploymentFolder" xml:space="preserve"><value>Game deployment folder</value></data>
+  <data name="GameDeploymentSubfolder" xml:space="preserve"><value>Game deployment folder\{0}</value></data>
+  <data name="TargetFolderAbsolute" xml:space="preserve"><value>Enter a subfolder such as mods, not a full path. Select source files under Resource directory.</value></data>
+  <data name="TargetFolderInvalid" xml:space="preserve"><value>Invalid subfolder. Use a path such as mods or mods\textures; avoid .. and Windows reserved names.</value></data>
+  <data name="SourcePathRequired" xml:space="preserve"><value>Select a resource folder or file.</value></data>
+  <data name="SourcePathInvalid" xml:space="preserve"><value>A full path is required. Select the folder or file again.</value></data>
+  <data name="SourcePathMissing" xml:space="preserve"><value>Resource not found. Select the folder or file again.</value></data>
+  <data name="SourceOverlapsData" xml:space="preserve"><value>Resources must not overlap the data folder. Choose a separate location.</value></data>
+  <data name="SourceOverlapsGame" xml:space="preserve"><value>Resources must not overlap a game folder. Choose a separate location.</value></data>
   <data name="ReferencedBy" xml:space="preserve"><value>Deployed in</value></data>
-  <data name="ConfigOnly" xml:space="preserve"><value>Saving records settings without copying files. Existing deployments keep their original records; new settings apply on the next deployment.</value></data>
+  <data name="ConfigOnly" xml:space="preserve"><value>Saving does not deploy files.</value></data>
   <data name="ReShadePending" xml:space="preserve"><value>This legacy record reads an installer directly and accepts only its original installer EXE or DLL. Saving keeps its deployment behavior. Adding INI paths reformats the file and omits comments; the original can be restored from backup.</value></data>
   <data name="ChooseFolder" xml:space="preserve"><value>Choose folder</value></data>
   <data name="ChooseFile" xml:space="preserve"><value>Choose file</value></data>
@@ -96,27 +96,27 @@
   <data name="zh-CN" xml:space="preserve"><value>简体中文</value></data>
   <data name="en-US" xml:space="preserve"><value>English</value></data>
   <data name="ApplicationData" xml:space="preserve"><value>Application data</value></data>
-  <data name="NoMigration" xml:space="preserve"><value>Data is stored here. Automatic migration is not available. If disconnected, reconnect the same data set.</value></data>
+  <data name="NoMigration" xml:space="preserve"><value>Data is not moved automatically. Reconnect the original data if needed.</value></data>
   <data name="OpenFolder" xml:space="preserve"><value>Open folder</value></data>
   <data name="ProtectedCopies" xml:space="preserve"><value>Protected modifications</value></data>
-  <data name="ProtectionRetention" xml:space="preserve"><value>Modified copies and their path records are retained without automatic expiry. Originals and recovery snapshots are separate and must not be treated as disposable cache.</value></data>
+  <data name="ProtectionRetention" xml:space="preserve"><value>Protected copies are kept indefinitely. Original backups and recovery snapshots are stored separately in the data folder; do not clear them as cache.</value></data>
   <data name="OpenProtectedCopies" xml:space="preserve"><value>Open protected copies</value></data>
   <data name="DevelopmentScope" xml:space="preserve"><value>Development build scope</value></data>
   <data name="CurrentScope" xml:space="preserve"><value>Deployment, version changes, and clearing for ordinary files and offline ReShade; manual game entry and local scanning for Steam, GOG, Epic, EA, Xbox, Ubisoft, Battle.net, and Rockstar. ReShade supports DirectX 9, DirectX 10/11/12, and OpenGL. Automatic Vulkan ReShade management is excluded from v1; ordinary resources are unaffected. OptiScaler is copied as ordinary files; BAT files are not run.</value></data>
   <data name="License" xml:space="preserve"><value>Sources and license</value></data>
   <data name="LicenseNotice" xml:space="preserve"><value>RHI-CS includes code adapted from RankFTW/RHI under GPL-3.0. Provided without warranty. You may modify and redistribute it under the license conditions. The license and source notices are included with the application.</value></data>
-  <data name="OpenLicenseFolder" xml:space="preserve"><value>Open license location</value></data>
+  <data name="OpenLicenseFolder" xml:space="preserve"><value>Open license folder</value></data>
   <data name="Welcome" xml:space="preserve"><value>Choose application data location</value></data>
-  <data name="DataExplanation" xml:space="preserve"><value>Choose an empty folder for configuration, deployment receipts, original backups and protected modifications. Do not choose a game or resource source directory. Cancelling leaves deployment disabled.</value></data>
-  <data name="BootstrapExplanation" xml:space="preserve"><value>Only a data-location pointer is stored in your system user directory. Deployment data and backups stay in the location you choose.</value></data>
+  <data name="DataExplanation" xml:space="preserve"><value>Choose an empty folder for configuration, deployment records and backups, outside game and source folders. Deployment is unavailable if cancelled.</value></data>
+  <data name="BootstrapExplanation" xml:space="preserve"><value>The user profile stores only the data location. Configuration and backups stay in the data folder.</value></data>
   <data name="ChooseData" xml:space="preserve"><value>Choose data folder</value></data>
   <data name="ReconnectData" xml:space="preserve"><value>Reconnect original data</value></data>
   <data name="Retry" xml:space="preserve"><value>Retry</value></data>
   <data name="TaskResults" xml:space="preserve"><value>Task results</value></data>
   <data name="TaskProgress" xml:space="preserve"><value>{0} · {1} · {2}/{3}</value></data>
-  <data name="Idle" xml:space="preserve"><value>Ready · Sources remain read-only</value></data>
-  <data name="Busy" xml:space="preserve"><value>Working. Wait or request a stop. Other pages remain viewable.</value></data>
-  <data name="TaskEnded" xml:space="preserve"><value>Task ended. Results can be reopened.</value></data>
+  <data name="Idle" xml:space="preserve"><value>Ready</value></data>
+  <data name="Busy" xml:space="preserve"><value>Working. You can view other pages or request a stop.</value></data>
+  <data name="TaskEnded" xml:space="preserve"><value>Task finished.</value></data>
   <data name="TaskRunning" xml:space="preserve"><value>Task in progress</value></data>
   <data name="CloseDuringTask" xml:space="preserve"><value>Wait for completion, or request a stop and restore the current library. Completed libraries stay deployed; remaining libraries will not run. Close the window after recovery finishes.</value></data>
   <data name="StopAndRestore" xml:space="preserve"><value>Stop and restore</value></data>
@@ -161,11 +161,11 @@
   <data name="InsufficientSpace" xml:space="preserve"><value>Insufficient free space for protection data.</value></data>
   <data name="SpaceCheckFailed" xml:space="preserve"><value>Cannot confirm free space. Operation blocked.</value></data>
   <data name="InspectionFailed" xml:space="preserve"><value>Inspection failed; deployment has not started.</value></data>
-  <data name="PreflightBlocked" xml:space="preserve"><value>Preflight has blocking issues.</value></data>
+  <data name="PreflightBlocked" xml:space="preserve"><value>Resolve the issues above, then check again.</value></data>
   <data name="ConsentRequired" xml:space="preserve"><value>Confirm original backup or modification protection.</value></data>
   <data name="VerificationFailed" xml:space="preserve"><value>File verification failed.</value></data>
   <data name="RecoveryTargetChanged" xml:space="preserve"><value>Recovery target has new, unknown changes. Overwriting stopped.</value></data>
-  <data name="NameRequired" xml:space="preserve"><value>Name or version label cannot be empty.</value></data>
+  <data name="NameRequired" xml:space="preserve"><value>Enter a name.</value></data>
   <data name="HardLinkTarget" xml:space="preserve"><value>The target has multiple hard links. Overwriting is blocked.</value></data>
   <data name="General" xml:space="preserve"><value>General</value></data>
   <data name="DataBackups" xml:space="preserve"><value>Data and backups</value></data>
@@ -186,34 +186,34 @@
   <data name="ConfigurationChanges" xml:space="preserve"><value>Configuration changes</value></data>
   <data name="NotSet" xml:space="preserve"><value>Not set</value></data>
   <data name="NoFileChange" xml:space="preserve"><value>No file change</value></data>
-  <data name="PendingConfigurationLocked" xml:space="preserve"><value>An unfinished operation locks the related game and library configuration. Check and recover it on the Games page before editing.</value></data>
+  <data name="PendingConfigurationLocked" xml:space="preserve"><value>Changes are locked by an unfinished operation. Check and recover on the Games page.</value></data>
   <data name="ConfigurationReferenced" xml:space="preserve"><value>This configuration is referenced by a deployment. Clear that deployment before removing it.</value></data>
   <data name="CheckTargets" xml:space="preserve"><value>Check targets</value></data>
   <data name="ViewDifferences" xml:space="preserve"><value>View differences</value></data>
-  <data name="TargetDifferences" xml:space="preserve"><value>Target differences and next action</value></data>
+  <data name="TargetDifferences" xml:space="preserve"><value>File differences</value></data>
   <data name="TargetMatched" xml:space="preserve"><value>Targets match</value></data>
   <data name="TargetModified" xml:space="preserve"><value>Targets changed</value></data>
   <data name="TargetMissing" xml:space="preserve"><value>Target files missing</value></data>
   <data name="TargetUnavailable" xml:space="preserve"><value>Targets could not be checked</value></data>
-  <data name="LastChecked" xml:space="preserve"><value>Last checked: {0:g}. Actions still require a fresh preflight.</value></data>
-  <data name="InspectionOnly" xml:space="preserve"><value>This check does not modify game files. Continuing still requires preflight and confirmation of the actual changes.</value></data>
+  <data name="LastChecked" xml:space="preserve"><value>Last checked: {0:g}</value></data>
+  <data name="InspectionOnly" xml:space="preserve"><value>Checks files only. Actions still require preflight and confirmation.</value></data>
   <data name="NextAction" xml:space="preserve"><value>Next action</value></data>
   <data name="RemoveLibrary" xml:space="preserve"><value>Remove library</value></data>
   <data name="RemoveVersion" xml:space="preserve"><value>Remove version</value></data>
-  <data name="RemoveConfigurationHelp" xml:space="preserve"><value>Only this configuration record is removed. Source files, game files and retained protection copies are kept. This cannot be undone; check the name before confirming.</value></data>
-  <data name="ReferenceNotice" xml:space="preserve"><value>This library is in use by these games; the library and referenced versions cannot be removed: {0}</value></data>
+  <data name="RemoveConfigurationHelp" xml:space="preserve"><value>Removes the record only. Source files, game files and protected copies are kept. This cannot be undone.</value></data>
+  <data name="ReferenceNotice" xml:space="preserve"><value>These games use this library. The library and versions in use cannot be removed: {0}</value></data>
   <data name="SkipLibrary" xml:space="preserve"><value>Skip this time: {0}</value></data>
   <data name="SkippedByUser" xml:space="preserve"><value>Skipped by selection; not executed</value></data>
   <data name="RecheckSelection" xml:space="preserve"><value>Recheck selection</value></data>
   <data name="FinishReview" xml:space="preserve"><value>Finish without deploying</value></data>
   <data name="BatchOperation" xml:space="preserve"><value>Batch operation</value></data>
   <data name="RefreshProtection" xml:space="preserve"><value>Refresh usage</value></data>
-  <data name="ProtectionUsage" xml:space="preserve"><value>{0:N0} protection sets · {1:N0} bytes in the protection folder (including records and partial copies)</value></data>
-  <data name="ProtectionNotCounted" xml:space="preserve"><value>Reading protection copy information.</value></data>
-  <data name="ProtectionReadFailed" xml:space="preserve"><value>Protection copies could not be fully counted. Check the data folder and refresh usage.</value></data>
+  <data name="ProtectionUsage" xml:space="preserve"><value>Protected copies: {0:N0} sets · {1:N0} bytes (including records and partial copies)</value></data>
+  <data name="ProtectionNotCounted" xml:space="preserve"><value>Counting protected copies…</value></data>
+  <data name="ProtectionReadFailed" xml:space="preserve"><value>Cannot count protected copies. Check the data folder and retry.</value></data>
   <data name="ProtectionMeasuredAt" xml:space="preserve"><value>Measured at: {0:g}</value></data>
-  <data name="FormReady" xml:space="preserve"><value>Inputs are valid and will be checked again on submission. Saving configuration does not deploy files.</value></data>
-  <data name="FormChecking" xml:space="preserve"><value>Checking. Please wait.</value></data>
+  <data name="FormReady" xml:space="preserve"><value>Ready to save.</value></data>
+  <data name="FormChecking" xml:space="preserve"><value>Checking…</value></data>
   <data name="RelocateGame" xml:space="preserve"><value>Locate moved game</value></data>
   <data name="CheckLocation" xml:space="preserve"><value>Check location</value></data>
   <data name="ConfirmLocation" xml:space="preserve"><value>Confirm new location</value></data>
@@ -227,12 +227,12 @@
   <data name="RelocationOldLocationExists" xml:space="preserve"><value>The previous deployment location still exists. Records cannot be transferred to another game copy. Check how the game was moved.</value></data>
   <data name="RelocationFilesChanged" xml:space="preserve"><value>Managed files at the new location do not match the deployment records. Existing records are unchanged; check the moved files.</value></data>
   <data name="GameLocationMissing" xml:space="preserve"><value>The game location is unavailable. Deployment records are retained. Locate and verify the moved game; it has not been cleared.</value></data>
-  <data name="ManagedPathHelp" xml:space="preserve"><value>Paths are locked in ordinary editing while deployments exist. Use Locate moved game after moving the game. Pending recovery must be completed first.</value></data>
+  <data name="ManagedPathHelp" xml:space="preserve"><value>Paths are locked while deployments exist. Use Locate moved game after a move; complete pending recovery first.</value></data>
   <data name="DefaultDataUnavailable" xml:space="preserve"><value>The Data folder beside the application could not be used. Choose a separate empty folder for configuration, deployment records, and backups, outside game and source folders. Cancelling leaves deployment unavailable.</value></data>
-  <data name="DataLocationHelp" xml:space="preserve"><value>First use defaults to Data beside the application; existing data keeps its original location. Preserve the data folder when updating. Keep resource source files in a separate location.</value></data>
+  <data name="DataLocationHelp" xml:space="preserve"><value>First use creates Data beside the app; existing data keeps its location. Keep the data folder when updating. Store resource files separately.</value></data>
   <data name="MakeOfflineReShade" xml:space="preserve"><value>Create offline ReShade</value></data>
   <data name="CreateOffline" xml:space="preserve"><value>Create</value></data>
-  <data name="OfflineInstaller" xml:space="preserve"><value>Local official installer (EXE)</value></data>
+  <data name="OfflineInstaller" xml:space="preserve"><value>Official installer (EXE)</value></data>
   <data name="OfflineOutputParent" xml:space="preserve"><value>Output location</value></data>
   <data name="OfflineFolderName" xml:space="preserve"><value>New folder name</value></data>
   <data name="OfflineArchitecture" xml:space="preserve"><value>Game architecture</value></data>
@@ -244,11 +244,13 @@
   <data name="ReconnectDataHelp" xml:space="preserve"><value>Reconnect the folder containing the original configuration, deployment records, and backups. If the old data is no longer needed, choose "Create new data and start over". Files are not migrated automatically.</value></data>
   <data name="ResetOffline" xml:space="preserve"><value>Reset</value></data>
   <data name="BrowseFolder" xml:space="preserve"><value>Browse folder</value></data>
-  <data name="OfflineFillForm" xml:space="preserve"><value>Select a local official installer and output location, then confirm the game architecture, graphics API, and new folder name.</value></data>
-  <data name="OfflineReadyToCreate" xml:space="preserve"><value>Ready to create the offline files. This does not deploy anything to a game.</value></data>
+  <data name="OfflineFillForm" xml:space="preserve"><value>Select an installer and output location.</value></data>
+  <data name="OfflineReadyToCreate" xml:space="preserve"><value>The output can be added as an ordinary resource. It will not be deployed to a game.</value></data>
   <data name="StartNewData" xml:space="preserve"><value>Create new data and start over</value></data>
   <data name="CreateNewData" xml:space="preserve"><value>Create new data</value></data>
   <data name="ChooseEmptyDataFolder" xml:space="preserve"><value>Choose another empty folder</value></data>
   <data name="StartNewDataHelp" xml:space="preserve"><value>Continue only if the old data is no longer needed. This creates separate empty data without importing old configuration, deployment records, or backups. New data cannot restore old deployments. The old folder is unchanged and its location record is archived. The default is Data beside the application. If it is not writable or already contains files, choose another separate empty folder outside game and resource source folders.</value></data>
   <data name="DataLocationChanged" xml:space="preserve"><value>Another instance changed the data location. Close and reopen the application, then try again.</value></data>
+  <data name="VersionTargetRule" xml:space="preserve"><value>Leave blank to use the library setting. Subfolders are created during deployment.</value></data>
+  <data name="VersionTargetLocation" xml:space="preserve"><value>Destination: {0}</value></data>
 </root>

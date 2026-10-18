@@ -10,18 +10,18 @@
   <data name="AddGame" xml:space="preserve"><value>添加游戏</value></data>
   <data name="NoGames" xml:space="preserve"><value>尚未添加游戏。可以扫描本地游戏平台或手动选择 EXE。</value></data>
   <data name="NoMatches" xml:space="preserve"><value>没有匹配项。</value></data>
-  <data name="AddGameHelp" xml:space="preserve"><value>添加游戏后，在这里选择本地资源并预检。</value></data>
+  <data name="AddGameHelp" xml:space="preserve"><value>添加游戏后选择资源库。</value></data>
   <data name="GameName" xml:space="preserve"><value>游戏名称</value></data>
   <data name="Executable" xml:space="preserve"><value>游戏 EXE</value></data>
-  <data name="InstallRoot" xml:space="preserve"><value>游戏安装根目录</value></data>
-  <data name="DeploymentRoot" xml:space="preserve"><value>部署位置</value></data>
+  <data name="InstallRoot" xml:space="preserve"><value>游戏安装目录</value></data>
+  <data name="DeploymentRoot" xml:space="preserve"><value>部署目录</value></data>
   <data name="GraphicsApi" xml:space="preserve"><value>图形 API</value></data>
   <data name="SelectExecutable" xml:space="preserve"><value>选择游戏 EXE</value></data>
-  <data name="ExeHelp" xml:space="preserve"><value>请选择实际游戏程序。安装根目录与 EXE 所在目录可能不同；图形 API 由你确认，位数从文件读取。</value></data>
+  <data name="ExeHelp" xml:space="preserve"><value>选择实际游戏 EXE，确认图形 API；位数自动读取。安装目录可能与 EXE 所在目录不同。</value></data>
   <data name="DiscoveredGames" xml:space="preserve"><value>发现的游戏</value></data>
   <data name="SteamScanScope" xml:space="preserve"><value>扫描 Steam、GOG、Epic、EA、Xbox、Ubisoft、Battle.net 和 Rockstar 的本地安装记录。结果仅供选择，请确认实际游戏 EXE 和部署目录。</value></data>
   <data name="LocalResources" xml:space="preserve"><value>本地资源</value></data>
-  <data name="PreflightHelp" xml:space="preserve"><value>先预检，再写入游戏目录。取消勾选不会清除已部署资源。</value></data>
+  <data name="PreflightHelp" xml:space="preserve"><value>部署前会检查文件。取消勾选不清除已部署资源。</value></data>
   <data name="Select" xml:space="preserve"><value>选择</value></data>
   <data name="LibraryName" xml:space="preserve"><value>资源库名称</value></data>
   <data name="VersionLabel" xml:space="preserve"><value>版本名称</value></data>
@@ -41,14 +41,14 @@
   <data name="PreflightSelected" xml:space="preserve"><value>预检所选</value></data>
   <data name="PreflightCount" xml:space="preserve"><value>预检所选（{0}）</value></data>
   <data name="Preflight" xml:space="preserve"><value>预检与确认</value></data>
-  <data name="NotWrittenYet" xml:space="preserve"><value>尚未修改游戏文件。请核对以下实际影响。</value></data>
+  <data name="NotWrittenYet" xml:space="preserve"><value>尚未修改游戏文件，请确认以下改动。</value></data>
   <data name="PlanCounts" xml:space="preserve"><value>新增 {0} · 写入/恢复 {1} · 移除 {2} · 目标变化 {3}</value></data>
   <data name="ExternalChange" xml:space="preserve"><value>目标已变化</value></data>
   <data name="Write" xml:space="preserve"><value>写入/恢复</value></data>
   <data name="Remove" xml:space="preserve"><value>移除</value></data>
-  <data name="OverwriteConsent" xml:space="preserve"><value>继续后会先备份已有原件，再部署整个资源库。即使内容相同，也不会静默认领。</value></data>
-  <data name="ProtectionConsent" xml:space="preserve"><value>继续后会先备份并核验目标修改，再更换或清除。修改副本不会写回源库，不会自动合并到新版，也不代表修改继续生效。</value></data>
-  <data name="SkipLibraryHelp" xml:space="preserve"><value>可按整库选择本次跳过。改变选择后先重新预检；新计划确认前不会修改游戏文件。</value></data>
+  <data name="OverwriteConsent" xml:space="preserve"><value>将先备份已有原件，再部署整个资源库；内容相同的已有文件也需确认。</value></data>
+  <data name="ProtectionConsent" xml:space="preserve"><value>将先保存并核验修改保护副本，再更换版本或清除部署。副本不写回来源、不合并到新版；保留副本不代表修改继续生效。</value></data>
+  <data name="SkipLibraryHelp" xml:space="preserve"><value>可整库跳过；更改选择后需重新预检。</value></data>
   <data name="ProtectAndExecute" xml:space="preserve"><value>备份修改并执行</value></data>
   <data name="BackupAndExecute" xml:space="preserve"><value>备份原件并部署</value></data>
   <data name="ConfirmExecute" xml:space="preserve"><value>确认执行</value></data>
@@ -57,29 +57,29 @@
   <data name="RecoveryHelp" xml:space="preserve"><value>将检查未完成操作并尝试恢复操作前状态。若目标再次变化或保护资料不足，会停止并保留待修复状态。</value></data>
   <data name="AddLibrary" xml:space="preserve"><value>添加资源库</value></data>
   <data name="AddVersion" xml:space="preserve"><value>添加版本</value></data>
-  <data name="LibraryExplanation" xml:space="preserve"><value>先添加资源库，再添加版本并选择资源文件。保存只记录设置，在游戏页确认部署后才会复制文件；源文件保持不变。</value></data>
-  <data name="NoLibraries" xml:space="preserve"><value>还没有资源库，请到资源库页面添加库和版本。</value></data>
-  <data name="TargetRelative" xml:space="preserve"><value>部署到游戏内文件夹路径（留空即为游戏页部署目录）</value></data>
-  <data name="TargetOverride" xml:space="preserve"><value>部署到游戏内文件夹路径（留空沿用资源库设置）</value></data>
+  <data name="LibraryExplanation" xml:space="preserve"><value>添加资源库，再添加版本并选择资源文件。</value></data>
+  <data name="NoLibraries" xml:space="preserve"><value>暂无资源库，请在资源库页添加。</value></data>
+  <data name="TargetRelative" xml:space="preserve"><value>部署子目录</value></data>
+  <data name="TargetOverride" xml:space="preserve"><value>部署子目录</value></data>
   <data name="SourcePath" xml:space="preserve"><value>资源文件目录</value></data>
-  <data name="LibraryFormHelp" xml:space="preserve"><value>先给资源库命名。保存后点“添加版本”，选择资源文件。</value></data>
-  <data name="LibraryTargetPlaceholder" xml:space="preserve"><value>留空，或填写 mods 等文件夹名</value></data>
-  <data name="LibraryTargetHelp" xml:space="preserve"><value>填写游戏页部署目录下的路径，如 mods 或 mods\textures；不要填写 F:\… 等完整路径。所需文件夹不存在时，会在正式部署时自动创建；保存设置不会创建文件夹。</value></data>
-  <data name="SourcePlaceholder" xml:space="preserve"><value>点击下方选择，或粘贴完整路径</value></data>
-  <data name="VersionSourceHelp" xml:space="preserve"><value>选择资源文件夹，也可选择单个文件。部署时复制文件夹内的内容或所选文件，不修改来源文件。</value></data>
-  <data name="VersionTargetPlaceholder" xml:space="preserve"><value>留空，跟随资源库设置</value></data>
-  <data name="VersionTargetHelp" xml:space="preserve"><value>留空沿用资源库设置，当前对应：{0}。填写 mods 或 mods\textures 可单独指定游戏部署目录下的路径，不填完整路径。所需文件夹在正式部署时自动创建。</value></data>
-  <data name="GameDeploymentFolder" xml:space="preserve"><value>游戏页部署目录</value></data>
-  <data name="GameDeploymentSubfolder" xml:space="preserve"><value>游戏页部署目录下的 {0} 文件夹</value></data>
-  <data name="TargetFolderAbsolute" xml:space="preserve"><value>此处只填写游戏部署目录下的路径，例如 mods，不接受 F:\… 等完整路径。资源来源请在“添加版本”的“资源文件目录”中选择。</value></data>
-  <data name="TargetFolderInvalid" xml:space="preserve"><value>部署路径请填写 mods 或 mods\textures 等路径；不要用 ..、CON 等保留名称、重复斜杠、末尾空格或句点，以及 &lt; &gt; : &quot; | ? * 等字符。</value></data>
-  <data name="SourcePathRequired" xml:space="preserve"><value>请在“资源文件目录”选择一个文件夹或文件，也可以粘贴完整路径。</value></data>
-  <data name="SourcePathInvalid" xml:space="preserve"><value>资源文件目录需要本地完整路径，例如 F:\资源库\素材。请用下方按钮重新选择文件夹或文件。</value></data>
-  <data name="SourcePathMissing" xml:space="preserve"><value>找不到所填的资源文件或文件夹。请检查盘符和目录是否还在，或用下方按钮重新选择。</value></data>
-  <data name="SourceOverlapsData" xml:space="preserve"><value>资源来源与软件数据目录（Data 或你选的数据目录）重叠。请选择独立的资源文件夹，不要选择数据目录、其内部或包含它的目录。</value></data>
-  <data name="SourceOverlapsGame" xml:space="preserve"><value>资源来源与已添加游戏的安装或部署目录重叠。请选择游戏目录之外的独立资源文件夹。</value></data>
+  <data name="LibraryFormHelp" xml:space="preserve"><value>保存后可添加版本。</value></data>
+  <data name="LibraryTargetPlaceholder" xml:space="preserve"><value>例如 mods\textures</value></data>
+  <data name="LibraryTargetHelp" xml:space="preserve"><value>留空使用游戏部署目录。子目录不存在时，部署时自动创建。</value></data>
+  <data name="SourcePlaceholder" xml:space="preserve"><value>选择文件夹、文件或粘贴完整路径</value></data>
+  <data name="VersionSourceHelp" xml:space="preserve"><value>复制文件夹内的内容或所选文件，来源保持不变。</value></data>
+  <data name="VersionTargetPlaceholder" xml:space="preserve"><value>例如 mods\textures</value></data>
+  <data name="VersionTargetHelp" xml:space="preserve"><value>沿用资源库：{0}</value></data>
+  <data name="GameDeploymentFolder" xml:space="preserve"><value>游戏部署目录</value></data>
+  <data name="GameDeploymentSubfolder" xml:space="preserve"><value>游戏部署目录\{0}</value></data>
+  <data name="TargetFolderAbsolute" xml:space="preserve"><value>此处填写子目录，例如 mods，不填完整路径。资源来源请在“资源文件目录”中选择。</value></data>
+  <data name="TargetFolderInvalid" xml:space="preserve"><value>路径格式无效。请填写 mods 或 mods\textures 这样的子目录，避开 .. 和 Windows 保留名称。</value></data>
+  <data name="SourcePathRequired" xml:space="preserve"><value>请选择资源文件夹或文件。</value></data>
+  <data name="SourcePathInvalid" xml:space="preserve"><value>需要完整路径，请重新选择文件夹或文件。</value></data>
+  <data name="SourcePathMissing" xml:space="preserve"><value>找不到资源，请重新选择文件夹或文件。</value></data>
+  <data name="SourceOverlapsData" xml:space="preserve"><value>资源不能与数据目录重叠，请选择独立目录。</value></data>
+  <data name="SourceOverlapsGame" xml:space="preserve"><value>资源不能与游戏目录重叠，请选择独立目录。</value></data>
   <data name="ReferencedBy" xml:space="preserve"><value>已部署于</value></data>
-  <data name="ConfigOnly" xml:space="preserve"><value>保存只记录设置，不会复制文件。已有部署仍按原记录管理；新设置在下次部署时使用。</value></data>
+  <data name="ConfigOnly" xml:space="preserve"><value>保存不会部署文件。</value></data>
   <data name="ReShadePending" xml:space="preserve"><value>此旧记录仍使用安装包直读方式，仅接受原安装包 EXE 或 DLL。保存不会改变其部署方式；补充 INI 路径时会重排格式并省略注释，原文件可由备份恢复。</value></data>
   <data name="ChooseFolder" xml:space="preserve"><value>选择文件夹</value></data>
   <data name="ChooseFile" xml:space="preserve"><value>选择文件</value></data>
@@ -96,27 +96,27 @@
   <data name="zh-CN" xml:space="preserve"><value>简体中文</value></data>
   <data name="en-US" xml:space="preserve"><value>English</value></data>
   <data name="ApplicationData" xml:space="preserve"><value>应用数据</value></data>
-  <data name="NoMigration" xml:space="preserve"><value>数据保存在此位置。当前不提供自动搬迁；数据失联时可重新连接同一数据集合。</value></data>
-  <data name="OpenFolder" xml:space="preserve"><value>打开目录</value></data>
+  <data name="NoMigration" xml:space="preserve"><value>不自动搬迁数据；失联后可重新连接原数据。</value></data>
+  <data name="OpenFolder" xml:space="preserve"><value>打开文件夹</value></data>
   <data name="ProtectedCopies" xml:space="preserve"><value>修改保护副本</value></data>
-  <data name="ProtectionRetention" xml:space="preserve"><value>修改副本与路径说明长期保留，不自动过期。原件和恢复快照另存于数据目录，不能当作缓存清理。</value></data>
-  <data name="OpenProtectedCopies" xml:space="preserve"><value>打开修改备份</value></data>
+  <data name="ProtectionRetention" xml:space="preserve"><value>修改保护副本长期保留。原件备份和恢复快照另存于数据目录，请勿当作缓存清理。</value></data>
+  <data name="OpenProtectedCopies" xml:space="preserve"><value>打开修改保护副本</value></data>
   <data name="DevelopmentScope" xml:space="preserve"><value>当前开发版范围</value></data>
   <data name="CurrentScope" xml:space="preserve"><value>普通文件及离线 ReShade 的部署、换版与清除；手动添加游戏，以及 Steam、GOG、Epic、EA、Xbox、Ubisoft、Battle.net、Rockstar 本地扫描。ReShade 支持 DirectX 9、DirectX 10/11/12 和 OpenGL；Vulkan ReShade 自动管理不在首版范围，普通资源不受此限制。OptiScaler 仅按普通文件复制，不执行 BAT。</value></data>
   <data name="License" xml:space="preserve"><value>来源与许可</value></data>
   <data name="LicenseNotice" xml:space="preserve"><value>RHI-CS 含 RankFTW/RHI 的 GPL-3.0 适配代码。软件按 GPL-3.0 提供，无担保；你可按许可证条件修改和再分发。许可证和来源说明随程序提供。</value></data>
-  <data name="OpenLicenseFolder" xml:space="preserve"><value>查看许可证所在目录</value></data>
+  <data name="OpenLicenseFolder" xml:space="preserve"><value>打开许可文件夹</value></data>
   <data name="Welcome" xml:space="preserve"><value>选择应用数据位置</value></data>
-  <data name="DataExplanation" xml:space="preserve"><value>选择一个空文件夹，用来保存资源配置、部署记录、原件备份和修改保护副本。不要选择游戏目录或资源来源目录。取消后不会进入部署。</value></data>
-  <data name="BootstrapExplanation" xml:space="preserve"><value>系统用户目录仅保存用于下次找到数据的定位文件；部署数据和备份保存在你选择的位置。</value></data>
+  <data name="DataExplanation" xml:space="preserve"><value>选择空文件夹保存配置、部署记录和备份，不要选择游戏或资源来源目录。取消后无法部署。</value></data>
+  <data name="BootstrapExplanation" xml:space="preserve"><value>系统用户目录只保存数据位置；配置和备份保存在数据目录。</value></data>
   <data name="ChooseData" xml:space="preserve"><value>选择数据文件夹</value></data>
   <data name="ReconnectData" xml:space="preserve"><value>重新定位原数据</value></data>
   <data name="Retry" xml:space="preserve"><value>重试</value></data>
   <data name="TaskResults" xml:space="preserve"><value>查看任务结果</value></data>
   <data name="TaskProgress" xml:space="preserve"><value>{0} · {1} · {2}/{3}</value></data>
-  <data name="Idle" xml:space="preserve"><value>就绪 · 只读源库</value></data>
-  <data name="Busy" xml:space="preserve"><value>正在处理，请等待或请求停止。其他页面仍可查看。</value></data>
-  <data name="TaskEnded" xml:space="preserve"><value>任务已结束，可重新打开结果。</value></data>
+  <data name="Idle" xml:space="preserve"><value>就绪</value></data>
+  <data name="Busy" xml:space="preserve"><value>正在处理，可查看其他页面或请求停止。</value></data>
+  <data name="TaskEnded" xml:space="preserve"><value>任务已结束。</value></data>
   <data name="TaskRunning" xml:space="preserve"><value>任务正在执行</value></data>
   <data name="CloseDuringTask" xml:space="preserve"><value>请等待任务结束，或请求停止并恢复当前库。已经完成的库会保留，后续库不会继续执行。恢复完成后再关闭窗口。</value></data>
   <data name="StopAndRestore" xml:space="preserve"><value>停止并恢复</value></data>
@@ -161,11 +161,11 @@
   <data name="InsufficientSpace" xml:space="preserve"><value>可用空间不足以准备保护资料。</value></data>
   <data name="SpaceCheckFailed" xml:space="preserve"><value>无法确认可用空间，已阻止操作。</value></data>
   <data name="InspectionFailed" xml:space="preserve"><value>检查失败，未开始部署。</value></data>
-  <data name="PreflightBlocked" xml:space="preserve"><value>预检存在阻塞项，不能执行。</value></data>
+  <data name="PreflightBlocked" xml:space="preserve"><value>请先解决以上问题，再重新预检。</value></data>
   <data name="ConsentRequired" xml:space="preserve"><value>需要确认原件或修改保护处理。</value></data>
   <data name="VerificationFailed" xml:space="preserve"><value>文件核验失败。</value></data>
   <data name="RecoveryTargetChanged" xml:space="preserve"><value>恢复目标存在新的未知变化，已停止覆盖。</value></data>
-  <data name="NameRequired" xml:space="preserve"><value>名称或版本标签不能为空。</value></data>
+  <data name="NameRequired" xml:space="preserve"><value>请填写名称。</value></data>
   <data name="HardLinkTarget" xml:space="preserve"><value>目标文件有多个硬链接，已阻止覆盖。</value></data>
   <data name="General" xml:space="preserve"><value>常规</value></data>
   <data name="DataBackups" xml:space="preserve"><value>数据与备份</value></data>
@@ -186,39 +186,39 @@
   <data name="ConfigurationChanges" xml:space="preserve"><value>配置改动</value></data>
   <data name="NotSet" xml:space="preserve"><value>未设置</value></data>
   <data name="NoFileChange" xml:space="preserve"><value>无需改动</value></data>
-  <data name="PendingConfigurationLocked" xml:space="preserve"><value>存在未完成操作，相关游戏与资源库配置已锁定。请到游戏页完成检查与恢复后再修改。</value></data>
+  <data name="PendingConfigurationLocked" xml:space="preserve"><value>存在未完成操作，暂不能修改。请在游戏页检查并恢复。</value></data>
   <data name="ConfigurationReferenced" xml:space="preserve"><value>配置仍被部署记录引用，请先清除对应部署。</value></data>
   <data name="CheckTargets" xml:space="preserve"><value>核对目标</value></data>
   <data name="ViewDifferences" xml:space="preserve"><value>查看差异</value></data>
-  <data name="TargetDifferences" xml:space="preserve"><value>目标差异与后续操作</value></data>
+  <data name="TargetDifferences" xml:space="preserve"><value>文件差异</value></data>
   <data name="TargetMatched" xml:space="preserve"><value>目标一致</value></data>
   <data name="TargetModified" xml:space="preserve"><value>目标已变化</value></data>
   <data name="TargetMissing" xml:space="preserve"><value>目标文件缺失</value></data>
   <data name="TargetUnavailable" xml:space="preserve"><value>目标无法核对</value></data>
-  <data name="LastChecked" xml:space="preserve"><value>上次核对：{0:g}。操作前仍会重新预检。</value></data>
-  <data name="InspectionOnly" xml:space="preserve"><value>此次只核对目标，不修改游戏文件。继续后仍需预检并确认实际影响。</value></data>
+  <data name="LastChecked" xml:space="preserve"><value>上次核对：{0:g}</value></data>
+  <data name="InspectionOnly" xml:space="preserve"><value>仅核对文件；执行操作前仍需预检并确认。</value></data>
   <data name="NextAction" xml:space="preserve"><value>后续操作</value></data>
   <data name="RemoveLibrary" xml:space="preserve"><value>移除资源库</value></data>
   <data name="RemoveVersion" xml:space="preserve"><value>移除版本</value></data>
-  <data name="RemoveConfigurationHelp" xml:space="preserve"><value>仅移除此配置记录，不删除来源文件、游戏文件或已保留的保护副本。此操作不能撤销，请核对名称。</value></data>
-  <data name="ReferenceNotice" xml:space="preserve"><value>以下游戏正在使用此库，不能移除库及其被引用版本：{0}</value></data>
+  <data name="RemoveConfigurationHelp" xml:space="preserve"><value>仅移除记录，保留来源文件、游戏文件和修改保护副本。此操作无法撤销。</value></data>
+  <data name="ReferenceNotice" xml:space="preserve"><value>以下游戏正在使用此库，暂不能移除资源库及所用版本：{0}</value></data>
   <data name="SkipLibrary" xml:space="preserve"><value>本次跳过：{0}</value></data>
   <data name="SkippedByUser" xml:space="preserve"><value>按本次选择跳过，未执行</value></data>
   <data name="RecheckSelection" xml:space="preserve"><value>重新预检所选</value></data>
   <data name="FinishReview" xml:space="preserve"><value>结束，本次不部署</value></data>
   <data name="BatchOperation" xml:space="preserve"><value>批量操作</value></data>
   <data name="RefreshProtection" xml:space="preserve"><value>重新统计</value></data>
-  <data name="ProtectionUsage" xml:space="preserve"><value>修改副本 {0:N0} 组 · 保护目录占用 {1:N0} 字节（含记录及未完成副本）</value></data>
-  <data name="ProtectionNotCounted" xml:space="preserve"><value>正在读取保护副本信息。</value></data>
-  <data name="ProtectionReadFailed" xml:space="preserve"><value>无法完整统计保护副本，请检查数据目录后重新统计。</value></data>
+  <data name="ProtectionUsage" xml:space="preserve"><value>修改保护副本 {0:N0} 组 · 占用 {1:N0} 字节（含记录及未完成副本）</value></data>
+  <data name="ProtectionNotCounted" xml:space="preserve"><value>正在统计修改保护副本…</value></data>
+  <data name="ProtectionReadFailed" xml:space="preserve"><value>无法统计修改保护副本，请检查数据目录后重试。</value></data>
   <data name="ProtectionMeasuredAt" xml:space="preserve"><value>统计时间：{0:g}</value></data>
-  <data name="FormReady" xml:space="preserve"><value>输入有效。提交时会再次核对；保存配置不会部署文件。</value></data>
-  <data name="FormChecking" xml:space="preserve"><value>正在核对，请稍候。</value></data>
+  <data name="FormReady" xml:space="preserve"><value>可保存。</value></data>
+  <data name="FormChecking" xml:space="preserve"><value>正在检查…</value></data>
   <data name="RelocateGame" xml:space="preserve"><value>重新定位游戏</value></data>
   <data name="CheckLocation" xml:space="preserve"><value>核对位置</value></data>
   <data name="ConfirmLocation" xml:space="preserve"><value>确认更新位置</value></data>
-  <data name="OldLocation" xml:space="preserve"><value>原部署位置</value></data>
-  <data name="NewLocation" xml:space="preserve"><value>新部署位置</value></data>
+  <data name="OldLocation" xml:space="preserve"><value>原部署目录</value></data>
+  <data name="NewLocation" xml:space="preserve"><value>新部署目录</value></data>
   <data name="RelocationHelp" xml:space="preserve"><value>选择搬迁后的原游戏，保持 EXE、安装根和部署目录的相对结构。仅核对并更新记录，不搬动文件。旧位置仍存在、原磁盘离线、文件或备份无法核对时不会接管。</value></data>
   <data name="RelocationConfirmHelp" xml:space="preserve"><value>已核对 EXE、已管理文件和原件备份。确认时会再次核对，再统一更新游戏及部署记录；不会部署或清除文件。复制到新目录时，不继承空目录清理权限。</value></data>
   <data name="RelocationCounts" xml:space="preserve"><value>已核对 {0} 个资源库、{1} 个已管理文件。</value></data>
@@ -227,12 +227,12 @@
   <data name="RelocationOldLocationExists" xml:space="preserve"><value>原部署位置仍存在，不能将管理记录转到另一份游戏。请先核对实际搬迁情况。</value></data>
   <data name="RelocationFilesChanged" xml:space="preserve"><value>新位置的已管理文件与部署记录不一致。原记录保持不变；请核对搬迁文件。</value></data>
   <data name="GameLocationMissing" xml:space="preserve"><value>游戏路径失联。部署记录仍保留，请重新定位并核对，不能直接视为已清除。</value></data>
-  <data name="ManagedPathHelp" xml:space="preserve"><value>已有部署时，普通修改锁定路径。游戏搬迁后请使用“重新定位游戏”；待修复时须先完成恢复。</value></data>
+  <data name="ManagedPathHelp" xml:space="preserve"><value>已有部署，路径暂不能直接修改。搬迁后请用“重新定位游戏”；待修复时先恢复。</value></data>
   <data name="DefaultDataUnavailable" xml:space="preserve"><value>无法使用程序目录下的 Data。请选择一个独立的空文件夹保存配置、部署记录和备份，不要选择游戏目录或资源来源目录。取消后不会进入部署。</value></data>
-  <data name="DataLocationHelp" xml:space="preserve"><value>首次默认使用程序目录下的 Data；已有数据继续使用原位置。更新软件时请保留数据文件夹。资源库源文件应独立存放。</value></data>
+  <data name="DataLocationHelp" xml:space="preserve"><value>首次使用程序旁的 Data，已有数据沿用原位置。更新时保留数据目录；资源文件另行存放。</value></data>
   <data name="MakeOfflineReShade" xml:space="preserve"><value>制作离线 ReShade</value></data>
   <data name="CreateOffline" xml:space="preserve"><value>制作</value></data>
-  <data name="OfflineInstaller" xml:space="preserve"><value>本地官方安装包（EXE）</value></data>
+  <data name="OfflineInstaller" xml:space="preserve"><value>官方安装包（EXE）</value></data>
   <data name="OfflineOutputParent" xml:space="preserve"><value>输出位置</value></data>
   <data name="OfflineFolderName" xml:space="preserve"><value>新文件夹名称</value></data>
   <data name="OfflineArchitecture" xml:space="preserve"><value>游戏位数</value></data>
@@ -244,11 +244,13 @@
   <data name="ReconnectDataHelp" xml:space="preserve"><value>请重新连接保存原配置、部署记录和备份的数据文件夹。若旧数据已不再需要，可选择“创建新数据，重新开始”；不会自动迁移文件。</value></data>
   <data name="ResetOffline" xml:space="preserve"><value>重置</value></data>
   <data name="BrowseFolder" xml:space="preserve"><value>浏览文件夹</value></data>
-  <data name="OfflineFillForm" xml:space="preserve"><value>请选择本地官方安装包和输出位置，再确认游戏位数、图形 API 和新文件夹名称。</value></data>
-  <data name="OfflineReadyToCreate" xml:space="preserve"><value>输入有效。点击“制作”生成离线文件，不会向游戏部署。</value></data>
+  <data name="OfflineFillForm" xml:space="preserve"><value>请选择安装包和输出位置。</value></data>
+  <data name="OfflineReadyToCreate" xml:space="preserve"><value>制作后可作为普通资源入库，不会部署到游戏。</value></data>
   <data name="StartNewData" xml:space="preserve"><value>创建新数据，重新开始</value></data>
   <data name="CreateNewData" xml:space="preserve"><value>创建新数据</value></data>
   <data name="ChooseEmptyDataFolder" xml:space="preserve"><value>选择其他空文件夹</value></data>
   <data name="StartNewDataHelp" xml:space="preserve"><value>仅在旧数据已不再需要时继续。将创建独立的空数据，不导入旧配置、部署记录或备份，也不能用新数据恢复旧部署。旧目录不会被修改，旧定位记录会留档。默认使用程序旁的 Data；若无法写入或已有内容，请选择其他独立空文件夹，不要选择游戏目录或资源来源目录。</value></data>
   <data name="DataLocationChanged" xml:space="preserve"><value>数据位置已被其他实例修改，请关闭并重新打开软件后再试。</value></data>
+  <data name="VersionTargetRule" xml:space="preserve"><value>留空沿用资源库设置；子目录在部署时创建。</value></data>
+  <data name="VersionTargetLocation" xml:space="preserve"><value>部署位置：{0}</value></data>
 </root>

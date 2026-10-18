@@ -116,6 +116,7 @@ function Check-Pages([string]$prefix) {
     (Find-Control -id 'LibraryTargetInput').GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).SetValue('assets')
     Assert-FixedAction $before
     if (-not (Find-Control -name (Label 'Save') -Action).Current.IsEnabled) { throw 'Valid form remains disabled.' }
+    Assert-FormReady
     Capture "$prefix-valid"
     Invoke-Control 'Cancel'
     Invoke-VisualId 'LibraryAddVersion'
