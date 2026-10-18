@@ -90,18 +90,21 @@ function Assert-ActionOrder([string]$action) {
     }
     return $confirm
 }
-function Select-ResourceKind([string]$key) {
-    $kind = Find-Control -id 'VersionResourceType'
-    $kind.GetCurrentPattern([Windows.Automation.ExpandCollapsePattern]::Pattern).Expand()
-    $option = Find-Control -name (Label $key)
-    $option.GetCurrentPattern([Windows.Automation.SelectionItemPattern]::Pattern).Select()
+function Assert-NoResourceType {
+    $window = [Windows.Automation.AutomationElement]::FromHandle($process.MainWindowHandle)
+    $selector = [Windows.Automation.PropertyCondition]::new([Windows.Automation.AutomationElement]::AutomationIdProperty, 'VersionResourceType')
+    if ($window.FindFirst([Windows.Automation.TreeScope]::Descendants, $selector)) { throw 'Resource type selector must not be shown.' }
+}
+function Assert-FormError([string]$key) {
     Start-Sleep -Milliseconds 250
+    if ((Find-Control -id 'FormValidation' -IncludeOffscreen).Current.Name -ne (Label $key)) { throw "Wrong form guidance: $key" }
+    if ((Find-Control -name (Label 'Save') -Action).Current.IsEnabled) { throw 'Invalid form can be saved.' }
 }
 function Assert-FixedAction($before, [string]$action = 'Save') {
     $after = Assert-ActionOrder $action
     foreach ($property in @('X', 'Y', 'Width', 'Height')) {
         if ([Math]::Abs($before.$property - $after.$property) -gt 1) {
-            throw "Version type change moved action bounds: $property ($($before.$property) -> $($after.$property))"
+            throw "Form state change moved action bounds: $property ($($before.$property) -> $($after.$property))"
         }
     }
 }
@@ -189,24 +192,45 @@ try {
     Invoke-Control 'Libraries'
     Find-Control -name (Label 'AddVersion') | Out-Null
     Capture '02-library'
+    (Find-Control -id 'VersionEdit' -Enabled).GetCurrentPattern([Windows.Automation.InvokePattern]::Pattern).Invoke()
+    Assert-NoResourceType
+    $legacySource = (Find-Control -id 'VersionSourceInput').GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).Current.Value
+    if ((Find-Control -id 'VersionChooseFolder').Current.IsEnabled) { throw 'Legacy adapter must not accept a folder.' }
+    if ((Find-Control -id 'VersionTargetOverride' -IncludeOffscreen).Current.IsEnabled) { throw 'Legacy adapter must retain root placement.' }
+    Scroll-DialogToEnd 'Save' -IfNeeded
+    Capture '04-version-legacy'
+    Invoke-Control 'Save'
     Invoke-Control 'AddVersion'
-    Find-Control -id 'VersionResourceType' | Out-Null
+    Assert-NoResourceType
     $filesSave = Assert-ActionOrder 'Save'
     Capture '03-version-files'
-    Select-ResourceKind 'ReShadeStandard'
-    if ((Find-Control -id 'VersionChooseFolder').Current.IsEnabled) { throw 'ReShade folder picker must be disabled.' }
-    if ((Find-Control -id 'VersionTargetOverride').Current.IsEnabled) { throw 'ReShade subfolder override must be disabled.' }
-    Assert-FixedAction $filesSave
-    Capture '04-version-reshade'
-    Select-ResourceKind 'ReShadeAddon'
-    Assert-FixedAction $filesSave
-    Capture '07-version-addon'
-    Select-ResourceKind 'Files'
-    Assert-FixedAction $filesSave
     if (-not (Find-Control -id 'VersionChooseFolder').Current.IsEnabled) { throw 'Ordinary file folder picker must be enabled.' }
-    if (-not (Find-Control -id 'VersionTargetOverride').Current.IsEnabled) { throw 'Ordinary file subfolder override must be enabled.' }
-    Capture '08-version-files-restored'
-    Invoke-Control 'Cancel'
+    if (-not (Find-Control -id 'VersionChooseFile').Current.IsEnabled) { throw 'File picker must be enabled.' }
+    if (-not (Find-Control -id 'VersionTargetOverride' -IncludeOffscreen).Current.IsEnabled) { throw 'Version folder setting must be enabled.' }
+    (Find-Control -id 'VersionLabelInput').GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).SetValue('Prepared offline folder')
+    Assert-FormError 'SourcePathRequired'
+    $sourceInput = (Find-Control -id 'VersionSourceInput').GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern)
+    $sourceInput.SetValue('mods')
+    Assert-FormError 'SourcePathInvalid'
+    $sourceInput.SetValue($legacySource + '.missing')
+    Assert-FormError 'SourcePathMissing'
+    $sourceInput.SetValue([IO.Path]::GetDirectoryName($legacySource))
+    $targetInput = (Find-Control -id 'VersionTargetOverride' -IncludeOffscreen).GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern)
+    $targetInput.SetValue('F:\Resources\OfflineReShade')
+    Assert-FormError 'TargetFolderAbsolute'
+    Assert-FixedAction $filesSave
+    Scroll-DialogToEnd 'Save' -IfNeeded
+    Capture '07-version-path-error'
+    $targetInput.SetValue('')
+    Assert-FixedAction $filesSave
+    Capture '08-version-folder-ready'
+    Invoke-Control 'Save'
+    $pointer = Get-Content -LiteralPath (Join-Path $env:LOCALAPPDATA 'RHI-CS/bootstrap.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+    $savedState = Get-Content -LiteralPath (Join-Path $pointer.Root 'workspace.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+    $savedVersion = @($savedState.Libraries.Versions | Where-Object { $_.Label -eq 'Prepared offline folder' })
+    if ($savedVersion.Count -ne 1 -or $savedVersion[0].Kind -notin @('Files', 0) -or $null -ne $savedVersion[0].TargetOverride) {
+        throw 'New folder version was not saved as ordinary files following the library setting.'
+    }
     Invoke-Control 'Games'
     Invoke-Control 'Deploy'
     Find-Control -name (Label 'ConfigurationChanges') | Out-Null
@@ -236,12 +260,12 @@ try {
     Invoke-Control 'Libraries'
     Invoke-Control 'AddVersion'
     $englishSave = Assert-ActionOrder 'Save'
-    Select-ResourceKind 'ReShadeAddon'
+    Assert-NoResourceType
     Assert-FixedAction $englishSave
-    Capture '11-version-reshade-en'
-    Scroll-DialogToEnd 'Save'
+    Capture '11-version-files-en'
+    Scroll-DialogToEnd 'Save' -IfNeeded
     Assert-FixedAction $englishSave
-    Capture '13-version-reshade-en-scrolled'
+    Capture '13-version-files-en-scrolled'
     Invoke-Control 'Cancel'
     Invoke-Control 'Games'
     if ((Find-Control -id 'GamesSearch').GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).Current.Value -ne 'CI Game') {
@@ -264,7 +288,7 @@ try {
     Find-Control -name (Label 'Deploy') -Action | Out-Null
     Find-Control -name (Label 'NotDeployed') | Out-Null
     Capture '16-reshade-cleared-en'
-    [IO.File]::WriteAllText((Join-Path $captureRoot 'result.txt'), 'PASS: launch, type controls, fixed dialog actions, INI preview, search retention, live Chinese/English switching, and deploy/clear through confirmation. Screenshots require visual review; fixture binaries are synthetic and never executed.', [Text.Encoding]::UTF8)
+    [IO.File]::WriteAllText((Join-Path $captureRoot 'result.txt'), 'PASS: ordinary folder versions without a type selector; contextual source/destination guidance; saved Files kind; legacy record editing and INI preview; fixed dialog actions; search retention; Chinese/English switching; legacy deploy/clear. Screenshots require visual review; fixture binaries are synthetic and never executed.', [Text.Encoding]::UTF8)
 } catch {
     $failure = $_
     Write-Warning "$failure`n$($failure.ScriptStackTrace)"

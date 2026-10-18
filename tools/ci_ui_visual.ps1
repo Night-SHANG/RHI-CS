@@ -109,6 +109,10 @@ function Check-Pages([string]$prefix) {
     if ((Find-Control -name (Label 'Save') -Action).Current.IsEnabled) { throw 'Empty library form is valid.' }
     Capture "$prefix-invalid"
     (Find-Control -id 'LibraryNameInput').GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).SetValue('Visual validation')
+    (Find-Control -id 'LibraryTargetInput').GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).SetValue('F:\Resources\OfflineReShade')
+    Assert-FormError 'TargetFolderAbsolute'
+    Assert-FixedAction $before
+    Capture "$prefix-library-path-error"
     (Find-Control -id 'LibraryTargetInput').GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).SetValue('assets')
     Assert-FixedAction $before
     if (-not (Find-Control -name (Label 'Save') -Action).Current.IsEnabled) { throw 'Valid form remains disabled.' }
@@ -116,13 +120,11 @@ function Check-Pages([string]$prefix) {
     Invoke-Control 'Cancel'
     Invoke-VisualId 'LibraryAddVersion'
     $before = Assert-ActionOrder 'Save'
-    Select-ResourceKind 'ReShadeStandard'
+    Assert-NoResourceType
     Assert-FixedAction $before
+    Capture "$prefix-version-source"
     Scroll-DialogToEnd 'Save' -IfNeeded
-    Capture "$prefix-reshade"
-    (Find-Control -id 'DialogContentScroll').GetCurrentPattern([Windows.Automation.ScrollPattern]::Pattern).SetScrollPercent([Windows.Automation.ScrollPattern]::NoScroll, 0)
-    Start-Sleep -Milliseconds 300
-    Select-ResourceKind 'Files'
+    Capture "$prefix-version-destination"
     Assert-FixedAction $before
     Invoke-Control 'Cancel'
     $query = (Find-Control -id 'LibrariesSearch').GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern)

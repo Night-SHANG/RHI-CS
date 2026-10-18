@@ -11,23 +11,48 @@ public static class ConfigurationRules
         ? throw new DeploymentException("NameRequired") : value.Trim();
 
     public static ResourceLibrary Library(ResourceLibrary value) => value with
-    { Name = Name(value.Name), TargetRelative = PathPolicy.Relative(value.TargetRelative) };
+    { Name = Name(value.Name), TargetRelative = TargetFolder(value.TargetRelative) };
+
+    private static string TargetFolder(string value)
+    {
+        if (Path.IsPathRooted(value)) throw new DeploymentException("TargetFolderAbsolute", value);
+        try { return PathPolicy.Relative(value); }
+        catch (DeploymentException ex) when (ex.Code == "UnsafeRelativePath")
+        { throw new DeploymentException("TargetFolderInvalid", value); }
+    }
+
+    private static string SourcePath(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value)) throw new DeploymentException("SourcePathRequired");
+        try { return PathPolicy.Full(value); }
+        catch (DeploymentException ex) when (ex.Code == "LocalAbsolutePathRequired")
+        { throw new DeploymentException("SourcePathInvalid", value); }
+        catch (Exception ex) when (ex is ArgumentException or NotSupportedException or PathTooLongException)
+        { throw new DeploymentException("SourcePathInvalid", value); }
+    }
 
     public static ResourceVersion Version(WorkspaceState state, string dataRoot, ResourceVersion value)
     {
         var name = Name(value.Label);
-        var source = PathPolicy.Full(value.SourcePath);
-        if (!File.Exists(source) && !Directory.Exists(source)) throw new DeploymentException("SourceUnavailable", source);
+        var source = SourcePath(value.SourcePath);
+        if (!File.Exists(source) && !Directory.Exists(source)) throw new DeploymentException("SourcePathMissing", source);
         if (!Enum.IsDefined(value.Kind)) throw new DeploymentException("ReShadeInvalidBinary");
         if (value.Kind != ResourceKind.Files && (!File.Exists(source) ||
             !(Path.GetExtension(source).Equals(".exe", StringComparison.OrdinalIgnoreCase) ||
               Path.GetExtension(source).Equals(".dll", StringComparison.OrdinalIgnoreCase))))
             throw new DeploymentException("ReShadeInvalidBinary", source);
-        PathPolicy.Disjoint(source, dataRoot);
-        foreach (var game in state.Games)
-        { PathPolicy.DisjointSource(game.InstallRoot, source); PathPolicy.DisjointSource(game.DeploymentRoot, source); }
+        try { PathPolicy.Disjoint(source, dataRoot); }
+        catch (DeploymentException ex) when (ex.Code == "OverlappingPaths")
+        { throw new DeploymentException("SourceOverlapsData", source); }
+        try
+        {
+            foreach (var game in state.Games)
+            { PathPolicy.DisjointSource(game.InstallRoot, source); PathPolicy.DisjointSource(game.DeploymentRoot, source); }
+        }
+        catch (DeploymentException ex) when (ex.Code == "OverlappingPaths")
+        { throw new DeploymentException("SourceOverlapsGame", source); }
         return value with { Label = name, SourcePath = source, TargetOverride = value.Kind != ResourceKind.Files ? "" :
-            string.IsNullOrWhiteSpace(value.TargetOverride) ? null : PathPolicy.Relative(value.TargetOverride) };
+            string.IsNullOrWhiteSpace(value.TargetOverride) ? null : TargetFolder(value.TargetOverride) };
     }
 
     public static GameEntry Game(WorkspaceState state, string dataRoot, GameEntry value, bool relocation = false)

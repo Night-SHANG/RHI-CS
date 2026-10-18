@@ -61,7 +61,7 @@ public sealed partial class LibrariesView : UserControl
         else
         {
             right.Children.Add(Ui.Text(selected.Name, 23));
-            right.Children.Add(Ui.Text(Strings.Get("TargetRelative") + ": " + selected.TargetRelative));
+            right.Children.Add(Ui.Text(ResourcePresentation.TargetLocation(selected.TargetRelative)));
             var editLibrary = c.Button("Edit", () => EditLibrary(selected), !c.Session.Busy && !locked);
             var addVersion = c.Button("AddVersion", () => EditVersion(selected), !c.Session.Busy && !locked);
             AutomationProperties.SetAutomationId(editLibrary, "LibraryEdit");
@@ -93,7 +93,9 @@ public sealed partial class LibrariesView : UserControl
                     !c.Session.Busy && !locked && !state.Receipts.Any(r => r.LibraryId == selected.Id && r.VersionId == detail.Id));
                 AutomationProperties.SetAutomationId(removeVersion, "VersionRemove");
                 right.Children.Add(Ui.Card(Ui.Stack(Ui.Label("VersionDetails", 20), Ui.Text(ResourcePresentation.VersionName(detail)),
-                    Ui.Text(detail.SourcePath), Ui.Text(Strings.Get("TargetRelative") + ": " + (detail.TargetOverride ?? selected.TargetRelative)),
+                    Ui.Text(Strings.Get("SourcePath") + ": " + detail.SourcePath),
+                    Ui.Text(ResourcePresentation.TargetLocation(detail.Kind == ResourceKind.Files
+                        ? detail.TargetOverride ?? selected.TargetRelative : "")),
                     Ui.Row(editVersion, removeVersion))));
             }
         }
@@ -106,11 +108,13 @@ public sealed partial class LibrariesView : UserControl
     {
         var name = Ui.Input("LibraryName", existing?.Name ?? "");
         var target = Ui.Input("TargetRelative", existing?.TargetRelative ?? "");
+        target.PlaceholderText = Strings.Get("LibraryTargetPlaceholder");
         AutomationProperties.SetAutomationId(name, "LibraryNameInput");
         AutomationProperties.SetAutomationId(target, "LibraryTargetInput");
         var id = existing?.Id ?? Guid.NewGuid();
         ResourceLibrary Read() => ConfigurationRules.Library(new(id, name.Text, target.Text, existing?.Versions ?? []));
-        await c.Edit(existing is null ? "AddLibrary" : "Edit", Ui.Stack(name, target, Ui.Label("ConfigOnly")),
+        await c.Edit(existing is null ? "AddLibrary" : "Edit",
+            Ui.Stack(Ui.Label("LibraryFormHelp"), name, Ui.Stack(target, Ui.Label("LibraryTargetHelp")), Ui.Label("ConfigOnly")),
             () => { Read(); }, () =>
             {
                 var library = Read(); var state = c.Session.State!;
@@ -126,37 +130,31 @@ public sealed partial class LibrariesView : UserControl
         var label = Ui.Input("VersionLabel", existing?.Label ?? "");
         var source = Ui.Input("SourcePath", existing?.SourcePath ?? "");
         var target = Ui.Input("TargetOverride", existing?.TargetOverride ?? "");
-        var kinds = Enum.GetValues<ResourceKind>();
-        var kind = Ui.Choice("ResourceType", kinds.Select(ResourcePresentation.KindName),
-            Math.Max(0, Array.IndexOf(kinds, existing?.Kind ?? ResourceKind.Files)));
-        AutomationProperties.SetAutomationId(kind, "VersionResourceType");
+        // New offline resources are ordinary files. Preserve legacy adapter semantics when editing old records.
+        var kind = existing?.Kind ?? ResourceKind.Files;
+        var ordinary = kind == ResourceKind.Files;
+        source.PlaceholderText = Strings.Get("SourcePlaceholder");
+        target.PlaceholderText = Strings.Get("VersionTargetPlaceholder");
         AutomationProperties.SetAutomationId(label, "VersionLabelInput");
         AutomationProperties.SetAutomationId(source, "VersionSourceInput");
         AutomationProperties.SetAutomationId(target, "VersionTargetOverride");
         var chooseFolder = c.Button("ChooseFolder", async () => { var p = await c.Windows.PickFolder(); if (p is not null) source.Text = p; });
         AutomationProperties.SetAutomationId(chooseFolder, "VersionChooseFolder");
         var chooseFile = c.Button("ChooseFile", async () => { var p = await c.Windows.PickFile(); if (p is not null) source.Text = p; });
-        var help = Ui.Label("ReShadePending");
-        var targetHelp = Ui.Label("ReShadeTargetMustBeRoot");
-        var ordinaryTarget = target.Text;
-        var wasOrdinary = true;
-        void UpdateKind()
-        {
-            var ordinary = kinds[Math.Max(0, kind.SelectedIndex)] == ResourceKind.Files;
-            if (wasOrdinary && !ordinary) ordinaryTarget = target.Text;
-            target.Text = ordinary ? ordinaryTarget : "";
-            target.IsEnabled = ordinary; chooseFolder.IsEnabled = ordinary;
-            targetHelp.Visibility = ordinary ? Visibility.Collapsed : Visibility.Visible;
-            help.Visibility = ordinary ? Visibility.Collapsed : Visibility.Visible;
-            wasOrdinary = ordinary;
-        }
-        kind.SelectionChanged += (_, _) => UpdateKind();
-        UpdateKind();
-        var form = Ui.Stack(label, kind, source, Ui.Row(chooseFolder, chooseFile), target, targetHelp,
-            Ui.Label("ConfigOnly"), help);
+        AutomationProperties.SetAutomationId(chooseFile, "VersionChooseFile");
+        chooseFolder.IsEnabled = ordinary;
+        target.IsEnabled = ordinary;
+        if (!ordinary) target.Text = "";
+        var sourceGroup = Ui.Stack(source, Ui.Row(chooseFolder, chooseFile), Ui.Label(ordinary ? "VersionSourceHelp" : "ReShadePending"));
+        var targetGroup = Ui.Stack(target, ordinary
+            ? Ui.Text(Strings.Format("VersionTargetHelp", ResourcePresentation.TargetLocation(library.TargetRelative)))
+            : Ui.Label("ReShadeTargetMustBeRoot"));
+        sourceGroup.Spacing = 6;
+        targetGroup.Spacing = 6;
+        var form = Ui.Stack(label, sourceGroup, targetGroup);
         var id = existing?.Id ?? Guid.NewGuid();
         ResourceVersion Read() => ConfigurationRules.Version(c.Session.State!, c.Session.Store!.Root,
-            new(id, label.Text, source.Text, target.Text, kinds[Math.Max(0, kind.SelectedIndex)]));
+            new(id, label.Text, source.Text, target.Text, kind));
         await c.Edit(existing is null ? "AddVersion" : "Edit", form, () => { Read(); }, () =>
         {
             var version = Read();
@@ -164,6 +162,6 @@ public sealed partial class LibrariesView : UserControl
             var updated = current with { Versions = current.Versions.Where(v => v.Id != version.Id).Append(version).ToArray() };
             c.Session.Save(c.Session.State with { Libraries = c.Session.State.Libraries.Select(l => l.Id == library.Id ? updated : l).ToArray() });
             return Task.CompletedTask;
-        }, [label, source, target, kind, chooseFolder, chooseFile]);
+        }, [label, source, target, chooseFolder, chooseFile]);
     }
 }

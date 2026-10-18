@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="690" viewBox="0 0 1120 690">
+  <rect width="1120" height="690" fill="#eff2f6"/>
+  <g font-family="Microsoft YaHei UI,Segoe UI,sans-serif" fill="#17223d">
+    <text x="32" y="36" font-size="22" font-weight="600">资源库与版本 · 来源和游戏内位置分开说明</text>
+    <text x="32" y="64" font-size="13" fill="#53627d">结构样板（非运行截图）：统一弹窗；正文可滚动；底部按钮固定、等宽；不再选择资源类型。</text>
+    <rect x="32" y="88" width="520" height="550" rx="8" fill="white" stroke="#d1d5dc"/>
+    <rect x="568" y="88" width="520" height="550" rx="8" fill="white" stroke="#d1d5dc"/>
+    <g font-size="14">
+      <text x="56" y="128" font-size="22">添加资源库</text>
+      <text x="56" y="162">先给资源库命名。保存后点“添加版本”，选择资源文件。</text>
+      <text x="56" y="196">资源库名称</text>
+      <rect x="56" y="206" width="472" height="34" rx="4" fill="#fff" stroke="#d5d5d5"/>
+      <text x="68" y="229">ReShade 离线资源</text>
+      <text x="56" y="274">放到游戏里的哪个文件夹（可留空）</text>
+      <rect x="56" y="284" width="472" height="34" rx="4" fill="#fff" stroke="#d5d5d5"/>
+      <text x="68" y="307" fill="#697386">留空，或填写 mods 等文件夹名</text>
+      <text x="56" y="346">留空：放在游戏页确认的部署位置。</text>
+      <text x="56" y="369">填 mods：放进该位置下的 mods 文件夹。</text>
+      <text x="56" y="392">这里不是资源来源，不要填写 F:\… 等完整路径。</text>
+      <text x="56" y="446" fill="#53627d">保存只记录设置；之后在游戏页确认部署，才会复制文件。</text>
+      <text x="56" y="510" fill="#53627d">输入有效。保存不会部署文件。</text>
+      <text x="592" y="128" font-size="22">添加版本</text>
+      <text x="592" y="164">版本名称</text>
+      <rect x="592" y="174" width="472" height="34" rx="4" fill="#fff" stroke="#d5d5d5"/>
+      <text x="604" y="197">离线 ReShade 6.7</text>
+      <text x="592" y="238">资源文件在哪里</text>
+      <rect x="592" y="248" width="472" height="34" rx="4" fill="#fff" stroke="#d5d5d5"/>
+      <text x="604" y="271">F:\资源库\离线 ReShade</text>
+      <rect x="592" y="294" width="232" height="36" rx="4" fill="#fafafa" stroke="#dedede"/>
+      <rect x="832" y="294" width="232" height="36" rx="4" fill="#fafafa" stroke="#dedede"/>
+      <text x="708" y="318" text-anchor="middle">选择文件夹</text>
+      <text x="948" y="318" text-anchor="middle">选择文件</text>
+      <text x="592" y="356">选择准备好的资源。离线 ReShade 直接选输出文件夹。</text>
+      <text x="592" y="379">部署时复制文件夹内的内容，源文件保持不变。</text>
+      <text x="592" y="412">这个版本放在哪里（可留空）</text>
+      <rect x="592" y="422" width="472" height="34" rx="4" fill="#fff" stroke="#d5d5d5"/>
+      <text x="604" y="445" fill="#697386">留空，跟随资源库设置</text>
+      <text x="592" y="480">留空后放在：游戏页确认的部署位置。</text>
+      <text x="592" y="503">单独指定时填 mods 等文件夹名，不填完整路径。</text>
+      <path d="M32 554H552M568 554H1088" stroke="#e5e5e5"/>
+      <rect x="56" y="578" width="232" height="36" rx="4" fill="#fafafa" stroke="#dedede"/>
+      <rect x="296" y="578" width="232" height="36" rx="4" fill="#005fa8"/>
+      <rect x="592" y="578" width="232" height="36" rx="4" fill="#fafafa" stroke="#dedede"/>
+      <rect x="832" y="578" width="232" height="36" rx="4" fill="#005fa8"/>
+      <text x="172" y="602" text-anchor="middle">取消</text>
+      <text x="412" y="602" text-anchor="middle" fill="white">保存</text>
+      <text x="708" y="602" text-anchor="middle">取消</text>
+      <text x="948" y="602" text-anchor="middle" fill="white">保存</text>
+      <text x="32" y="670" fill="#53627d">错误状态沿用固定反馈区，禁用保存；长路径自动换行，正文滚动时不移动取消 / 保存按钮。</text>
+    </g>
+  </g>
+</svg>
