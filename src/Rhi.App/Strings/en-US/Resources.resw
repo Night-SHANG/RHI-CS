@@ -98,7 +98,7 @@
   <data name="ApplicationData" xml:space="preserve"><value>Application data</value></data>
   <data name="NoMigration" xml:space="preserve"><value>Data is not moved automatically. Reconnect the original data if needed.</value></data>
   <data name="OpenFolder" xml:space="preserve"><value>Open folder</value></data>
-  <data name="ProtectedCopies" xml:space="preserve"><value>Protected modifications</value></data>
+  <data name="ProtectedCopies" xml:space="preserve"><value>Protected copies</value></data>
   <data name="ProtectionRetention" xml:space="preserve"><value>Protected copies are kept indefinitely. Original backups and recovery snapshots are stored separately in the data folder; do not clear them as cache.</value></data>
   <data name="OpenProtectedCopies" xml:space="preserve"><value>Open protected copies</value></data>
   <data name="DevelopmentScope" xml:space="preserve"><value>Development build scope</value></data>

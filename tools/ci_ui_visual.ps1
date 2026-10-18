@@ -69,6 +69,21 @@ function Assert-OfflineLayout {
     $dpiScale = [SmokeWindow]::GetDpiForWindow($process.MainWindowHandle) / 96.0
     $width = (Find-Control -id 'SettingsScroll').Current.BoundingRectangle.Width / $dpiScale
     if ($width -ge 1016 -and ($right.Left -le $left.Right -or [Math]::Abs($right.Top - $left.Top) -gt 2)) { throw 'Wide Settings must have top-aligned left settings and right offline form.' }
+    if ($width -ge 1016) {
+        $viewport = (Find-Control -id 'SettingsScroll').Current.BoundingRectangle
+        $general = (Find-Control -id 'SettingsGeneralCard' -IncludeOffscreen).Current.BoundingRectangle
+        $offlineCard = (Find-Control -id 'OfflinePreparationCard' -IncludeOffscreen).Current.BoundingRectangle
+        $evidence.Add("Settings horizontal bounds: viewport=$viewport; general=$general; offline=$offlineCard")
+        foreach ($card in @($general, $offlineCard)) {
+            if ($card.Left -lt $viewport.Left - 2 -or $card.Right -gt $viewport.Right + 2) {
+                throw 'Settings card extends outside its horizontal viewport.'
+            }
+        }
+        # UIA may report a clipped rectangle as visible; verify the complete planned column ratio too.
+        if ([Math]::Abs($offlineCard.Width - $general.Width * 540 / 780) -gt 3 * $dpiScale) {
+            throw 'Settings card is clipped or no longer follows the planned 780:540 column ratio.'
+        }
+    }
     if ($width -le 992) {
         # Offscreen peers may not expose usable bounds. Bring the lower card into view before comparing alignment.
         $right = (Reveal-SettingsControl 'OfflineTitle').Current.BoundingRectangle

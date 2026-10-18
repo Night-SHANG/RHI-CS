@@ -93,6 +93,9 @@ public sealed partial class SettingsView : UserControl
         content.MaxWidth = 1360;
         content.HorizontalAlignment = HorizontalAlignment.Stretch;
         var scroll = Ui.Scroll(content);
+        // Bound both columns to the viewport before measuring localized text and paths.
+        scroll.HorizontalContentAlignment = HorizontalAlignment.Stretch;
+        scroll.SizeChanged += (_, e) => content.Width = Math.Min(e.NewSize.Width, 1360);
         AutomationProperties.SetAutomationId(scroll, "SettingsScroll");
         Content = new Border { Padding = new Thickness(24), Child = scroll };
         Loaded += async (_, _) =>
