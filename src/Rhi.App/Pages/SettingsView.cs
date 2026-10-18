@@ -1,5 +1,6 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Automation;
 using Rhi.App.Localization;
 using Rhi.App.Presentation;
 using Rhi.App.Services;
@@ -15,6 +16,7 @@ public sealed class SettingsView : UserControl
         var languages = new[] { "System" }.Concat(Strings.AvailableLanguages).ToArray();
         var theme = Ui.Choice("Appearance", themes.Select(Strings.Get), Math.Max(0, Array.IndexOf(themes, state.Preferences.Theme)));
         var language = Ui.Choice("Language", languages.Select(Strings.LanguageName), Math.Max(0, Array.IndexOf(languages, state.Preferences.Language)));
+        AutomationProperties.SetAutomationId(language, "SettingsLanguage");
         theme.IsEnabled = !c.Session.Busy; language.IsEnabled = !c.Session.Busy;
         var save = c.Button("Save", async () =>
         {

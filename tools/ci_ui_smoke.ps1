@@ -140,7 +140,32 @@ try {
         throw 'Search query was lost during navigation.'
     }
     Capture '06-search-retained'
-    [IO.File]::WriteAllText((Join-Path $captureRoot 'result.txt'), 'PASS: application launch, type controls, INI preview, and search retention. Screenshots require visual review.', [Text.Encoding]::UTF8)
+    Invoke-Control 'Settings'
+    Capture '09-settings-zh'
+    $language = Find-Control -id 'SettingsLanguage'
+    $language.GetCurrentPattern([Windows.Automation.ExpandCollapsePattern]::Pattern).Expand()
+    (Find-Control -name (Label 'en-US')).GetCurrentPattern([Windows.Automation.SelectionItemPattern]::Pattern).Select()
+    Invoke-Control 'Save'
+    $labels = [xml][IO.File]::ReadAllText((Join-Path $appRoot 'Strings/en-US/Resources.resw'), [Text.Encoding]::UTF8)
+    Find-Control -name (Label 'Settings') | Out-Null
+    Capture '10-settings-en'
+    Invoke-Control 'Libraries'
+    Invoke-Control 'AddVersion'
+    $englishSave = Assert-ActionOrder 'Save'
+    Select-ResourceKind 'ReShadeAddon'
+    Assert-FixedAction $englishSave
+    Capture '11-version-reshade-en'
+    Invoke-Control 'Cancel'
+    Invoke-Control 'Games'
+    if ((Find-Control -id 'GamesSearch').GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).Current.Value -ne 'CI Game') {
+        throw 'Search query was lost during language switching.'
+    }
+    Invoke-Control 'Deploy'
+    Find-Control -name (Label 'ConfigurationChanges') | Out-Null
+    Assert-ActionOrder 'ConfirmExecute' | Out-Null
+    Capture '12-reshade-preflight-en'
+    Invoke-Control 'Cancel'
+    [IO.File]::WriteAllText((Join-Path $captureRoot 'result.txt'), 'PASS: launch, type controls, fixed dialog actions, INI preview, search retention, and live Chinese/English switching. Screenshots require visual review.', [Text.Encoding]::UTF8)
 } catch {
     try { Capture 'failure' } catch { Write-Warning $_ }
     $diagnostic = @(
