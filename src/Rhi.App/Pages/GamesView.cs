@@ -63,6 +63,7 @@ public sealed partial class GamesView : UserControl
             body.Children.Add(Ui.Text($"{game.Api} · {game.Architecture}"));
             body.Children.Add(Ui.Text(Strings.Get("DeploymentRoot") + ": " + game.DeploymentRoot));
             var pending = c.Session.Store!.Pending().Where(j => j.GameId == game.Id).ToArray();
+            var locationAvailable = Directory.Exists(game.InstallRoot) && Directory.Exists(game.DeploymentRoot) && File.Exists(game.ExePath);
             var edit = c.Button("Edit", () => EditGame(game), !c.Session.Busy && pending.Length == 0);
             AutomationProperties.SetAutomationId(edit, "GameEdit");
             var headerActions = Ui.Row(edit, c.Button("CheckTargets", async () => { await c.Session.InspectTargets(game.Id); },
@@ -73,9 +74,9 @@ public sealed partial class GamesView : UserControl
                 var relocate = c.Button("RelocateGame", () => Relocate(game), !c.Session.Busy && pending.Length == 0);
                 AutomationProperties.SetAutomationId(relocate, "GameRelocate");
                 headerActions.Children.Add(relocate);
-                if (!Directory.Exists(game.DeploymentRoot) || !File.Exists(game.ExePath)) body.Children.Add(Ui.Label("GameLocationMissing"));
                 if (pending.Length > 0) body.Children.Add(Ui.Label("PendingConfigurationLocked"));
             }
+            if (!locationAvailable) body.Children.Add(Ui.Label("GameLocationMissing"));
             if (c.Session.TargetObservation is { } observed && observed.GameId == game.Id && observed.Revision == state.Revision)
                 body.Children.Add(Ui.Text(Strings.Format("LastChecked", observed.CheckedAt.ToLocalTime())));
             foreach (var operation in pending)
@@ -84,7 +85,7 @@ public sealed partial class GamesView : UserControl
             body.Children.Add(Ui.Label("LocalResources", 20));
             body.Children.Add(Ui.Label("PreflightHelp"));
             body.Children.Add(TableRow(Ui.Label("Select"), Ui.Label("LibraryName"), Ui.Label("VersionLabel"), Ui.Label("Status"), Ui.Label("Actions")));
-            foreach (var library in state.Libraries) body.Children.Add(ResourceRow(game, library, pending.Length > 0));
+            foreach (var library in state.Libraries) body.Children.Add(ResourceRow(game, library, pending.Length > 0 || !locationAvailable));
             if (state.Libraries.Length == 0) body.Children.Add(Ui.Label("NoLibraries"));
         }
         batchButton = c.Button("PreflightSelected", async () =>

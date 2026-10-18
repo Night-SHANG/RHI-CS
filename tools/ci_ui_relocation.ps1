@@ -22,6 +22,11 @@ function Invoke-ById([string]$id) {
 }
 
 Find-Control -name (Label 'GameLocationMissing') | Out-Null
+if ((Find-Control -id ('ClearLibrary_' + $fixture.LibraryId.Replace('-', '')) -IncludeOffscreen).Current.IsEnabled) {
+    throw 'Clearing an unavailable game is enabled.'
+}
+if ((Find-Control -name (Label 'Deploy') -Action -IncludeOffscreen).Current.IsEnabled -or
+    (Find-Control -id 'BatchPreflight').Current.IsEnabled) { throw 'Deployment for an unavailable game is enabled.' }
 Capture '40-location-missing'
 Invoke-ById 'GameRelocate'
 Assert-Save $false 'CheckLocation'
