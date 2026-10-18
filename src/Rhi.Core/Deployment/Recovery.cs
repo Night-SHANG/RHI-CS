@@ -34,12 +34,7 @@ public sealed partial class DeploymentEngine
             using var lease = DirectoryLease.Acquire(journal.TargetRoot);
             EnsureIdentity(journal);
             // Inspect the whole rollback first. A third-party change after a crash must not be overwritten.
-            for (var i = 0; i <= journal.IntentIndex; i++)
-            {
-                var file = journal.Files[i];
-                if (file.BeforeHash is { } before) store.Blobs.Verify(before);
-                FileReplacement.ValidateRecovery(journal, i);
-            }
+            ValidateRollback(journal);
             for (var i = journal.IntentIndex; i >= 0; i--)
             {
                 FileReplacement.Restore(store.Blobs, journal, i);

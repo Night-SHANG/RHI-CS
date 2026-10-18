@@ -134,6 +134,18 @@ internal static class FileReplacement
         RemoveVerified(paths.Displaced, file.DesiredHash);
     }
 
+    public static void ValidateCleanup(OperationJournal journal, int index)
+    {
+        var paths = Paths(journal, index);
+        using var directory = DirectoryLease.Acquire(Path.GetDirectoryName(paths.Target)!);
+        var file = journal.Files[index];
+        CheckParent(file);
+        VerifyOptional(paths.Before, file.BeforeHash);
+        VerifyOptional(paths.Next, file.DesiredHash);
+        VerifyOptional(paths.Restore, file.BeforeHash);
+        VerifyOptional(paths.Displaced, file.DesiredHash);
+    }
+
     private static void VerifyOptional(string path, string? expected)
     {
         if (!File.Exists(path) && !Directory.Exists(path)) return;

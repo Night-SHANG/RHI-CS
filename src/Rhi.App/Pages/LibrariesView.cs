@@ -14,13 +14,40 @@ public sealed class LibrariesView : UserControl
     {
         c = context;
         var state = c.Session.State!;
-        var list = new ListView { SelectionMode = ListViewSelectionMode.Single, DisplayMemberPath = "Name", ItemsSource = state.Libraries };
-        var selected = state.Libraries.FirstOrDefault(l => l.Id == c.LibraryId) ?? state.Libraries.FirstOrDefault();
-        list.SelectedItem = selected;
-        list.SelectionChanged += (_, _) => { c.LibraryId = (list.SelectedItem as ResourceLibrary)?.Id; c.Refresh(); };
-        var search = new TextBox { PlaceholderText = Strings.Get("SearchLibraries") };
-        search.TextChanged += (_, _) => list.ItemsSource = state.Libraries.Where(l => l.Name.Contains(search.Text, StringComparison.CurrentCultureIgnoreCase)).ToArray();
+        var list = new ListView { SelectionMode = ListViewSelectionMode.Single, DisplayMemberPath = "Name" };
+        var detail = new ContentControl { HorizontalContentAlignment = HorizontalAlignment.Stretch,
+            VerticalContentAlignment = VerticalAlignment.Stretch };
+        var search = new TextBox { PlaceholderText = Strings.Get("SearchLibraries"), Text = c.LibraryQuery };
+        var empty = Ui.Label(state.Libraries.Length == 0 ? "NoLibraries" : "NoMatches");
+        var filtering = false;
+        void ShowLibrary(ResourceLibrary? library)
+        {
+            if (detail.Content is not null && c.LibraryId == library?.Id) return;
+            c.LibraryId = library?.Id;
+            detail.Content = LibraryBody(library);
+        }
+        void Filter()
+        {
+            c.LibraryQuery = search.Text;
+            var filtered = state.Libraries.Where(l => l.Name.Contains(search.Text, StringComparison.CurrentCultureIgnoreCase)).ToArray();
+            var library = filtered.FirstOrDefault(l => l.Id == c.LibraryId) ?? filtered.FirstOrDefault();
+            filtering = true;
+            list.ItemsSource = filtered; list.SelectedItem = library;
+            filtering = false;
+            empty.Visibility = filtered.Length == 0 ? Visibility.Visible : Visibility.Collapsed;
+            ShowLibrary(library);
+        }
+        list.SelectionChanged += (_, _) => { if (!filtering) ShowLibrary(list.SelectedItem as ResourceLibrary); };
+        search.TextChanged += (_, _) => Filter();
+        Filter();
         var left = Ui.Stack(Ui.Label("Libraries", 23), search, c.Button("AddLibrary", () => EditLibrary(null), !c.Session.Busy), list);
+        left.Children.Add(empty);
+        Content = Ui.Split(Ui.Scroll(left), detail);
+    }
+
+    private UIElement LibraryBody(ResourceLibrary? selected)
+    {
+        var state = c.Session.State!;
         var right = Ui.Stack(Ui.Label("Libraries", 28), Ui.Label("LibraryExplanation"));
         if (selected is null) right.Children.Add(Ui.Label("NoLibraries"));
         else
@@ -45,7 +72,7 @@ public sealed class LibrariesView : UserControl
                 Ui.Text(detail.SourcePath), Ui.Text(Strings.Get("TargetRelative") + ": " + (detail.TargetOverride ?? selected.TargetRelative)),
                 c.Button("Edit", () => EditVersion(selected, detail), !c.Session.Busy))));
         }
-        Content = Ui.Split(Ui.Scroll(left), Ui.Dock(Ui.Scroll(right), Ui.Label("ConfigOnly")));
+        return Ui.Dock(Ui.Scroll(right), Ui.Label("ConfigOnly"));
     }
 
     private async Task EditLibrary(ResourceLibrary? existing)

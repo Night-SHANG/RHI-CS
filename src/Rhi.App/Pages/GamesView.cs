@@ -16,21 +16,42 @@ public sealed partial class GamesView : UserControl
     {
         c = context;
         var state = c.Session.State!;
-        var list = new ListView { DisplayMemberPath = "Name", ItemsSource = state.Games };
-        var game = state.Games.FirstOrDefault(g => g.Id == c.GameId) ?? state.Games.FirstOrDefault();
-        list.SelectedItem = game;
-        list.SelectionChanged += (_, _) => { c.GameId = (list.SelectedItem as GameEntry)?.Id; c.Refresh(); };
-        var search = new TextBox { PlaceholderText = Strings.Get("SearchGames") };
+        var list = new ListView { DisplayMemberPath = "Name" };
+        var detail = new ContentControl { HorizontalContentAlignment = HorizontalAlignment.Stretch,
+            VerticalContentAlignment = VerticalAlignment.Stretch };
+        var search = new TextBox { PlaceholderText = Strings.Get("SearchGames"), Text = c.GameQuery };
         var empty = Ui.Label(state.Games.Length == 0 ? "NoGames" : "NoMatches");
-        empty.Visibility = state.Games.Length == 0 ? Visibility.Visible : Visibility.Collapsed;
-        search.TextChanged += (_, _) =>
+        var filtering = false;
+        void ShowGame(GameEntry? game)
         {
+            if (detail.Content is not null && c.GameId == game?.Id) return;
+            c.GameId = game?.Id;
+            selected.Clear(); batchButton = null;
+            detail.Content = GameBody(game);
+        }
+        void Filter()
+        {
+            c.GameQuery = search.Text;
             var filtered = state.Games.Where(g => g.Name.Contains(search.Text, StringComparison.CurrentCultureIgnoreCase)).ToArray();
+            var game = filtered.FirstOrDefault(g => g.Id == c.GameId) ?? filtered.FirstOrDefault();
+            filtering = true;
             list.ItemsSource = filtered;
+            list.SelectedItem = game;
+            filtering = false;
             empty.Visibility = filtered.Length == 0 ? Visibility.Visible : Visibility.Collapsed;
-        };
+            ShowGame(game);
+        }
+        list.SelectionChanged += (_, _) => { if (!filtering) ShowGame(list.SelectedItem as GameEntry); };
+        search.TextChanged += (_, _) => Filter();
+        Filter();
         var left = Ui.Stack(Ui.Label("Games", 23), search,
             Ui.Row(c.Button("Refresh", Scan, !c.Session.Busy), c.Button("AddGame", () => EditGame(), !c.Session.Busy)), empty, list);
+        Content = Ui.Split(Ui.Scroll(left), detail);
+    }
+
+    private UIElement GameBody(GameEntry? game)
+    {
+        var state = c.Session.State!;
         var body = Ui.Stack();
         if (game is null) body.Children.Add(Ui.Label("AddGameHelp", 22));
         else
@@ -55,7 +76,7 @@ public sealed partial class GamesView : UserControl
             if (game is not null) await Preflight(game, selected.Select(s => new DeploymentRequest(s.Key, s.Value, OperationKind.Deploy)).ToArray());
         }, false);
         UpdateSelection();
-        Content = Ui.Split(Ui.Scroll(left), Ui.Dock(Ui.Scroll(body), batchButton));
+        return Ui.Dock(Ui.Scroll(body), batchButton);
     }
 
     private UIElement ResourceRow(GameEntry game, ResourceLibrary library, bool locked)

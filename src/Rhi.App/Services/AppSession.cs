@@ -93,6 +93,14 @@ public sealed class AppSession : ObservableObject, IDisposable
         finally { IsWriting = false; Busy = false; Changed?.Invoke(); }
     }
 
+    public async Task<RecoveryPreview> InspectRecovery(Guid id)
+    {
+        RequireIdle();
+        Busy = true; Changed?.Invoke();
+        try { return await Task.Run(() => new DeploymentEngine(Store!, gameSafetyCheck: CheckGame).InspectRecovery(id)); }
+        finally { Busy = false; Changed?.Invoke(); }
+    }
+
     public void Stop() { if (Recovering) return; StopRequested = true; cancellation?.Cancel(); }
     private static void CheckGame(string exe)
     { if (WindowsIntegration.IsGameRunning(exe)) throw new DeploymentException("GameRunning"); }

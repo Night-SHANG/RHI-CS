@@ -14,6 +14,8 @@ public sealed class PageContext(AppSession session, WindowsIntegration windows, 
     public Guid? GameId { get; set; }
     public Guid? LibraryId { get; set; }
     public Guid? VersionId { get; set; }
+    public string GameQuery { get; set; } = "";
+    public string LibraryQuery { get; set; } = "";
     public async Task Run(Func<Task> action)
     {
         try { await action(); }
