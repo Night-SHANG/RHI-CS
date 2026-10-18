@@ -159,6 +159,12 @@ function Check-Pages([string]$prefix) {
     Invoke-Control 'Cancel'
     Invoke-VisualId 'LibraryAddVersion'
     $before = Assert-ActionOrder 'Save'
+    Assert-FormReady
+    Capture "$prefix-version-initial"
+    Invoke-Control 'Save'
+    Assert-FormError 'NameRequired'
+    Assert-FixedAction $before
+    Capture "$prefix-version-required"
     Assert-NoResourceType
     Assert-FixedAction $before
     Capture "$prefix-version-source"

@@ -70,7 +70,8 @@ public sealed partial class LibrariesView : UserControl
             var removeLibrary = c.Button("RemoveLibrary", () => RemoveLibrary(selected),
                 !c.Session.Busy && !locked && !state.Receipts.Any(r => r.LibraryId == selected.Id));
             AutomationProperties.SetAutomationId(removeLibrary, "LibraryRemove");
-            right.Children.Add(Ui.Row(editLibrary, addVersion, removeLibrary));
+            right.Children.Add(Ui.Row(editLibrary, addVersion, removeLibrary,
+                c.FolderAction("OpenLibraryFolder", selected.SourceRoot, "LibraryOpenFolder")));
             AddReferenceNotice(right, selected.Id);
             right.Children.Add(Ui.Label("Versions", 20));
             var table = new StackPanel();
@@ -87,7 +88,8 @@ public sealed partial class LibrariesView : UserControl
                 AutomationProperties.SetAutomationId(remove, "VersionRemove_" + version.Id.ToString("N"));
                 table.Children.Add(Ui.TableLine(Ui.Columns([1, 2, 1, 1.5], Ui.Text(ResourcePresentation.VersionName(version)), Ui.Text(version.SourcePath),
                     Ui.Stack(Ui.Status(available ? "Available" : "SourceUnavailable"), Ui.Secondary(string.Join(", ", references))),
-                    Ui.Row(view, remove))));
+                    Ui.Stack(Ui.Row(view, remove), c.FolderAction("OpenResourceFolder", version.SourcePath,
+                        "VersionOpenFolder_" + version.Id.ToString("N"), sourceFile: true)))));
             }
             right.Children.Add(table);
         }
@@ -125,7 +127,7 @@ public sealed partial class LibrariesView : UserControl
                 c.LibraryId = library.Id;
                 c.Refresh();
                 return Task.CompletedTask;
-            }, [name, sourceRoot, target, browse], deferNameError: true);
+            }, [name, sourceRoot, target, browse]);
     }
 
     private async Task EditVersion(ResourceLibrary library, ResourceVersion? existing = null)

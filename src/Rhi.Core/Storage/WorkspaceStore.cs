@@ -114,12 +114,13 @@ public sealed class WorkspaceStore : IDisposable
         .Where(j => j.Status is OperationStatus.Preparing or OperationStatus.Executing or OperationStatus.NeedsRepair)
         .ToArray();
 
-    public void Protect(ProtectionEntry entry)
+    public void Protect(ProtectionEntry entry, string? description = null)
     {
         CheckAvailable();
         entry = entry with { ProtectionDirectory = ProtectionLayout.CreateDirectory(entry) };
         var copies = ProtectionLayout.FilesDirectory(Path.Combine(physicalRoot, "protection"), entry);
         PathPolicy.CheckNoLinks(copies);
+        Directory.CreateDirectory(copies);
         foreach (var file in entry.Files)
         {
             if (file.BeforeHash is not { } hash) continue;
@@ -131,6 +132,16 @@ public sealed class WorkspaceStore : IDisposable
                 81920, FileOptions.WriteThrough))
             { input.CopyTo(output); output.Flush(true); }
             if (BlobStore.Hash(copy) != hash) throw new DeploymentException("VerificationFailed", copy);
+        }
+        if (entry.FullVersion)
+        {
+            var info = Path.Combine(Path.GetDirectoryName(copies)!, "备份说明.txt");
+            PathPolicy.CheckNoLinks(info);
+            using var output = new FileStream(info, FileMode.CreateNew, FileAccess.Write, FileShare.None,
+                81920, FileOptions.WriteThrough);
+            using var writer = new StreamWriter(output, new System.Text.UTF8Encoding(true), leaveOpen: true);
+            writer.Write(description ?? System.Text.Json.JsonSerializer.Serialize(entry, AtomicJson.Options));
+            writer.Flush(); output.Flush(true);
         }
         var path = Path.Combine(physicalRoot, "protection", entry.OperationId.ToString("N") + ".json");
         PathPolicy.CheckNoLinks(path);

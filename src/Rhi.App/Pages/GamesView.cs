@@ -70,7 +70,7 @@ public sealed partial class GamesView : UserControl
             var locationAvailable = Directory.Exists(game.InstallRoot) && Directory.Exists(game.DeploymentRoot) && File.Exists(game.ExePath);
             var edit = c.Button("Edit", () => EditGame(game), !c.Session.Busy && pending.Length == 0);
             AutomationProperties.SetAutomationId(edit, "GameEdit");
-            var headerActions = Ui.Row(edit, c.Button("CheckTargets", async () => { await c.Session.InspectTargets(game.Id); },
+            var headerActions = Ui.Actions(132, edit, c.Button("CheckTargets", async () => { await c.Session.InspectTargets(game.Id); },
                 !c.Session.Busy && state.Receipts.Any(r => r.GameId == game.Id)));
             body.Children.Add(headerActions);
             if (state.Receipts.Any(r => r.GameId == game.Id) || pending.Length > 0)
@@ -81,6 +81,8 @@ public sealed partial class GamesView : UserControl
                 if (pending.Length > 0) body.Children.Add(Ui.Label("PendingConfigurationLocked"));
             }
             if (!locationAvailable) body.Children.Add(Ui.Label("GameLocationMissing"));
+            Ui.AddToRow(headerActions, c.FolderAction("OpenDeploymentFolder", game.DeploymentRoot, "GameOpenFolder"));
+            foreach (var column in headerActions.ColumnDefinitions) column.Width = new GridLength(132);
             if (c.Session.TargetObservation is { } observed && observed.GameId == game.Id && observed.Revision == state.Revision)
                 body.Children.Add(Ui.Text(Strings.Format("LastChecked", observed.CheckedAt.ToLocalTime())));
             foreach (var operation in pending)
@@ -147,7 +149,7 @@ public sealed partial class GamesView : UserControl
         status.Spacing = 4;
         var versionCell = Ui.Stack(box);
         versionCell.Spacing = 4;
-        var actions = Ui.Row(deploy);
+        var actions = Ui.Actions(112, deploy);
         if (receipt is not null)
         {
             versionCell.Children.Insert(0, Ui.Secondary(Strings.Get("CurrentVersion") + ": " + receipt.VersionLabel));
@@ -155,6 +157,7 @@ public sealed partial class GamesView : UserControl
             AutomationProperties.SetAutomationId(clear, "ClearLibrary_" + library.Id.ToString("N"));
             Ui.AddToRow(actions, clear);
             Ui.AddToRow(actions, c.Button("ViewDifferences", () => ViewDifferences(game, library, receipt), !c.Session.Busy));
+            foreach (var column in actions.ColumnDefinitions) column.Width = new GridLength(112);
             var snapshot = c.Session.TargetObservation;
             var health = snapshot?.GameId == game.Id && snapshot.Revision == c.Session.State.Revision
                 ? snapshot.Receipts.FirstOrDefault(r => r.LibraryId == library.Id)?.Health.ToString() : null;
@@ -184,9 +187,13 @@ public sealed partial class GamesView : UserControl
     private void UpdateSelection()
     {
         if (batchButton is null) return;
-        var deployCount = SelectedRequests(clear: false).Length;
+        var requests = SelectedRequests(clear: false);
+        var deployCount = requests.Length;
         var clearCount = SelectedRequests(clear: true).Length;
-        Ui.ButtonContent(batchButton, Strings.Format("BatchDeployCount", deployCount));
+        var batchKey = requests.Any(r => r.Kind == OperationKind.Deploy)
+            ? requests.Any(r => r.Kind == OperationKind.Change) ? "BatchDeployCount" : "BatchInstallCount"
+            : "BatchChangeCount";
+        Ui.ButtonContent(batchButton, Strings.Format(batchKey, deployCount));
         batchButton.Style = (Style)Application.Current.Resources["AccentButtonStyle"];
         batchButton.IsEnabled = deployCount > 0 && !c.Session.Busy;
         if (clearBatchButton is not null)
@@ -223,13 +230,15 @@ public sealed partial class GamesView : UserControl
         var grid = new Grid { ColumnSpacing = 12, RowSpacing = 8, Padding = new Thickness(12), MinHeight = 62 };
         grid.RowDefinitions.Add(new() { Height = GridLength.Auto });
         grid.RowDefinitions.Add(new() { Height = GridLength.Auto });
-        foreach (var width in new[] { 48d, 1.1, 2.2, 1.2, 3.0 })
-            grid.ColumnDefinitions.Add(new() { Width = width == 48 ? new GridLength(width) : new GridLength(width, GridUnitType.Star) });
-        for (var i = 0; i < cells.Length; i++) { Grid.SetColumn(cells[i], i); grid.Children.Add(cells[i]); }
+        foreach (var width in new[] { 48d, 1.1, 2.2, 1.2, 352d })
+            grid.ColumnDefinitions.Add(new() { Width = width is 48 or 352 ? new GridLength(width) : new GridLength(width, GridUnitType.Star) });
+        for (var i = 0; i < cells.Length; i++)
+        { Grid.SetColumn(cells[i], i); cells[i].VerticalAlignment = VerticalAlignment.Center; grid.Children.Add(cells[i]); }
+        cells[0].HorizontalAlignment = HorizontalAlignment.Center;
         grid.SizeChanged += (_, e) =>
         {
             var narrow = e.NewSize.Width < 940;
-            grid.ColumnDefinitions[4].Width = narrow ? new GridLength(0) : new GridLength(3, GridUnitType.Star);
+            grid.ColumnDefinitions[4].Width = narrow ? new GridLength(0) : new GridLength(352);
             cells[4].Visibility = header && narrow ? Visibility.Collapsed : Visibility.Visible;
             Grid.SetRow(cells[4], narrow ? 1 : 0);
             Grid.SetColumn(cells[4], narrow ? 1 : 4);
@@ -238,4 +247,3 @@ public sealed partial class GamesView : UserControl
         return grid;
     }
 }
-

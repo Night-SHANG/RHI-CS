@@ -19,7 +19,7 @@ public sealed record BatchPlan(Guid WorkspaceId, long Revision, Guid GameId, str
 {
     public bool CanExecute => Issues.Length == 0 && Libraries.Length > 0;
 }
-public sealed record OperationConsent(bool BackupOriginals, bool ProtectChanges);
+public sealed record OperationConsent(bool BackupOriginals, bool ProtectChanges, bool DiscardChangesOnClear = false);
 public sealed record OperationResult(Guid LibraryId, OperationStatus Status, string Detail, Guid? OperationId = null);
 public sealed record TaskProgress(string Phase, string Library, int Completed, int Total);
 public sealed class DeploymentException(string code, string? detail = null) : Exception(detail is null ? code : $"{code}: {detail}")

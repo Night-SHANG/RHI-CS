@@ -47,7 +47,7 @@
   <data name="Write" xml:space="preserve"><value>Write/restore</value></data>
   <data name="Remove" xml:space="preserve"><value>Remove</value></data>
   <data name="OverwriteConsent" xml:space="preserve"><value>Existing originals will be backed up before deploying the whole library. Identical existing files also require confirmation.</value></data>
-  <data name="ProtectionConsent" xml:space="preserve"><value>Modified files will be saved and verified as protected copies before changing versions or clearing deployment. Copies are not written to the source or merged into the new version; keeping a copy does not guarantee those changes remain active.</value></data>
+  <data name="ProtectionConsent" xml:space="preserve"><value>A protection copy saves all current managed files of the previously deployed version, including unchanged files. Missing files are listed. Copies are not written to the source or merged into the new version.</value></data>
   <data name="SkipLibraryHelp" xml:space="preserve"><value>Skip whole libraries as needed. Recheck after changing the selection.</value></data>
   <data name="ProtectAndExecute" xml:space="preserve"><value>Protect changes and execute</value></data>
   <data name="BackupAndExecute" xml:space="preserve"><value>Back up originals and deploy</value></data>
@@ -258,7 +258,36 @@
   <data name="LibraryFolderMissing" xml:space="preserve"><value>The library folder is missing or inaccessible. Update it, or enter the version's resource directory manually.</value></data>
   <data name="ChooseOtherVersion" xml:space="preserve"><value>Select another version to change versions.</value></data>
   <data name="SelectAll" xml:space="preserve"><value>Select all / clear selection</value></data>
-  <data name="BatchDeployCount" xml:space="preserve"><value>Deploy / change ({0})</value></data>
+  <data name="BatchDeployCount" xml:space="preserve"><value>Deploy and change version ({0})</value></data>
   <data name="BatchClearCount" xml:space="preserve"><value>Clear deployment ({0})</value></data>
   <data name="BatchSelectionHelp" xml:space="preserve"><value>Counts reflect applicable selected resources. Each action opens preflight; deselecting does not clear deployment.</value></data>
+  <data name="BatchInstallCount" xml:space="preserve"><value>Deploy ({0})</value></data>
+  <data name="BatchChangeCount" xml:space="preserve"><value>Change version ({0})</value></data>
+  <data name="OpenDeploymentFolder" xml:space="preserve"><value>Open deployment folder</value></data>
+  <data name="OpenLibraryFolder" xml:space="preserve"><value>Open library folder</value></data>
+  <data name="OpenResourceFolder" xml:space="preserve"><value>Open resource folder</value></data>
+  <data name="FolderUnavailable" xml:space="preserve"><value>The folder is unset or unavailable. Check its path.</value></data>
+  <data name="ProtectAndClear" xml:space="preserve"><value>Back up and clear</value></data>
+  <data name="DirectClear" xml:space="preserve"><value>Clear without copy</value></data>
+  <data name="DirectClearHelp" xml:space="preserve"><value>Clearing without a protection copy discards the current changes. Pre-deployment originals are still restored from the deployment record.</value></data>
+  <data name="SnapshotMissing" xml:space="preserve"><value>Missing, not copied</value></data>
+  <data name="SnapshotModified" xml:space="preserve"><value>Modified</value></data>
+  <data name="SnapshotUnchanged" xml:space="preserve"><value>Unchanged</value></data>
+  <data name="LegacyProtection" xml:space="preserve"><value>Legacy changes-only copy; version name was not recorded.</value></data>
+  <data name="ProtectionDescription" xml:space="preserve"><value>Game: {0}
+Game ID: {1}
+Library: {2}
+Library ID: {3}
+Previously deployed version: {4}
+Version ID: {5}
+Original deployment folder: {6}
+Backup time: {7}
+Unique ID: {8}
+Following operation: {9}
+
+This copy contains all existing managed files of this version immediately before the operation, including unchanged files. Missing files are listed, never filled from the source. Files outside the deployment record are excluded.
+Paths remain relative to the deployment folder. A copy with missing files is incomplete; check before reuse. This copy does not automatically restore deployment records and is not a backup of pre-deployment originals.
+
+State | Relative path | Checksum
+{10}</value></data>
 </root>

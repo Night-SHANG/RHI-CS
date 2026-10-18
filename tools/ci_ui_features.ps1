@@ -48,6 +48,7 @@ function Select-Batch {
     Invoke-Id 'BatchPreflight'
 }
 
+. (Join-Path $PSScriptRoot 'ci_ui_folder_actions.ps1')
 Invoke-Control 'Libraries'
 if ((Find-Control -id 'LibraryRemove').Current.IsEnabled) { throw 'A deployed library can be removed.' }
 $listBefore = (Find-Control -id 'LibrariesSearch').GetRuntimeId() -join ','
@@ -70,9 +71,9 @@ Invoke-Id 'SelectAllLibraries'
 if ((Find-Control -id "SelectLibrary_$reshade" -IncludeOffscreen).GetCurrentPattern([Windows.Automation.TogglePattern]::Pattern).Current.ToggleState -ne [Windows.Automation.ToggleState]::On) { throw 'Select all omitted deployed library.' }
 Capture '22-all-selected-mixed'
 Invoke-Id 'BatchClear'
-Assert-ActionOrder 'ProtectAndExecute' | Out-Null
+foreach ($key in @('ProtectAndClear', 'DirectClear', 'Cancel')) { Find-Control -name (Label $key) -Action | Out-Null }
 Capture '23-protect-before-clear'
-Invoke-Control 'ProtectAndExecute'
+Invoke-Control 'ProtectAndClear'
 Find-Control -id "DeployLibrary_$reshade" -Enabled | Out-Null
 Invoke-Control 'TaskResults'
 Find-Control -name ($taskPrefix + (Label 'Clear')) | Out-Null
@@ -157,4 +158,3 @@ Find-Control -name ($taskPrefix + (Label 'Deploy')) | Out-Null
 Capture '32-batch-result-en'
 Invoke-Control 'Close'
 [IO.File]::WriteAllText((Join-Path $captureRoot 'result.txt'), 'PASS: read-only differences, version-details dialog without rebuilding the sidebar, protection statistics without replacing page/draft/scroll, reference guards, mixed deployment/version change, select-all and partial selection, batch clear and cancellation, skipped batches, version/library removal, and bilingual results. Verify persisted files in the following fixture step.', [Text.Encoding]::UTF8)
-

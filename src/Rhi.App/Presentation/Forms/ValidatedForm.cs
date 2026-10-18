@@ -9,7 +9,7 @@ namespace Rhi.App.Presentation;
 public sealed partial class PageContext
 {
     public async Task<bool> Edit(string title, StackPanel fields, Action validate, Func<Task> submit,
-        Control[] inputs, string action = "Save", bool deferNameError = false)
+        Control[] inputs, string action = "Save")
     {
         var error = Ui.Text("");
         AutomationProperties.SetAutomationId(error, "FormValidation");
@@ -31,13 +31,14 @@ public sealed partial class PageContext
         void Check()
         {
             if (submitting) return;
+            // All editors share the same submission boundary; opening a blank form is not an error.
+            if (!attempted) { error.Text = ""; dialog.IsSecondaryButtonEnabled = true; return; }
             try { validate(); error.Text = ""; error.Foreground = Ui.ThemeBrush("SecondaryTextBrush"); dialog.IsSecondaryButtonEnabled = true; }
             catch (Exception ex) when (ex is DeploymentException or IOException or UnauthorizedAccessException or ArgumentException)
             {
-                var defer = deferNameError && !attempted && ex is DeploymentException { Code: "NameRequired" };
-                error.Text = defer ? "" : ErrorText(ex);
+                error.Text = ErrorText(ex);
                 error.Foreground = Ui.ThemeBrush("ErrorBrush");
-                dialog.IsSecondaryButtonEnabled = defer;
+                dialog.IsSecondaryButtonEnabled = false;
             }
         }
         foreach (var input in inputs)
@@ -73,4 +74,3 @@ public sealed partial class PageContext
         return saved;
     }
 }
-

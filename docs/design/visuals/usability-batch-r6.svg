@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="1040" viewBox="0 0 1280 1040">
+<style>text{font-family:'Segoe UI','Microsoft YaHei',sans-serif;font-size:14px;fill:#17233e}.title{font-size:24px;font-weight:600}.muted{fill:#50617c}.small{font-size:12px}.line{fill:white;stroke:#d8dfeb}.button{fill:#fafafa;stroke:#ddd}.blue{fill:#0067a8}.white{fill:white}.disabled{fill:#999}.green{fill:#16813b}</style>
+<rect width="1280" height="1040" fill="#f7f8fa"/>
+<text x="28" y="36" class="title">R6 · 游戏列表 / 版本详情 / 清除确认</text>
+<text x="28" y="63" class="muted">沿用浅色、14px 正文、28px 页边距、8px 按钮间距；操作按钮固定宽度，单个按钮不拉伸。</text>
+<rect x="28" y="85" width="1224" height="420" rx="8" class="line"/>
+<text x="52" y="122" class="title">Launcher</text><text x="52" y="151" class="muted">部署目录：C:\Games\WEEE</text>
+<g transform="translate(52 168)"><rect width="112" height="36" rx="4" class="button"/><text x="42" y="23">修改</text><rect x="120" width="112" height="36" rx="4" class="button"/><text x="148" y="23">核对目标</text><rect x="240" width="132" height="36" rx="4" class="button"/><text x="263" y="23">重新定位游戏</text><rect x="380" width="132" height="36" rx="4" class="button"/><text x="403" y="23">打开部署目录</text></g>
+<rect x="52" y="224" width="1176" height="50" fill="#f1f4f8"/><text x="112" y="255">资源库名称</text><text x="332" y="255">版本名称</text><text x="662" y="255">状态</text><text x="864" y="255">操作</text>
+<path d="M52 274H1228M52 344H1228M52 442H1228" stroke="#d8dfeb"/>
+<rect x="68" y="300" width="18" height="18" rx="3" class="button"/><text x="112" y="314">资源库 A</text><rect x="332" y="290" width="306" height="36" rx="4" class="button"/><text x="344" y="313">版本 1</text><text x="662" y="314" class="muted">• 未部署</text><rect x="864" y="290" width="112" height="36" rx="4" class="button"/><text x="906" y="313">部署</text>
+<rect x="68" y="384" width="18" height="18" rx="3" class="button"/><text x="112" y="398">资源库 B</text><text x="332" y="377" class="muted">当前版本：版本 1</text><rect x="332" y="386" width="306" height="36" rx="4" class="button"/><text x="344" y="409">版本 2</text><text x="662" y="388" class="green">• 已部署</text><text x="662" y="411" class="green">• 目标一致</text>
+<g transform="translate(864 379)"><rect width="112" height="36" rx="4" class="button"/><text x="28" y="23">更换版本</text><rect x="120" width="112" height="36" rx="4" class="button"/><text x="148" y="23">清除部署</text><rect x="240" width="112" height="36" rx="4" class="button"/><text x="268" y="23">查看差异</text></g>
+<text x="52" y="481" class="muted">复选框、名称、状态和按钮垂直居中；窄窗口整组操作移至下一行。</text>
+<rect x="28" y="530" width="590" height="304" rx="8" class="line"/><text x="52" y="568" class="title">版本详情</text><text x="52" y="603">资源库 B · 版本 1</text><text x="52" y="637" class="muted">资源文件目录：D:\Resources\LibraryB\v1</text><text x="52" y="669" class="muted">部署位置：游戏部署目录</text><rect x="52" y="689" width="132" height="36" rx="4" class="button"/><text x="76" y="712">打开资源目录</text>
+<path d="M28 752H618" stroke="#d8dfeb"/><g transform="translate(52 774)"><rect width="175" height="36" rx="4" class="button"/><text x="74" y="23">修改</text><rect x="183" width="175" height="36" rx="4" class="button"/><text x="243" y="23">移除版本</text><rect x="366" width="175" height="36" rx="4" class="button"/><text x="440" y="23">关闭</text></g>
+<rect x="642" y="530" width="610" height="304" rx="8" class="line"/><text x="666" y="568" class="title">预检与确认</text><text x="666" y="603">Launcher · 资源库 B · 版本 1 · 清除部署</text><text x="666" y="641">检测到文件改动。备份将保存该版本当前全部受管文件。</text><text x="666" y="673">直接清除不保留修改保护副本；原件仍按部署记录恢复。</text><text x="666" y="708" class="muted">缺失文件列入说明，不从来源补齐。</text><path d="M642 752H1252" stroke="#d8dfeb"/>
+<g transform="translate(666 774)"><rect width="181" height="36" rx="4" class="blue"/><text x="48" y="23" class="white">备份后清除</text><rect x="189" width="181" height="36" rx="4" class="button"/><text x="251" y="23">直接清除</text><rect x="378" width="181" height="36" rx="4" class="button"/><text x="455" y="23">取消</text></g>
+<text x="28" y="875" class="title">同类状态规则</text>
+<text x="28" y="910">表单：初次打开不显示必填错误；按保存后校验，后续编辑实时更新错误。错误区与底栏位置固定。</text>
+<text x="28" y="940">目录入口：游戏部署目录、资源库目录、版本资源目录分别打开对应路径；不存在时禁用并给出提示。</text>
+<text x="28" y="970">批量操作：按选中动作显示“部署 / 更换版本 / 部署与更换版本”，清除为独立按钮；不改变原预检规则。</text>
+<text x="28" y="1000">保护副本：游戏名 / 资源库名 / 时间__唯一编号 / 原版本名 / 文件；备份说明.txt 与原版本文件夹同级。</text>
+</svg>

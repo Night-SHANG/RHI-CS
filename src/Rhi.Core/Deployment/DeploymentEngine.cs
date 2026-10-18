@@ -4,7 +4,8 @@ using Rhi.Core.Storage.Windows;
 
 namespace Rhi.Core.Deployment;
 
-public sealed partial class DeploymentEngine(WorkspaceStore store, Action<string, int>? fault = null, Action<string>? gameSafetyCheck = null)
+public sealed partial class DeploymentEngine(WorkspaceStore store, Action<string, int>? fault = null,
+    Action<string>? gameSafetyCheck = null, Func<ProtectionEntry, string>? protectionDescription = null)
 {
     private readonly object gate = new();
 
@@ -14,8 +15,11 @@ public sealed partial class DeploymentEngine(WorkspaceStore store, Action<string
         lock (gate)
         {
             if (!plan.CanExecute) throw new DeploymentException("PreflightBlocked");
+            if (consent.DiscardChangesOnClear && (consent.ProtectChanges ||
+                plan.Libraries.Any(p => p.Request.Kind != OperationKind.Clear)))
+                throw new DeploymentException("ConsentRequired");
             if (plan.Libraries.Any(p => p.RequiresOverwrite) && !consent.BackupOriginals ||
-                plan.Libraries.Any(p => p.RequiresProtection) && !consent.ProtectChanges)
+                plan.Libraries.Any(p => p.RequiresProtection) && !consent.ProtectChanges && !consent.DiscardChangesOnClear)
                 throw new DeploymentException("ConsentRequired");
             var fresh = new DeploymentPlanner(store).Build(store.State, plan.GameId,
                 plan.Libraries.Select(p => p.Request).ToArray());
@@ -47,7 +51,7 @@ public sealed partial class DeploymentEngine(WorkspaceStore store, Action<string
                     stopped = true;
                     continue;
                 }
-                var result = ExecuteLibrary(plan, library, progress, cancellation);
+                var result = ExecuteLibrary(plan, library, consent, progress, cancellation);
                 results.Add(result);
                 stopped = result.Status != OperationStatus.Succeeded;
                 fault?.Invoke("LibraryCompleted", results.Count - 1);
@@ -56,7 +60,7 @@ public sealed partial class DeploymentEngine(WorkspaceStore store, Action<string
         }
     }
 
-    private OperationResult ExecuteLibrary(BatchPlan batch, LibraryPlan library,
+    private OperationResult ExecuteLibrary(BatchPlan batch, LibraryPlan library, OperationConsent consent,
         IProgress<TaskProgress>? progress, CancellationToken cancellation)
     {
         var id = Guid.NewGuid();
@@ -89,11 +93,20 @@ public sealed partial class DeploymentEngine(WorkspaceStore store, Action<string
                 else if (change.SourcePath is { } source) store.Blobs.Capture(source, change.DesiredHash!);
                 else if (change.DesiredHash is { } desired) store.Blobs.Verify(desired);
             }
-            var modified = library.Changes.Where(c => c.ExternalChange && c.BeforeHash is not null)
-                .Select(c => new JournalFile(c.RelativePath, c.BeforeHash, c.DesiredHash)).ToArray();
-            if (modified.Length > 0) store.Protect(new(id, batch.GameId, library.Request.LibraryId,
-                batch.TargetRoot, modified, DateTimeOffset.UtcNow,
-                store.State.Games.Single(g => g.Id == batch.GameId).Name, library.LibraryName));
+            if (library.RequiresProtection && consent.ProtectChanges)
+            {
+                // The old receipt owns the snapshot scope and identity, including on version changes.
+                var receipt = store.State.Receipts.Single(r => r.GameId == batch.GameId && r.LibraryId == library.Request.LibraryId);
+                var changes = library.Changes.ToDictionary(c => c.RelativePath, StringComparer.OrdinalIgnoreCase);
+                var files = receipt.Files.Select(f => changes[f.RelativePath])
+                    .Select(c => new JournalFile(c.RelativePath, c.BeforeHash, c.DesiredHash)).ToArray();
+                var entry = new ProtectionEntry(id, batch.GameId, library.Request.LibraryId, batch.TargetRoot, files,
+                    DateTimeOffset.UtcNow, store.State.Games.Single(g => g.Id == batch.GameId).Name,
+                    library.LibraryName, VersionId: receipt.VersionId, VersionLabel: receipt.VersionLabel,
+                    Kind: library.Request.Kind, ModifiedFiles: files.Where(f => changes[f.RelativePath].ExternalChange)
+                        .Select(f => f.RelativePath).ToArray(), FullVersion: true);
+                store.Protect(entry, protectionDescription?.Invoke(entry));
+            }
             journal = journal with { Status = OperationStatus.Executing };
             store.WriteJournal(journal);
             foreach (var relative in FileWriter.MissingDirectories(targetLease.Identity.Path, library.Changes))

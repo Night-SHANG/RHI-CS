@@ -67,6 +67,7 @@ public sealed partial class SettingsView : UserControl
                 var game = copy.Entry.GameName ?? state.Games.FirstOrDefault(g => g.Id == copy.Entry.GameId)?.Name ?? copy.Entry.GameId.ToString();
                 var library = copy.Entry.LibraryName ?? state.Libraries.FirstOrDefault(l => l.Id == copy.Entry.LibraryId)?.Name ?? copy.Entry.LibraryId.ToString();
                 protectionBody.Children.Add(Ui.Stack(Ui.Text(game + " · " + library),
+                    Ui.Text(copy.Entry.VersionLabel is { } version ? Strings.Get("VersionLabel") + ": " + version : Strings.Get("LegacyProtection")),
                     Ui.Text(copy.Entry.CreatedAt.ToLocalTime().ToString("g", System.Globalization.CultureInfo.CurrentCulture)),
                     Ui.Text(copy.Entry.TargetRoot),
                     c.Action("OpenProtectedCopies", () => WindowsIntegration.OpenFolder(copy.Directory), Directory.Exists(copy.Directory))));

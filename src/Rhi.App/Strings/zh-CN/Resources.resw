@@ -47,7 +47,7 @@
   <data name="Write" xml:space="preserve"><value>写入/恢复</value></data>
   <data name="Remove" xml:space="preserve"><value>移除</value></data>
   <data name="OverwriteConsent" xml:space="preserve"><value>将先备份已有原件，再部署整个资源库；内容相同的已有文件也需确认。</value></data>
-  <data name="ProtectionConsent" xml:space="preserve"><value>将先保存并核验修改保护副本，再更换版本或清除部署。副本不写回来源、不合并到新版；保留副本不代表修改继续生效。</value></data>
+  <data name="ProtectionConsent" xml:space="preserve"><value>备份会保存原部署版本当前全部受管文件，包括未修改的文件；缺失文件列入说明。副本不写回来源，也不合并到新版。</value></data>
   <data name="SkipLibraryHelp" xml:space="preserve"><value>可整库跳过；更改选择后需重新预检。</value></data>
   <data name="ProtectAndExecute" xml:space="preserve"><value>备份修改并执行</value></data>
   <data name="BackupAndExecute" xml:space="preserve"><value>备份原件并部署</value></data>
@@ -258,7 +258,36 @@
   <data name="LibraryFolderMissing" xml:space="preserve"><value>资源库目录不存在或无法访问。请修改资源库目录，或手动填写版本的资源文件目录。</value></data>
   <data name="ChooseOtherVersion" xml:space="preserve"><value>选择其他版本后可换版。</value></data>
   <data name="SelectAll" xml:space="preserve"><value>全选／取消全选</value></data>
-  <data name="BatchDeployCount" xml:space="preserve"><value>部署／换版（{0}）</value></data>
+  <data name="BatchDeployCount" xml:space="preserve"><value>部署与更换版本（{0}）</value></data>
   <data name="BatchClearCount" xml:space="preserve"><value>清除部署（{0}）</value></data>
   <data name="BatchSelectionHelp" xml:space="preserve"><value>按所选资源的状态分别计数；点击后先预检，取消勾选不会清除部署。</value></data>
+  <data name="BatchInstallCount" xml:space="preserve"><value>部署（{0}）</value></data>
+  <data name="BatchChangeCount" xml:space="preserve"><value>更换版本（{0}）</value></data>
+  <data name="OpenDeploymentFolder" xml:space="preserve"><value>打开部署目录</value></data>
+  <data name="OpenLibraryFolder" xml:space="preserve"><value>打开资源库目录</value></data>
+  <data name="OpenResourceFolder" xml:space="preserve"><value>打开资源目录</value></data>
+  <data name="FolderUnavailable" xml:space="preserve"><value>目录未设置或已失联，请先检查路径。</value></data>
+  <data name="ProtectAndClear" xml:space="preserve"><value>备份后清除</value></data>
+  <data name="DirectClear" xml:space="preserve"><value>直接清除</value></data>
+  <data name="DirectClearHelp" xml:space="preserve"><value>直接清除不保留修改保护副本，当前修改将被移除；部署前的原件仍按记录恢复。</value></data>
+  <data name="SnapshotMissing" xml:space="preserve"><value>缺失，未复制</value></data>
+  <data name="SnapshotModified" xml:space="preserve"><value>已修改</value></data>
+  <data name="SnapshotUnchanged" xml:space="preserve"><value>未修改</value></data>
+  <data name="LegacyProtection" xml:space="preserve"><value>旧版修改副本，未记录版本名称。</value></data>
+  <data name="ProtectionDescription" xml:space="preserve"><value>游戏：{0}
+游戏编号：{1}
+资源库：{2}
+资源库编号：{3}
+原部署版本：{4}
+版本编号：{5}
+原部署目录：{6}
+备份时间：{7}
+唯一编号：{8}
+后续操作：{9}
+
+本副本保存该版本在操作前的全部现存受管文件，包括未修改的文件。缺失文件仅记录，不从来源补齐。未纳入部署记录的其他文件不包含在内。
+文件保持相对部署目录的结构。缺失文件存在时，本副本不完整；重新使用前请核对。此副本不会自动恢复部署记录，也不是部署前原件备份。
+
+状态 | 相对路径 | 校验值
+{10}</value></data>
 </root>

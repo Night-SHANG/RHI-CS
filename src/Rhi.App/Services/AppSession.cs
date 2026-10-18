@@ -106,9 +106,11 @@ public sealed partial class AppSession : ObservableObject, IDisposable
         IsWriting = true; StopRequested = false; Busy = true; Changed?.Invoke();
         cancellation = new();
         var reporter = new Progress<TaskProgress>(p => { CurrentProgress = p; Progress?.Invoke(p); });
+        var description = ProtectionText.Capture();
         try
         {
-            Results = await Task.Run(() => new DeploymentEngine(Store!, gameSafetyCheck: CheckGame).Execute(plan, consent, reporter, cancellation.Token));
+            Results = await Task.Run(() => new DeploymentEngine(Store!, gameSafetyCheck: CheckGame,
+                protectionDescription: description).Execute(plan, consent, reporter, cancellation.Token));
             Results = Results.Concat(skipped.Select(r => new OperationResult(r.LibraryId, OperationStatus.NotExecuted, "SkippedByUser"))).ToArray();
         }
         finally { cancellation.Dispose(); cancellation = null; IsWriting = false; Busy = false; Changed?.Invoke(); }

@@ -96,6 +96,7 @@ function Assert-NoResourceType {
     if ($window.FindFirst([Windows.Automation.TreeScope]::Descendants, $selector)) { throw 'Resource type selector must not be shown.' }
 }
 function Assert-FormError([string]$key) {
+    if ((Find-Control -name (Label 'Save') -Action).Current.IsEnabled) { Invoke-Control 'Save' }
     Start-Sleep -Milliseconds 250
     if ((Find-Control -id 'FormValidation' -IncludeOffscreen).Current.Name -ne (Label $key)) { throw "Wrong form guidance: $key" }
     if ((Find-Control -name (Label 'Save') -Action).Current.IsEnabled) { throw 'Invalid form can be saved.' }

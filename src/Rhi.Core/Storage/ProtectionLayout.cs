@@ -26,16 +26,17 @@ public static class ProtectionLayout
             if (parts.Length != 3 || !parts[2].EndsWith("__" + entry.OperationId.ToString("N"), StringComparison.Ordinal))
                 throw new DeploymentException("InspectionFailed", relative);
         }
-        return PathPolicy.Target(protectionRoot, Path.Combine(relative, "files"));
+        return PathPolicy.Target(protectionRoot, Path.Combine(relative,
+            entry.FullVersion ? Label(entry.VersionLabel, entry.VersionId ?? entry.LibraryId, 80) : "files"));
     }
 
-    private static string Label(string? name, Guid id)
+    private static string Label(string? name, Guid id, int limit = 40)
     {
         var label = new string((name ?? "").Select(c => char.IsControl(c) || "<>:\"/\\|?*".Contains(c) ? '_' : c).ToArray())
             .Trim().TrimEnd('.');
-        if (label.Length > 40)
+        if (label.Length > limit)
         {
-            label = label[..40];
+            label = label[..limit];
             if (char.IsHighSurrogate(label[^1])) label = label[..^1];
             label = label.TrimEnd(' ', '.');
         }

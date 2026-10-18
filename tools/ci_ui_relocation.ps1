@@ -6,6 +6,7 @@ function Set-Input([string]$id, [string]$value) {
     Start-Sleep -Milliseconds 200
 }
 function Assert-Save([bool]$enabled, [string]$key = 'Save') {
+    if (-not $enabled -and (Find-Control -name (Label $key) -Action).Current.IsEnabled) { Invoke-Control $key }
     if ((Find-Control -name (Label $key) -Action).Current.IsEnabled -ne $enabled) { throw "Unexpected enabled state: $key" }
 }
 function Invoke-ById([string]$id) {

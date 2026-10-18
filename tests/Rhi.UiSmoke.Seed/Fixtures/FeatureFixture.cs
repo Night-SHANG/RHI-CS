@@ -69,6 +69,10 @@ internal static class FeatureFixture
         if (protectedCopy.Entry.LibraryId != metadata.ReShadeId ||
             !File.ReadAllText(Path.Combine(protectedCopy.Directory, "ReShade.ini"), System.Text.Encoding.UTF8).Contains("UserChange=preserve"))
             throw new InvalidOperationException("External configuration was not protected.");
+        if (!protectedCopy.Entry.FullVersion || protectedCopy.Entry.VersionId is null ||
+            !File.Exists(Path.Combine(protectedCopy.Directory, "dxgi.dll")) ||
+            !File.Exists(Path.Combine(Path.GetDirectoryName(protectedCopy.Directory)!, "备份说明.txt")))
+            throw new InvalidOperationException("Full version protection or its description is missing.");
         Console.WriteLine("PASS: UI changes match persisted receipts; skipped library not deployed; removal retains sources; external edits protected; unknown files retained.");
     }
 }

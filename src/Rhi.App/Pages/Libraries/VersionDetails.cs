@@ -11,20 +11,16 @@ public sealed partial class LibrariesView
     {
         var locked = c.Session.Store!.Pending().Any(j => j.LibraryId == library.Id);
         var referenced = c.Session.State!.Receipts.Any(r => r.LibraryId == library.Id && r.VersionId == version.Id);
-        var next = "";
-        Action close = () => { };
-        var edit = c.Action("Edit", () => { next = "edit"; close(); }, !c.Session.Busy && !locked);
-        var remove = c.Action("RemoveVersion", () => { next = "remove"; close(); }, !c.Session.Busy && !locked && !referenced);
-        AutomationProperties.SetAutomationId(edit, "VersionEdit");
-        AutomationProperties.SetAutomationId(remove, "VersionRemove");
         var panel = Ui.Stack(Ui.Text(library.Name + " · " + ResourcePresentation.VersionName(version), 20),
             Ui.Text(Strings.Get("SourcePath") + ": " + version.SourcePath),
             Ui.Text(ResourcePresentation.TargetLocation(version.Kind == ResourceKind.Files
-                ? version.TargetOverride ?? library.TargetRelative : "")), Ui.Row(edit, remove));
+                ? version.TargetOverride ?? library.TargetRelative : "")),
+            c.FolderAction("OpenResourceFolder", version.SourcePath, "VersionOpenFolder", sourceFile: true));
         if (referenced) AddReferenceNotice(panel, library.Id);
         if (locked) panel.Children.Add(Ui.Label("PendingConfigurationLocked"));
-        await c.Show("VersionDetails", panel, dialog => close = dialog.Hide);
-        if (next == "edit") await EditVersion(library, version);
-        else if (next == "remove") await RemoveVersion(library, version);
+        var result = await c.Choose("VersionDetails", panel, "Edit", "RemoveVersion", "Close",
+            !c.Session.Busy && !locked, !c.Session.Busy && !locked && !referenced, "VersionEdit", "VersionRemove");
+        if (result == Microsoft.UI.Xaml.Controls.ContentDialogResult.Primary) await EditVersion(library, version);
+        else if (result == Microsoft.UI.Xaml.Controls.ContentDialogResult.Secondary) await RemoveVersion(library, version);
     }
 }

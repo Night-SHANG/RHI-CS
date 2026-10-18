@@ -58,7 +58,25 @@ public sealed partial class GamesView
             }
         }
         var action = protect ? "ProtectAndExecute" : overwrite ? "BackupAndExecute" : "ConfirmExecute";
-        if (!await c.Confirm("Preflight", panel, action, configure: dialog =>
+        var discard = false;
+        if (protect && active.All(r => r.Kind == OperationKind.Clear))
+        {
+            panel.Children.Add(Ui.Label("DirectClearHelp"));
+            var choice = await c.Choose("Preflight", panel, "ProtectAndClear", "DirectClear", configure: dialog =>
+            {
+                updateAction = () =>
+                {
+                    var changed = !skipped.SetEquals(reviewedSkip);
+                    dialog.PrimaryButtonText = Strings.Get(changed ? "RecheckSelection" : "ProtectAndClear");
+                    dialog.IsPrimaryButtonEnabled = changed || plan?.CanExecute == true;
+                    dialog.IsSecondaryButtonEnabled = !changed && plan?.CanExecute == true;
+                };
+                updateAction();
+            });
+            if (choice == ContentDialogResult.None) return;
+            discard = choice == ContentDialogResult.Secondary;
+        }
+        else if (!await c.Confirm("Preflight", panel, action, configure: dialog =>
         {
             updateAction = () =>
             {
@@ -72,7 +90,7 @@ public sealed partial class GamesView
         var omitted = requests.Where(r => skipped.Contains(r.LibraryId)).ToArray();
         if (active.Length == 0) { c.Session.RecordSkipped(game.Id, omitted); return; }
         if (WindowsIntegration.IsGameRunning(game.ExePath)) throw new DeploymentException("GameRunning");
-        await c.Session.Execute(plan!, new(overwrite, protect), omitted);
+        await c.Session.Execute(plan!, new(overwrite, protect && !discard, discard), omitted);
         return;
         }
     }

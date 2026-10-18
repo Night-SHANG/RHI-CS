@@ -85,7 +85,7 @@ public sealed class DeploymentPlanner(WorkspaceStore store)
                 plans.Add(new(request, library.Name, version?.Label ?? receipt!.VersionLabel, changes.ToArray(),
                     receipt?.CreatedDirectories ?? [],
                     changes.Any(c => c.BeforeHash is not null && !old.ContainsKey(c.RelativePath)),
-                    changes.Any(c => c.ExternalChange && c.BeforeHash is not null), mapping.Inputs));
+                    changes.Any(c => c.ExternalChange), mapping.Inputs));
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or DeploymentException or InvalidOperationException)
             { AddIssue(issues, ex); }
