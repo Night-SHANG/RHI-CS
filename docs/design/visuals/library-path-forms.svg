@@ -12,7 +12,7 @@
       <text x="68" y="229">游戏资源</text>
       <text x="56" y="274">部署子目录</text>
       <rect x="56" y="284" width="472" height="34" rx="4" fill="#fff" stroke="#d5d5d5"/>
-      <text x="68" y="307" fill="#697386">例如 mods\textures</text>
+      <text x="68" y="307">mods</text>
       <text x="56" y="346">留空使用游戏部署目录。</text>
       <text x="56" y="369">子目录不存在时，部署时自动创建。</text>
       <text x="56" y="415" fill="#53627d">保存不会部署文件。</text>

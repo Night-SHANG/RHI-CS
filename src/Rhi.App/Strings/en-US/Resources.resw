@@ -47,7 +47,7 @@
   <data name="Write" xml:space="preserve"><value>Write/restore</value></data>
   <data name="Remove" xml:space="preserve"><value>Remove</value></data>
   <data name="OverwriteConsent" xml:space="preserve"><value>Existing originals will be backed up before deploying the whole library. Identical existing files also require confirmation.</value></data>
-  <data name="ProtectionConsent" xml:space="preserve"><value>Modified files will be saved and verified as protected copies before changing versions or clearing deployment. Copies are not written to the source or merged into the new version; saved changes will not remain active.</value></data>
+  <data name="ProtectionConsent" xml:space="preserve"><value>Modified files will be saved and verified as protected copies before changing versions or clearing deployment. Copies are not written to the source or merged into the new version; keeping a copy does not guarantee those changes remain active.</value></data>
   <data name="SkipLibraryHelp" xml:space="preserve"><value>Skip whole libraries as needed. Recheck after changing the selection.</value></data>
   <data name="ProtectAndExecute" xml:space="preserve"><value>Protect changes and execute</value></data>
   <data name="BackupAndExecute" xml:space="preserve"><value>Back up originals and deploy</value></data>
