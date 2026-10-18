@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/Rhi.Core/Rhi.Core.csproj" />
+    <Compile Include="../Rhi.Core.Tests/Deployment/Sandbox.cs" Link="Fixtures/Sandbox.cs" />
+    <Compile Include="../Rhi.Core.Tests/ReShade/ReShadeFixture.cs" Link="Fixtures/ReShadeFixture.cs" />
+    <Compile Include="../../src/Rhi.App/Services/Bootstrap.cs" Link="App/Bootstrap.cs" />
+  </ItemGroup>
+</Project>

@@ -1,5 +1,6 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Automation;
 using Rhi.App.Localization;
 using Rhi.App.Presentation;
 using Rhi.Core.Models;
@@ -20,6 +21,7 @@ public sealed partial class GamesView : UserControl
         var detail = new ContentControl { HorizontalContentAlignment = HorizontalAlignment.Stretch,
             VerticalContentAlignment = VerticalAlignment.Stretch };
         var search = new TextBox { PlaceholderText = Strings.Get("SearchGames"), Text = c.GameQuery };
+        AutomationProperties.SetAutomationId(search, "GamesSearch");
         var empty = Ui.Label(state.Games.Length == 0 ? "NoGames" : "NoMatches");
         var filtering = false;
         void ShowGame(GameEntry? game)
@@ -93,7 +95,7 @@ public sealed partial class GamesView : UserControl
             return TableRow(Ui.Text(""), Ui.Text(library.Name), Ui.Text(receipt.VersionLabel), status, actions);
         }
         var versions = library.Versions;
-        var box = new ComboBox { ItemsSource = versions.Select(v => v.Label).ToArray(), MinWidth = 150, MaxWidth = 230 };
+        var box = new ComboBox { ItemsSource = versions.Select(ResourcePresentation.VersionName).ToArray(), MinWidth = 150, MaxWidth = 230 };
         box.SelectedIndex = Array.FindIndex(versions, SourceAvailable);
         var check = new CheckBox();
         var deploy = c.Button("Deploy", async () =>
@@ -123,7 +125,7 @@ public sealed partial class GamesView : UserControl
         batchButton.IsEnabled = selected.Count > 0 && !c.Session.Busy;
         batchButton.HorizontalAlignment = HorizontalAlignment.Right;
     }
-    private static bool SourceAvailable(ResourceVersion v) => v.Kind == ResourceKind.Files && (File.Exists(v.SourcePath) || Directory.Exists(v.SourcePath));
+    private static bool SourceAvailable(ResourceVersion v) => ResourcePresentation.SourceAvailable(v);
     private static Grid TableRow(params FrameworkElement[] cells)
     {
         var grid = new Grid { ColumnSpacing = 12, Padding = new Thickness(12), MinHeight = 62 };

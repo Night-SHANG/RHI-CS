@@ -64,7 +64,7 @@
   <data name="SourcePath" xml:space="preserve"><value>Read-only source path</value></data>
   <data name="ReferencedBy" xml:space="preserve"><value>Deployed in</value></data>
   <data name="ConfigOnly" xml:space="preserve"><value>Saving affects future plans. Existing receipts retain the actual locations previously written.</value></data>
-  <data name="ReShadePending" xml:space="preserve"><value>This development build supports ordinary files and folders. ReShade EXE extraction and INI adaptation are not connected yet. Source executables are never run.</value></data>
+  <data name="ReShadePending" xml:space="preserve"><value>For ReShade, select a local official EXE or an extracted DLL and choose the standard or add-on build to match its source. Saving only records configuration; preflight checks architecture and previews INI changes without running the installer. Adding required paths reformats the INI and omits comments; the original file can be restored from backup.</value></data>
   <data name="ChooseFolder" xml:space="preserve"><value>Choose folder</value></data>
   <data name="ChooseFile" xml:space="preserve"><value>Choose file</value></data>
   <data name="Edit" xml:space="preserve"><value>Edit</value></data>
@@ -86,7 +86,7 @@
   <data name="ProtectionRetention" xml:space="preserve"><value>Modified copies and their path records are retained without automatic expiry. Originals and recovery snapshots are separate and must not be treated as disposable cache.</value></data>
   <data name="OpenProtectedCopies" xml:space="preserve"><value>Open protected copies</value></data>
   <data name="DevelopmentScope" xml:space="preserve"><value>Development build scope</value></data>
-  <data name="CurrentScope" xml:space="preserve"><value>Ordinary file deployment, version changes and clearing; manual game entry and local scanning for Steam, GOG, Epic, EA, Xbox, Ubisoft, Battle.net, and Rockstar. Dedicated ReShade adaptation is pending. Automatic Vulkan ReShade management is excluded from v1; ordinary resources are unaffected. OptiScaler is copied as ordinary files; BAT files are not run.</value></data>
+  <data name="CurrentScope" xml:space="preserve"><value>Deployment, version changes, and clearing for ordinary files and offline ReShade; manual game entry and local scanning for Steam, GOG, Epic, EA, Xbox, Ubisoft, Battle.net, and Rockstar. ReShade supports DirectX 9, DirectX 10/11/12, and OpenGL. Automatic Vulkan ReShade management is excluded from v1; ordinary resources are unaffected. OptiScaler is copied as ordinary files; BAT files are not run.</value></data>
   <data name="License" xml:space="preserve"><value>Sources and license</value></data>
   <data name="LicenseNotice" xml:space="preserve"><value>RHI-CS includes code adapted from RankFTW/RHI under GPL-3.0. Provided without warranty. You may modify and redistribute it under the license conditions. The license and source notices are included with the application.</value></data>
   <data name="OpenLicenseFolder" xml:space="preserve"><value>Open license location</value></data>
@@ -163,4 +163,11 @@
   <data name="ReShadeInvalidArchive" xml:space="preserve"><value>The DLL could not be read from the official ReShade installer. Use a supported official installer or an extracted DLL; the source installer is never run.</value></data>
   <data name="ReShadeInvalidIni" xml:space="preserve"><value>The existing ReShade.ini cannot be parsed reliably, or its search paths point outside the game deployment folder. Check the configuration and run preflight again.</value></data>
   <data name="ReShadeTargetMustBeRoot" xml:space="preserve"><value>ReShade must use the confirmed game deployment folder; this version cannot specify a separate target subfolder.</value></data>
+  <data name="ResourceType" xml:space="preserve"><value>Resource type</value></data>
+  <data name="Files" xml:space="preserve"><value>Ordinary files</value></data>
+  <data name="ReShadeStandard" xml:space="preserve"><value>ReShade standard</value></data>
+  <data name="ReShadeAddon" xml:space="preserve"><value>ReShade add-on build</value></data>
+  <data name="ConfigurationChanges" xml:space="preserve"><value>Configuration changes</value></data>
+  <data name="NotSet" xml:space="preserve"><value>Not set</value></data>
+  <data name="NoFileChange" xml:space="preserve"><value>No file change</value></data>
 </root>

@@ -1,5 +1,6 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Automation;
 using Rhi.App.Localization;
 using Rhi.App.Presentation;
 using Rhi.Core.Deployment;
@@ -18,6 +19,7 @@ public sealed class LibrariesView : UserControl
         var detail = new ContentControl { HorizontalContentAlignment = HorizontalAlignment.Stretch,
             VerticalContentAlignment = VerticalAlignment.Stretch };
         var search = new TextBox { PlaceholderText = Strings.Get("SearchLibraries"), Text = c.LibraryQuery };
+        AutomationProperties.SetAutomationId(search, "LibrariesSearch");
         var empty = Ui.Label(state.Libraries.Length == 0 ? "NoLibraries" : "NoMatches");
         var filtering = false;
         void ShowLibrary(ResourceLibrary? library)
@@ -62,13 +64,13 @@ public sealed class LibrariesView : UserControl
             {
                 var references = state.Receipts.Where(r => r.LibraryId == selected.Id && r.VersionId == version.Id)
                     .Select(r => state.Games.First(g => g.Id == r.GameId).Name);
-                var available = File.Exists(version.SourcePath) || Directory.Exists(version.SourcePath);
-                right.Children.Add(Ui.Columns([1, 2, 1, 1], Ui.Text(version.Label), Ui.Text(version.SourcePath),
+                var available = ResourcePresentation.SourceAvailable(version);
+                right.Children.Add(Ui.Columns([1, 2, 1, 1], Ui.Text(ResourcePresentation.VersionName(version)), Ui.Text(version.SourcePath),
                     Ui.Stack(Ui.Label(available ? "Available" : "SourceUnavailable"), Ui.Text(string.Join(", ", references))),
                     c.Action("View", () => { c.VersionId = version.Id; c.Refresh(); })));
             }
             var detail = selected.Versions.FirstOrDefault(v => v.Id == c.VersionId) ?? selected.Versions.FirstOrDefault();
-            if (detail is not null) right.Children.Add(Ui.Card(Ui.Stack(Ui.Label("VersionDetails", 20), Ui.Text(detail.Label),
+            if (detail is not null) right.Children.Add(Ui.Card(Ui.Stack(Ui.Label("VersionDetails", 20), Ui.Text(ResourcePresentation.VersionName(detail)),
                 Ui.Text(detail.SourcePath), Ui.Text(Strings.Get("TargetRelative") + ": " + (detail.TargetOverride ?? selected.TargetRelative)),
                 c.Button("Edit", () => EditVersion(selected, detail), !c.Session.Busy))));
         }
@@ -92,18 +94,47 @@ public sealed class LibrariesView : UserControl
         var label = Ui.Input("VersionLabel", existing?.Label ?? "");
         var source = Ui.Input("SourcePath", existing?.SourcePath ?? "");
         var target = Ui.Input("TargetOverride", existing?.TargetOverride ?? "");
+        var kinds = Enum.GetValues<ResourceKind>();
+        var kind = Ui.Choice("ResourceType", kinds.Select(ResourcePresentation.KindName),
+            Math.Max(0, Array.IndexOf(kinds, existing?.Kind ?? ResourceKind.Files)));
+        AutomationProperties.SetAutomationId(kind, "VersionResourceType");
+        AutomationProperties.SetAutomationId(target, "VersionTargetOverride");
         var chooseFolder = c.Button("ChooseFolder", async () => { var p = await c.Windows.PickFolder(); if (p is not null) source.Text = p; });
+        AutomationProperties.SetAutomationId(chooseFolder, "VersionChooseFolder");
         var chooseFile = c.Button("ChooseFile", async () => { var p = await c.Windows.PickFile(); if (p is not null) source.Text = p; });
-        if (!await c.Confirm(existing is null ? "AddVersion" : "Edit", Ui.Stack(label, source, Ui.Row(chooseFolder, chooseFile), target,
-            Ui.Label("ConfigOnly"), Ui.Label("ReShadePending")))) return;
+        var help = Ui.Label("ReShadePending");
+        var targetHelp = Ui.Label("ReShadeTargetMustBeRoot");
+        var ordinaryTarget = target.Text;
+        var wasOrdinary = true;
+        void UpdateKind()
+        {
+            var ordinary = kinds[Math.Max(0, kind.SelectedIndex)] == ResourceKind.Files;
+            if (wasOrdinary && !ordinary) ordinaryTarget = target.Text;
+            target.Text = ordinary ? ordinaryTarget : "";
+            target.IsEnabled = ordinary; chooseFolder.IsEnabled = ordinary;
+            targetHelp.Visibility = ordinary ? Visibility.Collapsed : Visibility.Visible;
+            help.Visibility = ordinary ? Visibility.Collapsed : Visibility.Visible;
+            wasOrdinary = ordinary;
+        }
+        kind.SelectionChanged += (_, _) => UpdateKind();
+        UpdateKind();
+        var form = Ui.Stack(label, kind, source, Ui.Row(chooseFolder, chooseFile), target, targetHelp,
+            Ui.Label("ConfigOnly"), help);
+        form.MinHeight = 480;
+        if (!await c.Confirm(existing is null ? "AddVersion" : "Edit", form)) return;
         if (string.IsNullOrWhiteSpace(label.Text)) throw new DeploymentException("NameRequired");
         var path = PathPolicy.Full(source.Text);
         if (!Directory.Exists(path) && !File.Exists(path)) throw new DeploymentException("SourceUnavailable", path);
+        var resourceKind = kinds[Math.Max(0, kind.SelectedIndex)];
+        if (resourceKind != ResourceKind.Files && (!File.Exists(path) ||
+            !(Path.GetExtension(path).Equals(".exe", StringComparison.OrdinalIgnoreCase) ||
+              Path.GetExtension(path).Equals(".dll", StringComparison.OrdinalIgnoreCase))))
+            throw new DeploymentException("ReShadeInvalidBinary", path);
         PathPolicy.Disjoint(path, c.Session.Store!.Root);
         foreach (var game in c.Session.State!.Games)
         { PathPolicy.Disjoint(path, game.InstallRoot); PathPolicy.Disjoint(path, game.DeploymentRoot); }
         var version = new ResourceVersion(existing?.Id ?? Guid.NewGuid(), label.Text.Trim(), path,
-            string.IsNullOrWhiteSpace(target.Text) ? null : PathPolicy.Relative(target.Text), ResourceKind.Files);
+            resourceKind != ResourceKind.Files ? "" : string.IsNullOrWhiteSpace(target.Text) ? null : PathPolicy.Relative(target.Text), resourceKind);
         var updated = library with { Versions = library.Versions.Where(v => v.Id != version.Id).Append(version).ToArray() };
         c.Session.Save(c.Session.State with { Libraries = c.Session.State.Libraries.Select(l => l.Id == library.Id ? updated : l).ToArray() });
     }

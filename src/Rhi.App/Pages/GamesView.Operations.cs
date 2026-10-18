@@ -19,7 +19,17 @@ public sealed partial class GamesView
                 library.Changes.Count(f => f.BeforeHash is not null && f.DesiredHash is not null),
                 library.Changes.Count(f => f.DesiredHash is null), library.Changes.Count(f => f.ExternalChange))));
             foreach (var file in library.Changes)
-                panel.Children.Add(Ui.Text(file.RelativePath + " · " + Strings.Get(file.ExternalChange ? "ExternalChange" : file.DesiredHash is null ? "Remove" : "Write")));
+            {
+                var detail = Ui.Stack(Ui.Text(file.RelativePath + " · " + Strings.Get(file.ExternalChange ? "ExternalChange" :
+                    file.BeforeHash == file.DesiredHash ? "NoFileChange" : file.DesiredHash is null ? "Remove" : "Write")));
+                if (file.ConfigurationEdits is { Length: > 0 } edits)
+                {
+                    detail.Children.Add(Ui.Label("ConfigurationChanges"));
+                    foreach (var edit in edits)
+                        detail.Children.Add(Ui.Text($"[{edit.Section}] {edit.Key}\n{edit.Before ?? Strings.Get("NotSet")} → {edit.After}"));
+                }
+                panel.Children.Add(Ui.Card(detail));
+            }
         }
         foreach (var issue in plan.Issues) panel.Children.Add(Ui.Text(Strings.Get(issue.Code) + "\n" + issue.Detail));
         var overwrite = plan.Libraries.Any(l => l.RequiresOverwrite);
@@ -36,8 +46,14 @@ public sealed partial class GamesView
     private async Task Recover(OperationJournal journal)
     {
         if (WindowsIntegration.IsGameRunning(journal.ExePath)) throw new DeploymentException("GameRunning");
+        var preview = await c.Session.InspectRecovery(journal.Id);
         var panel = Ui.Stack(Ui.Label("RecoveryHelp"), Ui.Text(journal.TargetRoot),
-            Ui.Text(string.Join("\n", journal.Files.Select(f => f.RelativePath))));
-        if (await c.Confirm("CheckRecovery", panel, "Recover")) await c.Session.Recover(journal.Id);
+            Ui.Label("NotWrittenYet"));
+        if (preview.AlreadyCommitted) panel.Children.Add(Ui.Label("CommittedJournalPending"));
+        foreach (var file in preview.Files)
+            panel.Children.Add(Ui.Text(file.RelativePath + " · " + Strings.Get(!file.RequiresRestore ? "NoFileChange" :
+                file.BeforeHash is null ? "Remove" : "Recover")));
+        foreach (var issue in preview.Issues) panel.Children.Add(Ui.Text(Strings.Get(issue.Code) + "\n" + issue.Detail));
+        if (await c.Confirm("CheckRecovery", panel, "Recover", preview.CanRecover)) await c.Session.Recover(journal.Id);
     }
 }

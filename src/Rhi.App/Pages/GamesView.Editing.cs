@@ -66,7 +66,7 @@ public sealed partial class GamesView
     private async Task ChooseVersion(GameEntry game, ResourceLibrary library, DeploymentReceipt receipt)
     {
         var versions = library.Versions.Where(v => v.Id != receipt.VersionId && SourceAvailable(v)).ToArray();
-        var box = Ui.Choice("CandidateVersion", versions.Select(v => v.Label));
+        var box = Ui.Choice("CandidateVersion", versions.Select(ResourcePresentation.VersionName));
         if (await c.Confirm("ChangeVersion", Ui.Stack(Ui.Text(Strings.Get("CurrentVersion") + ": " + receipt.VersionLabel), box), "Preflight", versions.Length > 0))
             await Preflight(game, [new(library.Id, versions[box.SelectedIndex].Id, OperationKind.Change)]);
     }

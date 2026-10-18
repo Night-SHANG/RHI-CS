@@ -64,7 +64,7 @@
   <data name="SourcePath" xml:space="preserve"><value>只读来源路径</value></data>
   <data name="ReferencedBy" xml:space="preserve"><value>已部署于</value></data>
   <data name="ConfigOnly" xml:space="preserve"><value>保存只影响后续计划。已部署记录继续指向当时实际写入的位置。</value></data>
-  <data name="ReShadePending" xml:space="preserve"><value>当前开发版仅接入普通文件/目录。ReShade 专用 EXE 解包与 INI 适配尚未接入；源 EXE 不会被运行。</value></data>
+  <data name="ReShadePending" xml:space="preserve"><value>ReShade 请选择本地官方 EXE 或已提取的 DLL，并按来源选择普通版或 Addon 版。保存仅记录配置；部署前会校验位数并预览 INI 改动，不会运行源安装器。补充必要路径时会重排 INI 格式并省略注释，原文件可由备份恢复。</value></data>
   <data name="ChooseFolder" xml:space="preserve"><value>选择文件夹</value></data>
   <data name="ChooseFile" xml:space="preserve"><value>选择文件</value></data>
   <data name="Edit" xml:space="preserve"><value>修改</value></data>
@@ -86,7 +86,7 @@
   <data name="ProtectionRetention" xml:space="preserve"><value>修改副本与路径说明长期保留，不自动过期。原件和恢复快照另存于数据目录，不能当作缓存清理。</value></data>
   <data name="OpenProtectedCopies" xml:space="preserve"><value>打开修改备份</value></data>
   <data name="DevelopmentScope" xml:space="preserve"><value>当前开发版范围</value></data>
-  <data name="CurrentScope" xml:space="preserve"><value>普通文件部署、换版与清除；手动添加游戏，以及 Steam、GOG、Epic、EA、Xbox、Ubisoft、Battle.net、Rockstar 本地扫描。ReShade 专用适配尚未接入。Vulkan ReShade 自动管理不在首版范围；普通资源不受此限制。OptiScaler 仅按普通文件复制，不执行 BAT。</value></data>
+  <data name="CurrentScope" xml:space="preserve"><value>普通文件及离线 ReShade 的部署、换版与清除；手动添加游戏，以及 Steam、GOG、Epic、EA、Xbox、Ubisoft、Battle.net、Rockstar 本地扫描。ReShade 支持 DirectX 9、DirectX 10/11/12 和 OpenGL；Vulkan ReShade 自动管理不在首版范围，普通资源不受此限制。OptiScaler 仅按普通文件复制，不执行 BAT。</value></data>
   <data name="License" xml:space="preserve"><value>来源与许可</value></data>
   <data name="LicenseNotice" xml:space="preserve"><value>RHI-CS 含 RankFTW/RHI 的 GPL-3.0 适配代码。软件按 GPL-3.0 提供，无担保；你可按许可证条件修改和再分发。许可证和来源说明随程序提供。</value></data>
   <data name="OpenLicenseFolder" xml:space="preserve"><value>查看许可证所在目录</value></data>
@@ -163,4 +163,11 @@
   <data name="ReShadeInvalidArchive" xml:space="preserve"><value>无法读取官方 ReShade 安装包中的 DLL。请使用受支持的官方安装包或已提取的 DLL；不会运行源安装器。</value></data>
   <data name="ReShadeInvalidIni" xml:space="preserve"><value>现有 ReShade.ini 无法可靠解析，或搜索路径指向游戏部署目录之外。请检查配置后重新预检。</value></data>
   <data name="ReShadeTargetMustBeRoot" xml:space="preserve"><value>ReShade 必须部署到已确认的游戏部署目录；此版本不能另设目标子目录。</value></data>
+  <data name="ResourceType" xml:space="preserve"><value>资源类型</value></data>
+  <data name="Files" xml:space="preserve"><value>普通文件</value></data>
+  <data name="ReShadeStandard" xml:space="preserve"><value>ReShade 普通版</value></data>
+  <data name="ReShadeAddon" xml:space="preserve"><value>ReShade Addon 版</value></data>
+  <data name="ConfigurationChanges" xml:space="preserve"><value>配置改动</value></data>
+  <data name="NotSet" xml:space="preserve"><value>未设置</value></data>
+  <data name="NoFileChange" xml:space="preserve"><value>无需改动</value></data>
 </root>
