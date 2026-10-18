@@ -128,7 +128,6 @@ try {
         foreach ($id in @('LibraryEdit', 'LibraryAddVersion', 'VersionEdit')) {
             if ((Find-Control -id $id -IncludeOffscreen).Current.IsEnabled) { throw "Pending library control is enabled: $id" }
         }
-        $lockedBounds = (Find-Control -id 'LibraryEdit').Current.BoundingRectangle
         Capture '17-library-locked-zh'
         $query = (Find-Control -id 'LibrariesSearch').GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern)
         $query.SetValue('Other library')
@@ -145,6 +144,7 @@ try {
         # Search selects the affected library independently of earlier selection in the unrelated-library check.
         (Find-Control -id 'LibrariesSearch').GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).SetValue('ReShade')
         Find-Control -name (Label 'PendingConfigurationLocked') | Out-Null
+        $lockedBounds = (Find-Control -id 'LibraryEdit').Current.BoundingRectangle
         Capture '18-library-locked-en'
         Invoke-Control 'Games'
         Invoke-Control 'CheckRecovery'
