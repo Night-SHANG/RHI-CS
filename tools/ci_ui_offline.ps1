@@ -27,7 +27,8 @@ $picker = $null
 $pickerCancel = $null
 for ($attempt = 0; $attempt -lt 50; $attempt++) {
     Start-Sleep -Milliseconds 200
-    $windows = [Windows.Automation.AutomationElement]::RootElement.FindAll([Windows.Automation.TreeScope]::Children, [Windows.Automation.Condition]::TrueCondition)
+    $windows = [Windows.Automation.AutomationElement]::RootElement.FindAll([Windows.Automation.TreeScope]::Descendants,
+        [Windows.Automation.PropertyCondition]::new([Windows.Automation.AutomationElement]::ControlTypeProperty, [Windows.Automation.ControlType]::Window))
     foreach ($candidate in $windows) {
         if ($candidate.Current.IsOffscreen -or $candidate.Current.NativeWindowHandle -eq $process.MainWindowHandle.ToInt64()) { continue }
         $buttons = $candidate.FindAll([Windows.Automation.TreeScope]::Descendants,
