@@ -13,6 +13,8 @@ public sealed class WindowsIntegration(Window window)
         {
             Rhi.Core.Deployment.PathPolicy.CheckNoLinks(initialDirectory);
             if (!Directory.Exists(initialDirectory)) throw new Rhi.Core.Models.DeploymentException("LibraryFolderMissing", initialDirectory);
+            // Return from the triggering input/UI Automation call before entering the native modal loop.
+            await Task.Yield();
             using var dialog = new System.Windows.Forms.FolderBrowserDialog
             { InitialDirectory = initialDirectory, SelectedPath = initialDirectory, ShowNewFolderButton = false };
             return dialog.ShowDialog(new PickerOwner(window)) == System.Windows.Forms.DialogResult.OK ? dialog.SelectedPath : null;
@@ -29,6 +31,7 @@ public sealed class WindowsIntegration(Window window)
         {
             Rhi.Core.Deployment.PathPolicy.CheckNoLinks(initialDirectory);
             if (!Directory.Exists(initialDirectory)) throw new Rhi.Core.Models.DeploymentException("LibraryFolderMissing", initialDirectory);
+            await Task.Yield();
             using var dialog = new System.Windows.Forms.OpenFileDialog
             { InitialDirectory = initialDirectory, RestoreDirectory = true, CheckFileExists = true,
                 Filter = extension == "*" ? "*.*|*.*" : $"*{extension}|*{extension}" };
@@ -74,3 +77,4 @@ public sealed class WindowsIntegration(Window window)
         return false;
     }
 }
+
