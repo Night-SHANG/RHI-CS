@@ -9,7 +9,8 @@ function Reveal-Control([string]$id, [string]$scrollId) {
     # Search/selection can replace the detail view before its first layout has settled.
     Start-Sleep -Milliseconds 400
     $stable = $false
-    for ($i = 0; $i -lt 16; $i++) {
+    $searchPercent = 0
+    for ($i = 0; $i -lt 24; $i++) {
         $element = Find-Control -id $id -IncludeOffscreen
         $viewer = Find-Control -id $scrollId
         $bounds = $element.Current.BoundingRectangle
@@ -21,13 +22,15 @@ function Reveal-Control([string]$id, [string]$scrollId) {
         if (-not $visible) {
             $scroll = $viewer.GetCurrentPattern([Windows.Automation.ScrollPattern]::Pattern)
             if ($scroll.Current.VerticallyScrollable) {
-                $direction = if ($bounds.Top -lt $viewport.Top) { [Windows.Automation.ScrollAmount]::LargeDecrement } else { [Windows.Automation.ScrollAmount]::LargeIncrement }
-                $scroll.Scroll([Windows.Automation.ScrollAmount]::NoAmount, $direction)
+                # Fully offscreen WinUI controls can expose an empty/infinite rectangle.
+                # Search from the top in small steps instead of inferring direction from it.
+                $scroll.SetScrollPercent(-1, [Math]::Min(100, $searchPercent))
+                $searchPercent += 5
             }
         }
         Start-Sleep -Milliseconds 200
     }
-    throw "Cannot reveal complete control: $id"
+    throw "Cannot reveal complete control: $id; bounds=$bounds; viewport=$viewport; offscreen=$($element.Current.IsOffscreen); scroll=$($scroll.Current.VerticalScrollPercent)"
 }
 function Invoke-Id([string]$id) {
     $node = Find-Control -id $id -Enabled
@@ -153,5 +156,5 @@ Invoke-Control 'TaskResults'
 Find-Control -name ($taskPrefix + (Label 'Deploy')) | Out-Null
 Capture '32-batch-result-en'
 Invoke-Control 'Close'
-[IO.File]::WriteAllText((Join-Path $captureRoot 'result.txt'), 'PASS: target inspection, differences to preflight, protection and clear, stable task identity, protection usage, reference guards, all-skipped and partial-skipped batches, version/library removal, and live bilingual results. Verify persisted files in the following fixture step.', [Text.Encoding]::UTF8)
+[IO.File]::WriteAllText((Join-Path $captureRoot 'result.txt'), 'PASS: read-only differences, version-details dialog without rebuilding the sidebar, protection statistics without replacing page/draft/scroll, reference guards, mixed deployment/version change, select-all and partial selection, batch clear and cancellation, skipped batches, version/library removal, and bilingual results. Verify persisted files in the following fixture step.', [Text.Encoding]::UTF8)
 
