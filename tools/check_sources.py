@@ -60,6 +60,12 @@ for language, values in catalogs.items():
             errors.append(f"empty locale: {language}: {key}")
 
 if args.published is not None:
+    xaml_resources = sorted(str(path.relative_to(args.published))
+                            for path in args.published.rglob("*")
+                            if path.suffix.lower() in {".xbf", ".pri"})
+    print("Published XAML resources: " + ", ".join(xaml_resources))
+    if not (args.published / "resources.pri").is_file():
+        errors.append("missing published application resource index: resources.pri")
     for language, values in catalogs.items():
         path = args.published / "Strings" / language / "Resources.resw"
         if not path.is_file():
