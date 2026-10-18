@@ -22,4 +22,5 @@
 <g stroke="#d5dce5" fill="white"><rect x="54" y="564" width="224" height="36" rx="4"/><rect x="584" y="564" width="224" height="36" rx="4"/></g>
 <rect x="290" y="564" width="226" height="36" rx="4" fill="#0067c0"/><rect x="820" y="564" width="226" height="36" rx="4" fill="#e9e9e9"/>
 <g font-size="14" text-anchor="middle"><text x="166" y="588">取消</text><text x="696" y="588">取消</text><text x="403" y="588" fill="white">核对位置</text><text x="933" y="588" fill="#858585">保存</text></g>
+<text x="30" y="650" font-size="13">游戏页：修改 / 核对目标 / 重新定位游戏保持同一行；路径规则在编辑和定位表单内展示。</text>
 </g></svg>
