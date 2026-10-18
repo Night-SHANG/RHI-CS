@@ -35,7 +35,7 @@ internal static class FeatureFixture
         var beta = Library("Beta");
         store.Save(store.State with { Libraries = [reshade, alpha, beta], Preferences = new("Dark", "zh-CN") });
         var plan = new DeploymentPlanner(store).Build(store.State, game.Id,
-            [new(reshade.Id, reshade.Versions.Single().Id, OperationKind.Deploy)]);
+            [new(reshade.Id, reshade.Versions.Single(v => v.Kind == ResourceKind.ReShadeStandard).Id, OperationKind.Deploy)]);
         if (new DeploymentEngine(store).Execute(plan, new(true, true)).Single().Status != OperationStatus.Succeeded)
             throw new InvalidOperationException("Cannot seed ReShade deployment.");
         File.AppendAllText(Path.Combine(game.DeploymentRoot, "ReShade.ini"), "\n[EXTERNAL]\nUserChange=preserve\n", System.Text.Encoding.UTF8);

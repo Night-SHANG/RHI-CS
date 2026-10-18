@@ -10,33 +10,35 @@
       <text x="56" y="162">先给资源库命名。保存后点“添加版本”，选择资源文件。</text>
       <text x="56" y="196">资源库名称</text>
       <rect x="56" y="206" width="472" height="34" rx="4" fill="#fff" stroke="#d5d5d5"/>
-      <text x="68" y="229">ReShade 离线资源</text>
-      <text x="56" y="274">放到游戏里的哪个文件夹（可留空）</text>
+      <text x="68" y="229">游戏资源</text>
+      <text x="56" y="274">部署到游戏内文件夹路径（留空即为游戏页部署目录）</text>
       <rect x="56" y="284" width="472" height="34" rx="4" fill="#fff" stroke="#d5d5d5"/>
       <text x="68" y="307" fill="#697386">留空，或填写 mods 等文件夹名</text>
-      <text x="56" y="346">留空：放在游戏页确认的部署位置。</text>
-      <text x="56" y="369">填 mods：放进该位置下的 mods 文件夹。</text>
-      <text x="56" y="392">这里不是资源来源，不要填写 F:\… 等完整路径。</text>
+      <text x="56" y="346">填写游戏页部署目录下的路径，如 mods 或 mods\textures。</text>
+      <text x="56" y="369">不要填写 F:\… 等完整路径。</text>
+      <text x="56" y="392">所需文件夹不存在时，会在正式部署时自动创建。</text>
+      <text x="56" y="415">保存设置不会创建文件夹。</text>
       <text x="56" y="446" fill="#53627d">保存只记录设置；之后在游戏页确认部署，才会复制文件。</text>
       <text x="56" y="510" fill="#53627d">输入有效。保存不会部署文件。</text>
       <text x="592" y="128" font-size="22">添加版本</text>
       <text x="592" y="164">版本名称</text>
       <rect x="592" y="174" width="472" height="34" rx="4" fill="#fff" stroke="#d5d5d5"/>
-      <text x="604" y="197">离线 ReShade 6.7</text>
-      <text x="592" y="238">资源文件在哪里</text>
+      <text x="604" y="197">1.0</text>
+      <text x="592" y="238">资源文件目录</text>
       <rect x="592" y="248" width="472" height="34" rx="4" fill="#fff" stroke="#d5d5d5"/>
-      <text x="604" y="271">F:\资源库\离线 ReShade</text>
+      <text x="604" y="271">F:\资源库\素材</text>
       <rect x="592" y="294" width="232" height="36" rx="4" fill="#fafafa" stroke="#dedede"/>
       <rect x="832" y="294" width="232" height="36" rx="4" fill="#fafafa" stroke="#dedede"/>
       <text x="708" y="318" text-anchor="middle">选择文件夹</text>
       <text x="948" y="318" text-anchor="middle">选择文件</text>
-      <text x="592" y="356">选择准备好的资源。离线 ReShade 直接选输出文件夹。</text>
-      <text x="592" y="379">部署时复制文件夹内的内容，源文件保持不变。</text>
-      <text x="592" y="412">这个版本放在哪里（可留空）</text>
+      <text x="592" y="356">选择资源文件夹，也可选择单个文件。</text>
+      <text x="592" y="379">部署时复制文件夹内的内容或所选文件，不修改来源文件。</text>
+      <text x="592" y="412">部署到游戏内文件夹路径（留空沿用资源库设置）</text>
       <rect x="592" y="422" width="472" height="34" rx="4" fill="#fff" stroke="#d5d5d5"/>
       <text x="604" y="445" fill="#697386">留空，跟随资源库设置</text>
-      <text x="592" y="480">留空后放在：游戏页确认的部署位置。</text>
-      <text x="592" y="503">单独指定时填 mods 等文件夹名，不填完整路径。</text>
+      <text x="592" y="480">留空沿用资源库设置，当前对应：游戏页部署目录。</text>
+      <text x="592" y="503">填写 mods 可单独指定目录，不填完整路径。</text>
+      <text x="592" y="526">所需文件夹在正式部署时自动创建。</text>
       <path d="M32 554H552M568 554H1088" stroke="#e5e5e5"/>
       <rect x="56" y="578" width="232" height="36" rx="4" fill="#fafafa" stroke="#dedede"/>
       <rect x="296" y="578" width="232" height="36" rx="4" fill="#005fa8"/>

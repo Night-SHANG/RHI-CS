@@ -57,30 +57,30 @@
   <data name="RecoveryHelp" xml:space="preserve"><value>将检查未完成操作并尝试恢复操作前状态。若目标再次变化或保护资料不足，会停止并保留待修复状态。</value></data>
   <data name="AddLibrary" xml:space="preserve"><value>添加资源库</value></data>
   <data name="AddVersion" xml:space="preserve"><value>添加版本</value></data>
-  <data name="LibraryExplanation" xml:space="preserve"><value>先添加资源库，再添加版本并选择资源文件。已制作好的离线 ReShade 也直接选择文件夹。保存只记录设置，在游戏页确认部署后才会复制文件；源文件保持不变。</value></data>
+  <data name="LibraryExplanation" xml:space="preserve"><value>先添加资源库，再添加版本并选择资源文件。保存只记录设置，在游戏页确认部署后才会复制文件；源文件保持不变。</value></data>
   <data name="NoLibraries" xml:space="preserve"><value>还没有资源库，请到资源库页面添加库和版本。</value></data>
-  <data name="TargetRelative" xml:space="preserve"><value>放到游戏里的哪个文件夹（可留空）</value></data>
-  <data name="TargetOverride" xml:space="preserve"><value>这个版本放在哪里（可留空）</value></data>
-  <data name="SourcePath" xml:space="preserve"><value>资源文件在哪里</value></data>
+  <data name="TargetRelative" xml:space="preserve"><value>部署到游戏内文件夹路径（留空即为游戏页部署目录）</value></data>
+  <data name="TargetOverride" xml:space="preserve"><value>部署到游戏内文件夹路径（留空沿用资源库设置）</value></data>
+  <data name="SourcePath" xml:space="preserve"><value>资源文件目录</value></data>
   <data name="LibraryFormHelp" xml:space="preserve"><value>先给资源库命名。保存后点“添加版本”，选择资源文件。</value></data>
   <data name="LibraryTargetPlaceholder" xml:space="preserve"><value>留空，或填写 mods 等文件夹名</value></data>
-  <data name="LibraryTargetHelp" xml:space="preserve"><value>留空：放在游戏页确认的部署位置。填 mods：放进该位置下的 mods 文件夹。这里不是资源来源，不要填写 F:\… 等完整路径。</value></data>
+  <data name="LibraryTargetHelp" xml:space="preserve"><value>填写游戏页部署目录下的路径，如 mods 或 mods\textures；不要填写 F:\… 等完整路径。所需文件夹不存在时，会在正式部署时自动创建；保存设置不会创建文件夹。</value></data>
   <data name="SourcePlaceholder" xml:space="preserve"><value>点击下方选择，或粘贴完整路径</value></data>
-  <data name="VersionSourceHelp" xml:space="preserve"><value>选择准备好的资源。离线 ReShade 直接选输出文件夹。部署时复制文件夹内的内容，源文件保持不变。</value></data>
+  <data name="VersionSourceHelp" xml:space="preserve"><value>选择资源文件夹，也可选择单个文件。部署时复制文件夹内的内容或所选文件，不修改来源文件。</value></data>
   <data name="VersionTargetPlaceholder" xml:space="preserve"><value>留空，跟随资源库设置</value></data>
-  <data name="VersionTargetHelp" xml:space="preserve"><value>留空后放在：{0}。单独指定时填 mods 等文件夹名，从游戏部署位置开始计算，不填完整路径。</value></data>
-  <data name="GameDeploymentFolder" xml:space="preserve"><value>游戏页确认的部署位置</value></data>
-  <data name="GameDeploymentSubfolder" xml:space="preserve"><value>游戏部署位置下的 {0} 文件夹</value></data>
-  <data name="TargetFolderAbsolute" xml:space="preserve"><value>“放在哪里”不能填 F:\… 等完整路径。留空或填 mods 等文件夹名。资源来源请在“添加版本”的“资源文件在哪里”中选择。</value></data>
-  <data name="TargetFolderInvalid" xml:space="preserve"><value>“放在哪里”请填 mods 或 mods\textures 等文件夹名；不要用 ..、CON 等保留名称、重复斜杠、末尾空格或句点，以及 &lt; &gt; : &quot; | ? * 等字符。</value></data>
-  <data name="SourcePathRequired" xml:space="preserve"><value>请在“资源文件在哪里”选择一个文件夹或文件，也可以粘贴完整路径。</value></data>
-  <data name="SourcePathInvalid" xml:space="preserve"><value>资源来源需要本地完整路径，例如 F:\资源库\离线ReShade。请用下方按钮重新选择文件夹或文件。</value></data>
+  <data name="VersionTargetHelp" xml:space="preserve"><value>留空沿用资源库设置，当前对应：{0}。填写 mods 或 mods\textures 可单独指定游戏部署目录下的路径，不填完整路径。所需文件夹在正式部署时自动创建。</value></data>
+  <data name="GameDeploymentFolder" xml:space="preserve"><value>游戏页部署目录</value></data>
+  <data name="GameDeploymentSubfolder" xml:space="preserve"><value>游戏页部署目录下的 {0} 文件夹</value></data>
+  <data name="TargetFolderAbsolute" xml:space="preserve"><value>此处只填写游戏部署目录下的路径，例如 mods，不接受 F:\… 等完整路径。资源来源请在“添加版本”的“资源文件目录”中选择。</value></data>
+  <data name="TargetFolderInvalid" xml:space="preserve"><value>部署路径请填写 mods 或 mods\textures 等路径；不要用 ..、CON 等保留名称、重复斜杠、末尾空格或句点，以及 &lt; &gt; : &quot; | ? * 等字符。</value></data>
+  <data name="SourcePathRequired" xml:space="preserve"><value>请在“资源文件目录”选择一个文件夹或文件，也可以粘贴完整路径。</value></data>
+  <data name="SourcePathInvalid" xml:space="preserve"><value>资源文件目录需要本地完整路径，例如 F:\资源库\素材。请用下方按钮重新选择文件夹或文件。</value></data>
   <data name="SourcePathMissing" xml:space="preserve"><value>找不到所填的资源文件或文件夹。请检查盘符和目录是否还在，或用下方按钮重新选择。</value></data>
   <data name="SourceOverlapsData" xml:space="preserve"><value>资源来源与软件数据目录（Data 或你选的数据目录）重叠。请选择独立的资源文件夹，不要选择数据目录、其内部或包含它的目录。</value></data>
   <data name="SourceOverlapsGame" xml:space="preserve"><value>资源来源与已添加游戏的安装或部署目录重叠。请选择游戏目录之外的独立资源文件夹。</value></data>
   <data name="ReferencedBy" xml:space="preserve"><value>已部署于</value></data>
   <data name="ConfigOnly" xml:space="preserve"><value>保存只记录设置，不会复制文件。已有部署仍按原记录管理；新设置在下次部署时使用。</value></data>
-  <data name="ReShadePending" xml:space="preserve"><value>这是旧版直接读取 ReShade 安装包的记录，仍按原方式处理，请选择原安装包 EXE 或 DLL。新资源请先到设置页制作离线文件夹，再添加版本。保存不会转换旧记录；旧方式补充 INI 路径时会重排格式并省略注释，原文件可由备份恢复。</value></data>
+  <data name="ReShadePending" xml:space="preserve"><value>此旧记录仍使用安装包直读方式，仅接受原安装包 EXE 或 DLL。保存不会改变其部署方式；补充 INI 路径时会重排格式并省略注释，原文件可由备份恢复。</value></data>
   <data name="ChooseFolder" xml:space="preserve"><value>选择文件夹</value></data>
   <data name="ChooseFile" xml:space="preserve"><value>选择文件</value></data>
   <data name="Edit" xml:space="preserve"><value>修改</value></data>
@@ -240,7 +240,7 @@
   <data name="OfflineOutputInvalid" xml:space="preserve"><value>请选择可用的输出文件夹，并填写不含路径分隔符的新文件夹名称。</value></data>
   <data name="OfflineOutputExists" xml:space="preserve"><value>输出名称已存在，请换一个名称。不会覆盖已有文件。</value></data>
   <data name="OfflineReady" xml:space="preserve"><value>离线 ReShade 已制作</value></data>
-  <data name="OfflineNextStep" xml:space="preserve"><value>可将着色器放入 reshade-shaders/Shaders、纹理放入 reshade-shaders/Textures，并自行补充预设。然后添加资源库和版本，在“资源文件在哪里”选择此输出文件夹，无需选择资源类型。文件应部署到实际游戏程序对应的位置；预设仍需在游戏内选择。当前未修改游戏或资源库配置。</value></data>
+  <data name="OfflineNextStep" xml:space="preserve"><value>可将着色器放入 reshade-shaders/Shaders、纹理放入 reshade-shaders/Textures，并自行补充预设。然后添加资源库和版本，在“资源文件目录”选择此输出文件夹。文件应部署到实际游戏程序对应的位置；预设仍需在游戏内选择。当前未修改游戏或资源库配置。</value></data>
   <data name="ReconnectDataHelp" xml:space="preserve"><value>请重新连接保存原配置、部署记录和备份的数据文件夹。若旧数据已不再需要，可选择“创建新数据，重新开始”；不会自动迁移文件。</value></data>
   <data name="ResetOffline" xml:space="preserve"><value>重置</value></data>
   <data name="BrowseFolder" xml:space="preserve"><value>浏览文件夹</value></data>

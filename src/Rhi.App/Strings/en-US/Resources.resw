@@ -57,30 +57,30 @@
   <data name="RecoveryHelp" xml:space="preserve"><value>Check the interrupted operation and restore its previous state. New target changes or unavailable protection data stop recovery and keep the game locked.</value></data>
   <data name="AddLibrary" xml:space="preserve"><value>Add library</value></data>
   <data name="AddVersion" xml:space="preserve"><value>Add version</value></data>
-  <data name="LibraryExplanation" xml:space="preserve"><value>Add a library, then add a version and select its files. Ready-made offline ReShade folders work the same way. Saving only records settings; files are copied after you confirm deployment on the Games page. Source files stay unchanged.</value></data>
+  <data name="LibraryExplanation" xml:space="preserve"><value>Add a library, then add a version and select its files. Saving only records settings; files are copied after you confirm deployment on the Games page. Source files stay unchanged.</value></data>
   <data name="NoLibraries" xml:space="preserve"><value>No libraries yet. Add a library and version on the Libraries page.</value></data>
-  <data name="TargetRelative" xml:space="preserve"><value>Folder inside the game (optional)</value></data>
-  <data name="TargetOverride" xml:space="preserve"><value>Where to put this version (optional)</value></data>
-  <data name="SourcePath" xml:space="preserve"><value>Where are the resource files?</value></data>
+  <data name="TargetRelative" xml:space="preserve"><value>Game subfolder path (blank: game's deployment folder)</value></data>
+  <data name="TargetOverride" xml:space="preserve"><value>Game subfolder path (blank: follow library setting)</value></data>
+  <data name="SourcePath" xml:space="preserve"><value>Resource directory</value></data>
   <data name="LibraryFormHelp" xml:space="preserve"><value>Name the library first. After saving, use Add version to select its resource files.</value></data>
   <data name="LibraryTargetPlaceholder" xml:space="preserve"><value>Leave blank, or enter a folder name such as mods</value></data>
-  <data name="LibraryTargetHelp" xml:space="preserve"><value>Blank: use the deployment folder confirmed on the Games page. Enter mods to put files in its mods subfolder. This is not the source location; do not enter a full path such as F:\…</value></data>
+  <data name="LibraryTargetHelp" xml:space="preserve"><value>Enter a path inside the deployment folder set on the Games page, such as mods or mods\textures, not a full path such as F:\… Required folders are created during deployment if missing. Saving settings does not create folders.</value></data>
   <data name="SourcePlaceholder" xml:space="preserve"><value>Choose below, or paste a full path</value></data>
-  <data name="VersionSourceHelp" xml:space="preserve"><value>Select your prepared resources. For offline ReShade, choose its output folder. Deployment copies the folder contents and leaves the source files unchanged.</value></data>
+  <data name="VersionSourceHelp" xml:space="preserve"><value>Select a resource folder or a single file. Deployment copies the folder contents or the selected file without modifying the source.</value></data>
   <data name="VersionTargetPlaceholder" xml:space="preserve"><value>Leave blank to follow the library setting</value></data>
-  <data name="VersionTargetHelp" xml:space="preserve"><value>When blank: {0}. To use a different folder, enter a name such as mods, starting from the game's deployment folder. Do not enter a full path.</value></data>
+  <data name="VersionTargetHelp" xml:space="preserve"><value>Blank follows the library setting, currently: {0}. Enter mods or mods\textures to specify a different path inside the game's deployment folder, not a full path. Required folders are created during deployment.</value></data>
   <data name="GameDeploymentFolder" xml:space="preserve"><value>the deployment folder confirmed on the Games page</value></data>
   <data name="GameDeploymentSubfolder" xml:space="preserve"><value>the {0} subfolder inside the game's deployment folder</value></data>
-  <data name="TargetFolderAbsolute" xml:space="preserve"><value>The destination cannot be a full path such as F:\… Leave it blank or enter a folder name such as mods. Select your source under “Where are the resource files?” in Add version.</value></data>
-  <data name="TargetFolderInvalid" xml:space="preserve"><value>Enter a folder name such as mods or mods\textures. Avoid .., reserved names such as CON, repeated slashes, trailing spaces or periods, and characters such as &lt; &gt; : &quot; | ? *.</value></data>
-  <data name="SourcePathRequired" xml:space="preserve"><value>Choose a folder or file under “Where are the resource files?”, or paste its full path.</value></data>
-  <data name="SourcePathInvalid" xml:space="preserve"><value>The source needs a full local path, such as F:\Resources\OfflineReShade. Use the buttons below to choose the folder or file again.</value></data>
+  <data name="TargetFolderAbsolute" xml:space="preserve"><value>Enter a path inside the game's deployment folder, such as mods, not a full path such as F:\… Select the source under “Resource directory” in Add version.</value></data>
+  <data name="TargetFolderInvalid" xml:space="preserve"><value>Enter a deployment path such as mods or mods\textures. Avoid .., reserved names such as CON, repeated slashes, trailing spaces or periods, and characters such as &lt; &gt; : &quot; | ? *.</value></data>
+  <data name="SourcePathRequired" xml:space="preserve"><value>Choose a folder or file under “Resource directory”, or paste its full path.</value></data>
+  <data name="SourcePathInvalid" xml:space="preserve"><value>The resource directory needs a full local path, such as F:\Resources\Assets. Use the buttons below to choose the folder or file again.</value></data>
   <data name="SourcePathMissing" xml:space="preserve"><value>The source file or folder was not found. Check that the drive and folder are available, or select it again using the buttons below.</value></data>
   <data name="SourceOverlapsData" xml:space="preserve"><value>The source overlaps the app's data folder (Data or your chosen location). Choose a separate resource folder, outside the data folder and not containing it.</value></data>
   <data name="SourceOverlapsGame" xml:space="preserve"><value>The source overlaps an added game's installation or deployment folder. Choose a separate resource folder outside the game.</value></data>
   <data name="ReferencedBy" xml:space="preserve"><value>Deployed in</value></data>
   <data name="ConfigOnly" xml:space="preserve"><value>Saving records settings without copying files. Existing deployments keep their original records; new settings apply on the next deployment.</value></data>
-  <data name="ReShadePending" xml:space="preserve"><value>This legacy record reads a ReShade installer directly and keeps its original behavior. Select its installer EXE or DLL. For new resources, create an offline folder in Settings, then add a version. Saving does not convert this record. The legacy adapter reformats the INI and omits comments when adding paths; the original can be restored from backup.</value></data>
+  <data name="ReShadePending" xml:space="preserve"><value>This legacy record reads an installer directly and accepts only its original installer EXE or DLL. Saving keeps its deployment behavior. Adding INI paths reformats the file and omits comments; the original can be restored from backup.</value></data>
   <data name="ChooseFolder" xml:space="preserve"><value>Choose folder</value></data>
   <data name="ChooseFile" xml:space="preserve"><value>Choose file</value></data>
   <data name="Edit" xml:space="preserve"><value>Edit</value></data>
@@ -240,7 +240,7 @@
   <data name="OfflineOutputInvalid" xml:space="preserve"><value>Choose an available output folder and enter a new folder name without path separators.</value></data>
   <data name="OfflineOutputExists" xml:space="preserve"><value>The output name already exists. Choose another name; existing files are never overwritten.</value></data>
   <data name="OfflineReady" xml:space="preserve"><value>Offline ReShade created</value></data>
-  <data name="OfflineNextStep" xml:space="preserve"><value>Add shaders under reshade-shaders/Shaders, textures under reshade-shaders/Textures, and any presets you need. Then add a library and version, and select this output folder under “Where are the resource files?”. No resource type selection is needed. Deploy to the location used by the actual game executable; select the preset in-game. No game files or library configuration have been changed.</value></data>
+  <data name="OfflineNextStep" xml:space="preserve"><value>Add shaders under reshade-shaders/Shaders, textures under reshade-shaders/Textures, and any presets you need. Then add a library and version, and select this output folder under “Resource directory”. Deploy to the location used by the actual game executable; select the preset in-game. No game files or library configuration have been changed.</value></data>
   <data name="ReconnectDataHelp" xml:space="preserve"><value>Reconnect the folder containing the original configuration, deployment records, and backups. If the old data is no longer needed, choose "Create new data and start over". Files are not migrated automatically.</value></data>
   <data name="ResetOffline" xml:space="preserve"><value>Reset</value></data>
   <data name="BrowseFolder" xml:space="preserve"><value>Browse folder</value></data>
