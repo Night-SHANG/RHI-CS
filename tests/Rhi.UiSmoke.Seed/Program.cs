@@ -1,9 +1,15 @@
 using Rhi.App.Services;
 using Rhi.Core.Models;
 using Rhi.Core.Tests.ReShade;
+using Rhi.UiSmoke.Seed;
 
 if (Environment.GetEnvironmentVariable("GITHUB_ACTIONS") != "true")
     throw new InvalidOperationException("This fixture is restricted to disposable GitHub Actions runners.");
+if (args.FirstOrDefault() == "--pending-configuration")
+{
+    PendingConfigurationFixture.Prepare();
+    return;
+}
 if (Bootstrap.Read() is not null)
     throw new InvalidOperationException("Refusing to replace an existing application locator.");
 using var fixture = new ReShadeFixture();

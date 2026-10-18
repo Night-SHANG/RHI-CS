@@ -51,13 +51,17 @@ public sealed class LibrariesView : UserControl
     {
         var state = c.Session.State!;
         var right = Ui.Stack(Ui.Label("Libraries", 28), Ui.Label("LibraryExplanation"));
+        var locked = selected is not null && c.Session.Store!.Pending().Any(j => j.LibraryId == selected.Id);
         if (selected is null) right.Children.Add(Ui.Label("NoLibraries"));
         else
         {
             right.Children.Add(Ui.Text(selected.Name, 23));
             right.Children.Add(Ui.Text(Strings.Get("TargetRelative") + ": " + selected.TargetRelative));
-            right.Children.Add(Ui.Row(c.Button("Edit", () => EditLibrary(selected), !c.Session.Busy),
-                c.Button("AddVersion", () => EditVersion(selected), !c.Session.Busy)));
+            var editLibrary = c.Button("Edit", () => EditLibrary(selected), !c.Session.Busy && !locked);
+            var addVersion = c.Button("AddVersion", () => EditVersion(selected), !c.Session.Busy && !locked);
+            AutomationProperties.SetAutomationId(editLibrary, "LibraryEdit");
+            AutomationProperties.SetAutomationId(addVersion, "LibraryAddVersion");
+            right.Children.Add(Ui.Row(editLibrary, addVersion));
             right.Children.Add(Ui.Label("Versions", 20));
             right.Children.Add(Ui.Columns([1, 2, 1, 1], Ui.Label("VersionLabel"), Ui.Label("SourcePath"), Ui.Label("Status"), Ui.Label("Actions")));
             foreach (var version in selected.Versions)
@@ -70,11 +74,16 @@ public sealed class LibrariesView : UserControl
                     c.Action("View", () => { c.VersionId = version.Id; c.Refresh(); })));
             }
             var detail = selected.Versions.FirstOrDefault(v => v.Id == c.VersionId) ?? selected.Versions.FirstOrDefault();
-            if (detail is not null) right.Children.Add(Ui.Card(Ui.Stack(Ui.Label("VersionDetails", 20), Ui.Text(ResourcePresentation.VersionName(detail)),
-                Ui.Text(detail.SourcePath), Ui.Text(Strings.Get("TargetRelative") + ": " + (detail.TargetOverride ?? selected.TargetRelative)),
-                c.Button("Edit", () => EditVersion(selected, detail), !c.Session.Busy))));
+            if (detail is not null)
+            {
+                var editVersion = c.Button("Edit", () => EditVersion(selected, detail), !c.Session.Busy && !locked);
+                AutomationProperties.SetAutomationId(editVersion, "VersionEdit");
+                right.Children.Add(Ui.Card(Ui.Stack(Ui.Label("VersionDetails", 20), Ui.Text(ResourcePresentation.VersionName(detail)),
+                    Ui.Text(detail.SourcePath), Ui.Text(Strings.Get("TargetRelative") + ": " + (detail.TargetOverride ?? selected.TargetRelative)),
+                    editVersion)));
+            }
         }
-        return Ui.Dock(Ui.Scroll(right), Ui.Label("ConfigOnly"));
+        return Ui.Dock(Ui.Scroll(right), Ui.Label(locked ? "PendingConfigurationLocked" : "ConfigOnly"));
     }
 
     private async Task EditLibrary(ResourceLibrary? existing)

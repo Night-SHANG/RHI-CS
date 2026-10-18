@@ -9,7 +9,7 @@
   <data name="Refresh" xml:space="preserve"><value>刷新</value></data>
   <data name="AddGame" xml:space="preserve"><value>添加游戏</value></data>
   <data name="NoGames" xml:space="preserve"><value>尚未添加游戏。可以扫描本地游戏平台或手动选择 EXE。</value></data>
-  <data name="NoMatches" xml:space="preserve"><value>没有匹配的游戏。</value></data>
+  <data name="NoMatches" xml:space="preserve"><value>没有匹配项。</value></data>
   <data name="AddGameHelp" xml:space="preserve"><value>添加游戏后，在这里选择本地资源并预检。</value></data>
   <data name="GameName" xml:space="preserve"><value>游戏名称</value></data>
   <data name="Executable" xml:space="preserve"><value>游戏 EXE</value></data>
@@ -170,4 +170,5 @@
   <data name="ConfigurationChanges" xml:space="preserve"><value>配置改动</value></data>
   <data name="NotSet" xml:space="preserve"><value>未设置</value></data>
   <data name="NoFileChange" xml:space="preserve"><value>无需改动</value></data>
+  <data name="PendingConfigurationLocked" xml:space="preserve"><value>存在未完成操作，相关游戏与资源库配置已锁定。请到游戏页完成检查与恢复后再修改。</value></data>
 </root>

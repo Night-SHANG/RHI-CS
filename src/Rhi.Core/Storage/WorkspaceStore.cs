@@ -84,6 +84,14 @@ public sealed class WorkspaceStore : IDisposable
     {
         CheckAvailable();
         if (next.Id != State.Id) throw new DeploymentException("WrongDataSet");
+        foreach (var pending in Pending())
+        {
+            var gameChanged = AtomicJson.Fingerprint(State.Games.SingleOrDefault(g => g.Id == pending.GameId)) !=
+                AtomicJson.Fingerprint(next.Games.SingleOrDefault(g => g.Id == pending.GameId));
+            var libraryChanged = AtomicJson.Fingerprint(State.Libraries.SingleOrDefault(l => l.Id == pending.LibraryId)) !=
+                AtomicJson.Fingerprint(next.Libraries.SingleOrDefault(l => l.Id == pending.LibraryId));
+            if (gameChanged || libraryChanged) throw new DeploymentException("PendingConfigurationLocked");
+        }
         next = next with { Revision = State.Revision + 1 };
         AtomicJson.Write(statePath, next);
         State = next;

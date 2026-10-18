@@ -1,4 +1,5 @@
-param([Parameter(Mandatory)][string]$AppDirectory, [Parameter(Mandatory)][string]$OutputDirectory)
+param([Parameter(Mandatory)][string]$AppDirectory, [Parameter(Mandatory)][string]$OutputDirectory,
+    [switch]$PendingConfiguration)
 $ErrorActionPreference = 'Stop'
 if ($env:GITHUB_ACTIONS -ne 'true') { throw 'UI smoke runs only on disposable GitHub Actions runners.' }
 Add-Type -AssemblyName UIAutomationClient, UIAutomationTypes, System.Windows.Forms, System.Drawing
@@ -25,7 +26,7 @@ $launchTime = Get-Date
 $process = Start-Process -FilePath (Join-Path $appRoot 'RHI-CS.exe') -PassThru `
     -RedirectStandardOutput (Join-Path $captureRoot 'stdout.txt') -RedirectStandardError (Join-Path $captureRoot 'stderr.txt')
 $processHandle = $process.Handle
-function Find-Control([string]$name = '', [string]$id = '', [switch]$Action) {
+function Find-Control([string]$name = '', [string]$id = '', [switch]$Action, [switch]$IncludeOffscreen) {
     $limit = [Diagnostics.Stopwatch]::StartNew()
     while ($limit.Elapsed.TotalSeconds -lt 25) {
         if ($process.HasExited) { throw "Application exited with code $($process.ExitCode)." }
@@ -36,7 +37,7 @@ function Find-Control([string]$name = '', [string]$id = '', [switch]$Action) {
         $condition = [Windows.Automation.AndCondition]::new($pidFilter, $selector)
         $items = [Windows.Automation.AutomationElement]::RootElement.FindAll([Windows.Automation.TreeScope]::Descendants, $condition)
         foreach ($item in $items) {
-            if ($item.Current.IsOffscreen) { continue }
+            if ($item.Current.IsOffscreen -and -not $IncludeOffscreen) { continue }
             if ($Action) {
                 $candidatePattern = $null
                 if (-not $item.TryGetCurrentPattern([Windows.Automation.InvokePattern]::Pattern, [ref]$candidatePattern) -and
@@ -120,6 +121,53 @@ try {
     $screen = [Windows.Forms.Screen]::PrimaryScreen.WorkingArea
     [SmokeWindow]::SetWindowPos($process.MainWindowHandle, [IntPtr]::Zero, $screen.X, $screen.Y,
         [Math]::Min(1320, $screen.Width), [Math]::Min(860, $screen.Height), 0x0040) | Out-Null
+    if ($PendingConfiguration) {
+        if ((Find-Control -id 'GameEdit').Current.IsEnabled) { throw 'Pending game configuration is editable.' }
+        Invoke-Control 'Libraries'
+        Find-Control -name (Label 'PendingConfigurationLocked') | Out-Null
+        foreach ($id in @('LibraryEdit', 'LibraryAddVersion', 'VersionEdit')) {
+            if ((Find-Control -id $id -IncludeOffscreen).Current.IsEnabled) { throw "Pending library control is enabled: $id" }
+        }
+        $lockedBounds = (Find-Control -id 'LibraryEdit').Current.BoundingRectangle
+        Capture '17-library-locked-zh'
+        $query = (Find-Control -id 'LibrariesSearch').GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern)
+        $query.SetValue('Other library')
+        Start-Sleep -Milliseconds 250
+        if (-not (Find-Control -id 'LibraryEdit').Current.IsEnabled) { throw 'Unrelated library was incorrectly locked.' }
+        $query.SetValue('')
+        Invoke-Control 'Settings'
+        $language = Find-Control -id 'SettingsLanguage'
+        $language.GetCurrentPattern([Windows.Automation.ExpandCollapsePattern]::Pattern).Expand()
+        (Find-Control -name (Label 'en-US')).GetCurrentPattern([Windows.Automation.SelectionItemPattern]::Pattern).Select()
+        Invoke-Control 'Save'
+        $labels = [xml][IO.File]::ReadAllText((Join-Path $appRoot 'Strings/en-US/Resources.resw'), [Text.Encoding]::UTF8)
+        Invoke-Control 'Libraries'
+        # Search selects the affected library independently of earlier selection in the unrelated-library check.
+        (Find-Control -id 'LibrariesSearch').GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).SetValue('ReShade')
+        Find-Control -name (Label 'PendingConfigurationLocked') | Out-Null
+        Capture '18-library-locked-en'
+        Invoke-Control 'Games'
+        Invoke-Control 'CheckRecovery'
+        Assert-ActionOrder 'Recover' | Out-Null
+        Invoke-Control 'Recover'
+        $unlockWait = [Diagnostics.Stopwatch]::StartNew()
+        while (-not (Find-Control -id 'GameEdit').Current.IsEnabled -and $unlockWait.Elapsed.TotalSeconds -lt 15) {
+            Start-Sleep -Milliseconds 200
+        }
+        if (-not (Find-Control -id 'GameEdit').Current.IsEnabled) { throw 'Recovered game is still locked.' }
+        Invoke-Control 'Libraries'
+        foreach ($id in @('LibraryEdit', 'LibraryAddVersion', 'VersionEdit')) {
+            if (-not (Find-Control -id $id -IncludeOffscreen).Current.IsEnabled) { throw "Recovered library is still locked: $id" }
+        }
+        $unlockedBounds = (Find-Control -id 'LibraryEdit').Current.BoundingRectangle
+        if ([Math]::Abs($lockedBounds.X - $unlockedBounds.X) -gt 1 -or [Math]::Abs($lockedBounds.Y - $unlockedBounds.Y) -gt 1) {
+            throw 'Changing lock state moved the library edit action.'
+        }
+        Find-Control -name (Label 'ConfigOnly') | Out-Null
+        Capture '19-library-unlocked-en'
+        [IO.File]::WriteAllText((Join-Path $captureRoot 'result.txt'), 'PASS: pending game/library controls locked in Chinese and English; reason visible; unrelated library editable; existing recovery flow unlocks controls. Interrupted preparation is a synthetic journal fixture.', [Text.Encoding]::UTF8)
+        return
+    }
     Capture '01-games'
     Invoke-Control 'Libraries'
     Find-Control -name (Label 'AddVersion') | Out-Null

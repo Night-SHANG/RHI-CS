@@ -9,7 +9,7 @@
   <data name="Refresh" xml:space="preserve"><value>Refresh</value></data>
   <data name="AddGame" xml:space="preserve"><value>Add game</value></data>
   <data name="NoGames" xml:space="preserve"><value>No games added. Scan local game platforms or select an executable manually.</value></data>
-  <data name="NoMatches" xml:space="preserve"><value>No matching games.</value></data>
+  <data name="NoMatches" xml:space="preserve"><value>No matching items.</value></data>
   <data name="AddGameHelp" xml:space="preserve"><value>Add a game to select and check local resources.</value></data>
   <data name="GameName" xml:space="preserve"><value>Game name</value></data>
   <data name="Executable" xml:space="preserve"><value>Game executable</value></data>
@@ -170,4 +170,5 @@
   <data name="ConfigurationChanges" xml:space="preserve"><value>Configuration changes</value></data>
   <data name="NotSet" xml:space="preserve"><value>Not set</value></data>
   <data name="NoFileChange" xml:space="preserve"><value>No file change</value></data>
+  <data name="PendingConfigurationLocked" xml:space="preserve"><value>An unfinished operation locks the related game and library configuration. Check and recover it on the Games page before editing.</value></data>
 </root>

@@ -63,7 +63,9 @@ public sealed partial class GamesView : UserControl
             body.Children.Add(Ui.Text($"{game.Api} · {game.Architecture}"));
             body.Children.Add(Ui.Text(Strings.Get("DeploymentRoot") + ": " + game.DeploymentRoot));
             var pending = c.Session.Store!.Pending().Where(j => j.GameId == game.Id).ToArray();
-            body.Children.Add(c.Button("Edit", () => EditGame(game), !c.Session.Busy && pending.Length == 0));
+            var edit = c.Button("Edit", () => EditGame(game), !c.Session.Busy && pending.Length == 0);
+            AutomationProperties.SetAutomationId(edit, "GameEdit");
+            body.Children.Add(edit);
             foreach (var operation in pending)
                 body.Children.Add(Ui.Stack(Ui.Label("NeedsRepair"), Ui.Text(operation.Error ?? ""),
                     c.Button("CheckRecovery", () => Recover(operation), !c.Session.Busy)));
