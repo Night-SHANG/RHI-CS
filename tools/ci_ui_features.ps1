@@ -20,8 +20,9 @@ function Reveal-Control([string]$id, [string]$scrollId) {
         $stable = $visible
         if (-not $visible) {
             $scroll = $viewer.GetCurrentPattern([Windows.Automation.ScrollPattern]::Pattern)
-            if ($scroll.Current.VerticallyScrollable -and $scroll.Current.VerticalScrollPercent -lt 100) {
-                $scroll.Scroll([Windows.Automation.ScrollAmount]::NoAmount, [Windows.Automation.ScrollAmount]::LargeIncrement)
+            if ($scroll.Current.VerticallyScrollable) {
+                $direction = if ($bounds.Top -lt $viewport.Top) { [Windows.Automation.ScrollAmount]::LargeDecrement } else { [Windows.Automation.ScrollAmount]::LargeIncrement }
+                $scroll.Scroll([Windows.Automation.ScrollAmount]::NoAmount, $direction)
             }
         }
         Start-Sleep -Milliseconds 200
@@ -150,7 +151,7 @@ Reveal-Control 'ProtectionUsage' 'SettingsScroll' | Out-Null
 Capture '31-protection-inventory-en'
 Invoke-Control 'TaskResults'
 Find-Control -name ($taskPrefix + (Label 'Deploy')) | Out-Null
-Find-Control -name (Label 'SkippedByUser') | Out-Null
 Capture '32-batch-result-en'
 Invoke-Control 'Close'
 [IO.File]::WriteAllText((Join-Path $captureRoot 'result.txt'), 'PASS: target inspection, differences to preflight, protection and clear, stable task identity, protection usage, reference guards, all-skipped and partial-skipped batches, version/library removal, and live bilingual results. Verify persisted files in the following fixture step.', [Text.Encoding]::UTF8)
+

@@ -103,7 +103,7 @@ public sealed partial class GamesView : UserControl
             selectAll.Checked += ToggleAll;
             selectAll.Unchecked += ToggleAll;
             selectAll.Indeterminate += ToggleAll;
-            table.Children.Add(Ui.TableLine(TableRow(selectAll, Ui.Label("LibraryName"), Ui.Label("VersionLabel"), Ui.Label("Status"), Ui.Label("Actions")), true));
+            table.Children.Add(Ui.TableLine(TableRow(true, selectAll, Ui.Label("LibraryName"), Ui.Label("VersionLabel"), Ui.Label("Status"), Ui.Label("Actions")), true));
             foreach (var library in state.Libraries) table.Children.Add(Ui.TableLine(ResourceRow(game, library, pending.Length > 0 || !locationAvailable)));
             body.Children.Add(table);
             if (state.Libraries.Length == 0) body.Children.Add(Ui.Label("NoLibraries"));
@@ -178,7 +178,7 @@ public sealed partial class GamesView : UserControl
         }
         check.Checked += (_, _) => Update(); check.Unchecked += (_, _) => Update();
         box.SelectionChanged += (_, _) => Update(); Update();
-        return TableRow(check, Ui.Text(library.Name), versionCell, status, actions);
+        return TableRow(false, check, Ui.Text(library.Name), versionCell, status, actions);
     }
 
     private void UpdateSelection()
@@ -218,7 +218,7 @@ public sealed partial class GamesView : UserControl
         }).OfType<DeploymentRequest>().ToArray();
     }
     private static bool SourceAvailable(ResourceVersion v) => ResourcePresentation.SourceAvailable(v);
-    private static Grid TableRow(params FrameworkElement[] cells)
+    private static Grid TableRow(bool header, params FrameworkElement[] cells)
     {
         var grid = new Grid { ColumnSpacing = 12, RowSpacing = 8, Padding = new Thickness(12), MinHeight = 62 };
         grid.RowDefinitions.Add(new() { Height = GridLength.Auto });
@@ -230,6 +230,7 @@ public sealed partial class GamesView : UserControl
         {
             var narrow = e.NewSize.Width < 940;
             grid.ColumnDefinitions[4].Width = narrow ? new GridLength(0) : new GridLength(3, GridUnitType.Star);
+            cells[4].Visibility = header && narrow ? Visibility.Collapsed : Visibility.Visible;
             Grid.SetRow(cells[4], narrow ? 1 : 0);
             Grid.SetColumn(cells[4], narrow ? 1 : 4);
             Grid.SetColumnSpan(cells[4], narrow ? 4 : 1);
@@ -237,3 +238,4 @@ public sealed partial class GamesView : UserControl
         return grid;
     }
 }
+

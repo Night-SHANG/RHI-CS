@@ -56,14 +56,15 @@ public sealed partial class PageContext
             foreach (var input in inputs) input.IsEnabled = false;
             error.Text = Strings.Get("FormChecking");
             error.Foreground = Ui.ThemeBrush("SecondaryTextBrush");
-            try { validate(); await submit(); saved = true; args.Cancel = false; }
+            var valid = false;
+            try { validate(); valid = true; await submit(); saved = true; args.Cancel = false; }
             catch (Exception ex) { error.Text = ErrorText(ex); error.Foreground = Ui.ThemeBrush("ErrorBrush"); }
             finally
             {
                 foreach (var input in inputs) input.IsEnabled = enabled[input];
                 submitting = false;
                 dialog.IsPrimaryButtonEnabled = true;
-                dialog.IsSecondaryButtonEnabled = true;
+                dialog.IsSecondaryButtonEnabled = valid;
                 deferral.Complete();
             }
         };
@@ -72,3 +73,4 @@ public sealed partial class PageContext
         return saved;
     }
 }
+
