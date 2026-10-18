@@ -44,4 +44,34 @@ $processHandle = $process.Handle
 Find-Control -id 'GamesSearch' | Out-Null
 if ([IO.File]::ReadAllText($locator, [Text.Encoding]::UTF8) -cne $created) { throw 'Restart changed workspace identity.' }
 Capture 'startup-reopened-workspace'
+Invoke-Control 'Settings'
+$language = Find-Control -id 'SettingsLanguage' -Enabled
+$language.GetCurrentPattern([Windows.Automation.ExpandCollapsePattern]::Pattern).Expand()
+(Find-Control -name (Label 'zh-CN')).GetCurrentPattern([Windows.Automation.SelectionItemPattern]::Pattern).Select()
+Invoke-Control 'Save'
+$labels = [xml][IO.File]::ReadAllText((Join-Path $appRoot 'Strings/zh-CN/Resources.resw'), [Text.Encoding]::UTF8)
+Find-Control -name (Label 'Games') | Out-Null
+# Simulate a disconnected live workspace while retaining its ledger for reconnection.
+# Both paths belong to this disposable runner fixture, never the user's data.
+$ledger = Join-Path $data 'workspace.json'
+$heldLedger = Join-Path $captureRoot 'workspace-held.json'
+[IO.File]::Move($ledger, $heldLedger)
+try {
+    Invoke-Control 'Games'
+    Find-Control -name (Label 'DataUnavailable') | Out-Null
+    Assert-StartupRow
+    Capture 'startup-missing-data-zh'
+    [SmokeWindow]::SetWindowPos($process.MainWindowHandle, [IntPtr]::Zero, 0, 0, 780, 620, 0x0040) | Out-Null
+    Start-Sleep -Milliseconds 300
+    Assert-StartupRow
+    Capture 'startup-missing-data-compact-zh'
+    Invoke-Control 'StartNewData'
+    Assert-ActionOrder 'CreateNewData' | Out-Null
+    Capture 'startup-confirm-new-data-zh'
+    Invoke-Control 'Cancel'
+} finally {
+    [IO.File]::Move($heldLedger, $ledger)
+}
+Invoke-Control 'Retry'
+Find-Control -id 'GamesSearch' | Out-Null
 Write-Host 'STARTUP UI PASSED: missing old location, cancellation, explicit creation, restart persistence.'

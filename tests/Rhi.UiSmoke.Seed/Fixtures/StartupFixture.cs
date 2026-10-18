@@ -46,7 +46,7 @@ internal static class StartupFixture
         if (!Directory.EnumerateFiles(history, "*.json").Any(p => AtomicJson.Read<DataPointer>(p) == context.Missing))
             throw new InvalidOperationException("Previous locator was not preserved.");
         // Keep runner-only data for diagnosis, outside the downloadable application artifact.
-        var retained = Path.Combine(Path.GetTempPath(), "RhiTests", "restart-" + Guid.NewGuid().ToString("N"));
+        var retained = Path.Combine(Path.GetDirectoryName(context.AppRoot)!, "startup-data-" + Guid.NewGuid().ToString("N"));
         Directory.Move(expectedRoot, retained);
         Bootstrap.Save(context.Original);
         Console.WriteLine("STARTUP: new identity, empty records, archived locator and restart persistence verified; fixture retained outside application artifact.");
