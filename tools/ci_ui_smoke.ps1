@@ -100,6 +100,18 @@ function Assert-FormError([string]$key) {
     if ((Find-Control -id 'FormValidation' -IncludeOffscreen).Current.Name -ne (Label $key)) { throw "Wrong form guidance: $key" }
     if ((Find-Control -name (Label 'Save') -Action).Current.IsEnabled) { throw 'Invalid form can be saved.' }
 }
+function Invoke-LibraryControl([string]$id) {
+    $node = Find-Control -id $id -Enabled -IncludeOffscreen
+    if ($node.Current.IsOffscreen) {
+        # Match the existing relocation check: reach the actual button by scrolling its owning view.
+        $scroll = (Find-Control -id 'LibraryScroll').GetCurrentPattern([Windows.Automation.ScrollPattern]::Pattern)
+        $percent = if ($id -eq 'VersionEdit') { 100 } else { 0 }
+        if (-not $scroll.Current.VerticallyScrollable) { throw "Library action is offscreen without scrolling: $id" }
+        $scroll.SetScrollPercent([Windows.Automation.ScrollPattern]::NoScroll, $percent)
+    }
+    (Find-Control -id $id -Enabled).GetCurrentPattern([Windows.Automation.InvokePattern]::Pattern).Invoke()
+    Start-Sleep -Milliseconds 250
+}
 function Assert-FixedAction($before, [string]$action = 'Save') {
     $after = Assert-ActionOrder $action
     foreach ($property in @('X', 'Y', 'Width', 'Height')) {
@@ -192,15 +204,15 @@ try {
     Invoke-Control 'Libraries'
     Find-Control -name (Label 'AddVersion') | Out-Null
     Capture '02-library'
-    (Find-Control -id 'VersionEdit' -Enabled).GetCurrentPattern([Windows.Automation.InvokePattern]::Pattern).Invoke()
-    Assert-NoResourceType
+    Invoke-LibraryControl 'VersionEdit'
     $legacySource = (Find-Control -id 'VersionSourceInput').GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).Current.Value
+    Assert-NoResourceType
     if ((Find-Control -id 'VersionChooseFolder').Current.IsEnabled) { throw 'Legacy adapter must not accept a folder.' }
     if ((Find-Control -id 'VersionTargetOverride' -IncludeOffscreen).Current.IsEnabled) { throw 'Legacy adapter must retain root placement.' }
     Scroll-DialogToEnd 'Save' -IfNeeded
     Capture '04-version-legacy'
     Invoke-Control 'Save'
-    Invoke-Control 'AddVersion'
+    Invoke-LibraryControl 'LibraryAddVersion'
     Assert-NoResourceType
     $filesSave = Assert-ActionOrder 'Save'
     Capture '03-version-files'
@@ -258,7 +270,7 @@ try {
     Find-Control -name (Label 'Settings') | Out-Null
     Capture '10-settings-en'
     Invoke-Control 'Libraries'
-    Invoke-Control 'AddVersion'
+    Invoke-LibraryControl 'LibraryAddVersion'
     $englishSave = Assert-ActionOrder 'Save'
     Assert-NoResourceType
     Assert-FixedAction $englishSave
