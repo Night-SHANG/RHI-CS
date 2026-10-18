@@ -5,6 +5,8 @@ $alpha = $fixture.AlphaId.Replace('-', '')
 $beta = $fixture.BetaId.Replace('-', '')
 $reshade = $fixture.ReShadeId.Replace('-', '')
 $taskPrefix = 'CI Game ' + [char]0x00B7 + ' '
+$evidence = [Collections.Generic.List[string]]::new()
+. (Join-Path $PSScriptRoot 'ci_ui_display.ps1') -PrepareWideOnly
 function Reveal-Control([string]$id, [string]$scrollId) {
     # Search/selection can replace the detail view before its first layout has settled.
     Start-Sleep -Milliseconds 400
@@ -84,6 +86,14 @@ Invoke-Control 'Settings'
 Find-Control -id 'ProtectionUsage' -IncludeOffscreen | Out-Null
 Reveal-Control 'ProtectionUsage' 'SettingsScroll' | Out-Null
 Capture '25-protection-inventory'
+$protectionRecord = @(Get-ChildItem -LiteralPath (Join-Path $fixture.Root 'protection') -Filter '*.json')
+if ($protectionRecord.Count -ne 1) { throw 'Expected one complete protection copy.' }
+$copy = [IO.File]::ReadAllText($protectionRecord[0].FullName, [Text.Encoding]::UTF8) | ConvertFrom-Json
+$copyId = 'OpenProtection_' + $copy.OperationId.Replace('-', '')
+Reveal-Control $copyId 'SettingsScroll' | Out-Null
+Capture '25-protection-version-entry'
+$copyFolder = Join-Path (Join-Path (Join-Path $fixture.Root 'protection') $copy.ProtectionDirectory) $copy.VersionLabel
+Check-FolderAction $copyId $copyFolder 'SettingsScroll'
 $settingsIdentity = (Find-Control -id 'SettingsTheme' -IncludeOffscreen).GetRuntimeId() -join ','
 $offlineDraft = (Find-Control -id 'OfflineNameInput' -IncludeOffscreen).GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern)
 $offlineDraft.SetValue('Keep draft across statistics')

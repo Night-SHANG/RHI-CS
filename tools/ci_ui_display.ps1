@@ -1,6 +1,6 @@
 param([switch]$PrepareWideOnly)
 # Windows display settings on the disposable hosted runner only. No registry hacks.
-if ($env:GITHUB_ACTIONS -ne 'true' -or -not $Visual) { throw 'CI visual harness required.' }
+if ($env:GITHUB_ACTIONS -ne 'true' -or (-not $Visual -and -not ($Features -and $PrepareWideOnly))) { throw 'CI visual harness required.' }
 $scaleChanged = $false
 $scaleBox = $null
 $originalScale = $null
