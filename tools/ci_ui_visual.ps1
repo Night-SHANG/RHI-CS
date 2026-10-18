@@ -74,20 +74,23 @@ function Assert-OfflineLayout {
         # Border has no automation peer. Reconstruct card edges from existing full-width rows.
         # Ui.Card has 18 DIP padding plus a 1 DIP border on each side.
         $inset = 19 * $dpiScale
-        $generalStart = (Find-Control -id 'SettingsTheme').Current.BoundingRectangle.Left - $inset
+        # ComboBox peers include an extra left visual margin. Titles share the card's content origin.
+        $generalStart = $left.Left - $inset
         $generalEnd = (Find-Control -id 'SettingsSave').Current.BoundingRectangle.Right + $inset
-        $offlineStart = (Find-Control -id 'OfflineInstallerInput').Current.BoundingRectangle.Left - $inset
+        $offlineStart = $right.Left - $inset
         $offlineEnd = (Find-Control -id 'OfflineChooseInstaller').Current.BoundingRectangle.Right + $inset
         $general = [PSCustomObject]@{ Left=$generalStart; Right=$generalEnd; Width=$generalEnd-$generalStart }
         $offlineCard = [PSCustomObject]@{ Left=$offlineStart; Right=$offlineEnd; Width=$offlineEnd-$offlineStart }
-        $evidence.Add("Settings horizontal bounds: viewport=$viewport; general=$general; offline=$offlineCard")
+        $evidence.Add("Settings horizontal bounds: viewport=$viewport; general=$general; offline=$offlineCard; title origins=$($left.Left),$($right.Left)")
         foreach ($card in @($general, $offlineCard)) {
             if ($card.Left -lt $viewport.Left - 2 -or $card.Right -gt $viewport.Right + 2) {
+                Capture 'settings-horizontal-boundary-failure'
                 throw 'Settings card extends outside its horizontal viewport.'
             }
         }
         # UIA may report a clipped rectangle as visible; verify the complete planned column ratio too.
         if ([Math]::Abs($offlineCard.Width - $general.Width * 540 / 780) -gt 3 * $dpiScale) {
+            Capture 'settings-column-ratio-failure'
             throw 'Settings card is clipped or no longer follows the planned 780:540 column ratio.'
         }
     }
