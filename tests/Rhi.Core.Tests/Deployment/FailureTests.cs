@@ -27,7 +27,7 @@ public sealed class FailureTests
         File.WriteAllText(f.Target, "user edit");
         var version = f.AddVersion("v2");
         var engine = new DeploymentEngine(f.Store, (phase, _) => { if (phase == "BeforeCommit") throw new IOException("disk"); });
-        var result = engine.Execute(f.Plan(new(f.Library.Id, version.Id, OperationKind.Change)), new(true, true));
+        var result = engine.Execute(f.Plan(new DeploymentRequest(f.Library.Id, version.Id, OperationKind.Change)), new(true, true));
         Assert.Equal(OperationStatus.Restored, result.Single().Status);
         Assert.Equal("user edit", File.ReadAllText(f.Target));
         Assert.Equal(f.Version.Id, f.Store.State.Receipts.Single().VersionId);
@@ -43,11 +43,11 @@ public sealed class FailureTests
             File.WriteAllText(f.Target, "another program");
             throw new IOException("injected");
         });
-        var result = engine.Execute(f.Plan(new(f.Library.Id, f.Version.Id, OperationKind.Deploy)), new(true, true));
+        var result = engine.Execute(f.Plan(new DeploymentRequest(f.Library.Id, f.Version.Id, OperationKind.Deploy)), new(true, true));
         Assert.Equal(OperationStatus.NeedsRepair, result.Single().Status);
         Assert.Equal("another program", File.ReadAllText(f.Target));
         Assert.Single(f.Store.Pending());
-        Assert.False(f.Plan(new(f.Library.Id, f.Version.Id, OperationKind.Deploy)).CanExecute);
+        Assert.False(f.Plan(new DeploymentRequest(f.Library.Id, f.Version.Id, OperationKind.Deploy)).CanExecute);
     }
 
     [Fact]
@@ -77,7 +77,7 @@ public sealed class FailureTests
         var second = f.Library with { Id = Guid.NewGuid(), Name = "B", TargetRelative = "B" };
         var third = f.Library with { Id = Guid.NewGuid(), Name = "C", TargetRelative = "C" };
         f.Store.Save(f.Store.State with { Libraries = [f.Library, second, third] });
-        var plan = f.Plan(new(f.Library.Id, f.Version.Id, OperationKind.Deploy),
+        var plan = f.Plan(new DeploymentRequest(f.Library.Id, f.Version.Id, OperationKind.Deploy),
             new(second.Id, f.Version.Id, OperationKind.Deploy), new(third.Id, f.Version.Id, OperationKind.Deploy));
         var result = f.Engine.Execute(plan, new(true, true));
         Assert.Equal(new[] { OperationStatus.Succeeded, OperationStatus.Restored, OperationStatus.NotExecuted },

@@ -29,7 +29,7 @@ public sealed class DeploymentTests
         using var f = new Sandbox();
         f.Deploy();
         File.WriteAllText(f.Target, "manual edit");
-        var plan = f.Plan(new(f.Library.Id, null, OperationKind.Clear));
+        var plan = f.Plan(new DeploymentRequest(f.Library.Id, null, OperationKind.Clear));
         Assert.True(plan.Libraries.Single().RequiresProtection);
         Assert.Throws<DeploymentException>(() => f.Engine.Execute(plan, new(false, false)));
         Assert.Equal("manual edit", File.ReadAllText(f.Target));
@@ -56,7 +56,7 @@ public sealed class DeploymentTests
     public void Changed_source_after_confirmation_is_rejected_without_writes()
     {
         using var f = new Sandbox();
-        var plan = f.Plan(new(f.Library.Id, f.Version.Id, OperationKind.Deploy));
+        var plan = f.Plan(new DeploymentRequest(f.Library.Id, f.Version.Id, OperationKind.Deploy));
         File.WriteAllText(f.Source, "new source");
         Assert.Throws<DeploymentException>(() => f.Engine.Execute(plan, new(true, true)));
         Assert.False(File.Exists(f.Target));
@@ -68,7 +68,7 @@ public sealed class DeploymentTests
         using var f = new Sandbox();
         var other = f.Library with { Id = Guid.NewGuid(), Name = "other" };
         f.Store.Save(f.Store.State with { Libraries = [f.Library, other] });
-        var plan = f.Plan(new(f.Library.Id, f.Version.Id, OperationKind.Deploy),
+        var plan = f.Plan(new DeploymentRequest(f.Library.Id, f.Version.Id, OperationKind.Deploy),
             new(other.Id, f.Version.Id, OperationKind.Deploy));
         Assert.False(plan.CanExecute);
         Assert.Contains(plan.Issues, i => i.Code == "TargetConflict");
@@ -80,7 +80,7 @@ public sealed class DeploymentTests
     {
         using var f = new Sandbox();
         File.WriteAllText(f.Target, "v1");
-        var plan = f.Plan(new(f.Library.Id, f.Version.Id, OperationKind.Deploy));
+        var plan = f.Plan(new DeploymentRequest(f.Library.Id, f.Version.Id, OperationKind.Deploy));
         Assert.True(plan.Libraries.Single().RequiresOverwrite);
         Assert.Throws<DeploymentException>(() => f.Engine.Execute(plan, new(false, true)));
         Assert.Empty(f.Store.State.Receipts);
@@ -92,7 +92,7 @@ public sealed class DeploymentTests
         using var f = new Sandbox();
         using var cancel = new CancellationTokenSource();
         cancel.Cancel();
-        var result = f.Engine.Execute(f.Plan(new(f.Library.Id, f.Version.Id, OperationKind.Deploy)),
+        var result = f.Engine.Execute(f.Plan(new DeploymentRequest(f.Library.Id, f.Version.Id, OperationKind.Deploy)),
             new(true, true), cancellation: cancel.Token);
         Assert.Equal(OperationStatus.Cancelled, result.Single().Status);
         Assert.False(File.Exists(f.Target));
@@ -107,7 +107,7 @@ public sealed class DeploymentTests
         f.Deploy();
         var hash = f.Store.State.Receipts.Single().Files.Single().OriginalHash!;
         File.WriteAllText(f.Store.Blobs.PathFor(hash), "corrupt");
-        Assert.False(f.Plan(new(f.Library.Id, null, OperationKind.Clear)).CanExecute);
+        Assert.False(f.Plan(new DeploymentRequest(f.Library.Id, null, OperationKind.Clear)).CanExecute);
         Assert.Equal("v1", File.ReadAllText(f.Target));
     }
 }

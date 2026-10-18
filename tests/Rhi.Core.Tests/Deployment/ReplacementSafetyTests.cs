@@ -44,7 +44,7 @@ public sealed class ReplacementSafetyTests
             Assert.Throws<IOException>(() => File.WriteAllText(f.Target, "another program"));
             Assert.Throws<IOException>(() => File.Delete(f.Target));
         });
-        var result = engine.Execute(f.Plan(new(f.Library.Id, null, OperationKind.Clear)), new(true, true));
+        var result = engine.Execute(f.Plan(new DeploymentRequest(f.Library.Id, null, OperationKind.Clear)), new(true, true));
         Assert.True(observed);
         Assert.Equal(OperationStatus.Succeeded, result.Single().Status);
         Assert.False(File.Exists(f.Target));
@@ -60,7 +60,7 @@ public sealed class ReplacementSafetyTests
         {
             if (phase == "TargetParked") File.WriteAllText(f.Target, "another program");
         });
-        var result = engine.Execute(f.Plan(new(f.Library.Id, f.Version.Id, OperationKind.Deploy)), new(true, true));
+        var result = engine.Execute(f.Plan(new DeploymentRequest(f.Library.Id, f.Version.Id, OperationKind.Deploy)), new(true, true));
         Assert.Equal(OperationStatus.NeedsRepair, result.Single().Status);
         Assert.Equal("another program", File.ReadAllText(f.Target));
         Assert.Single(f.Store.Pending());
@@ -71,7 +71,7 @@ public sealed class ReplacementSafetyTests
     public void Replacing_game_directory_after_preflight_does_not_transfer_authority()
     {
         using var f = new Sandbox();
-        var plan = f.Plan(new(f.Library.Id, f.Version.Id, OperationKind.Deploy));
+        var plan = f.Plan(new DeploymentRequest(f.Library.Id, f.Version.Id, OperationKind.Deploy));
         Directory.Move(f.Game.DeploymentRoot, f.Game.DeploymentRoot + ".old");
         Directory.CreateDirectory(f.Game.DeploymentRoot);
         File.WriteAllText(f.Game.ExePath, "test executable identity");
@@ -86,7 +86,7 @@ public sealed class ReplacementSafetyTests
         var second = f.Library with { Id = Guid.NewGuid(), Name = "B", TargetRelative = "B" };
         var third = f.Library with { Id = Guid.NewGuid(), Name = "C", TargetRelative = "C" };
         f.Store.Save(f.Store.State with { Libraries = [f.Library, second, third] });
-        var plan = f.Plan(new(f.Library.Id, f.Version.Id, OperationKind.Deploy),
+        var plan = f.Plan(new DeploymentRequest(f.Library.Id, f.Version.Id, OperationKind.Deploy),
             new(second.Id, f.Version.Id, OperationKind.Deploy), new(third.Id, f.Version.Id, OperationKind.Deploy));
         var engine = new DeploymentEngine(f.Store, (phase, _) =>
         {

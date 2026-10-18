@@ -20,7 +20,7 @@ public sealed class PathTests
         using var f = new Sandbox();
         var version = f.Version with { SourcePath = f.Game.DeploymentRoot };
         f.Store.Save(f.Store.State with { Libraries = [f.Library with { Versions = [version] }] });
-        Assert.False(f.Plan(new(f.Library.Id, version.Id, OperationKind.Deploy)).CanExecute);
+        Assert.False(f.Plan(new DeploymentRequest(f.Library.Id, version.Id, OperationKind.Deploy)).CanExecute);
     }
 
     [Fact]
