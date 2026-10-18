@@ -26,8 +26,9 @@ public static class ProtectionLayout
             if (parts.Length != 3 || !parts[2].EndsWith("__" + entry.OperationId.ToString("N"), StringComparison.Ordinal))
                 throw new DeploymentException("InspectionFailed", relative);
         }
-        return PathPolicy.Target(protectionRoot, Path.Combine(relative,
-            entry.FullVersion ? Label(entry.VersionLabel, entry.VersionId ?? entry.LibraryId, 80) : "files"));
+        var folder = entry.FullVersion ? Label(entry.VersionLabel, entry.VersionId ?? entry.LibraryId, 80) : "files";
+        if (entry.FullVersion && folder.Equals("备份说明.txt", StringComparison.OrdinalIgnoreCase)) folder = "_" + folder;
+        return PathPolicy.Target(protectionRoot, Path.Combine(relative, folder));
     }
 
     private static string Label(string? name, Guid id, int limit = 40)

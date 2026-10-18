@@ -8,6 +8,19 @@ namespace Rhi.Core.Tests.Storage;
 
 public sealed class ProtectionSnapshotTests
 {
+    [Fact]
+    public void Version_name_cannot_collide_with_the_description_file()
+    {
+        using var f = new Sandbox();
+        var entry = new ProtectionEntry(Guid.NewGuid(), f.Game.Id, f.Library.Id, f.Game.DeploymentRoot,
+            [], DateTimeOffset.UtcNow, f.Game.Name, f.Library.Name,
+            VersionId: f.Version.Id, VersionLabel: "备份说明.txt", FullVersion: true);
+        f.Store.Protect(entry);
+        var copy = Assert.Single(ProtectionCatalog.Read(f.Store).Operations);
+        Assert.Equal("_备份说明.txt", Path.GetFileName(copy.Directory));
+        Assert.True(File.Exists(Path.Combine(Path.GetDirectoryName(copy.Directory)!, "备份说明.txt")));
+    }
+
     private static void DeployPair(Sandbox f)
     {
         File.WriteAllText(Path.Combine(Path.GetDirectoryName(f.Source)!, "unchanged.dll"), "binary");

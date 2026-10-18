@@ -116,6 +116,15 @@ function Check-Pages([string]$prefix) {
     Assert-InWindow (Find-Control -id 'GameEdit')
     Assert-InWindow (Find-Control -id 'BatchPreflight')
     Capture "$prefix-games"
+    Invoke-Control 'AddGame'
+    Assert-FormReady
+    $blankGameAction = Assert-ActionOrder 'Save'
+    Capture "$prefix-game-initial"
+    Invoke-Control 'Save'
+    Assert-FormError 'NameRequired'
+    Assert-FixedAction $blankGameAction
+    Capture "$prefix-game-required"
+    Invoke-Control 'Cancel'
     $hover = (Find-Control -id 'GameEdit').Current.BoundingRectangle
     [Windows.Forms.Cursor]::Position = [Drawing.Point]::new([int]($hover.X + $hover.Width / 2), [int]($hover.Y + $hover.Height / 2))
     Capture "$prefix-hover"

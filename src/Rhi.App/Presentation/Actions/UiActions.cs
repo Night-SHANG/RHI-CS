@@ -10,6 +10,7 @@ public static partial class Ui
         var row = Row(buttons);
         row.HorizontalAlignment = HorizontalAlignment.Left;
         foreach (var column in row.ColumnDefinitions) column.Width = new GridLength(width);
+        foreach (var button in buttons) button.VerticalAlignment = VerticalAlignment.Stretch;
         return row;
     }
 }

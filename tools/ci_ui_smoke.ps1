@@ -342,6 +342,11 @@ try {
     Assert-FixedAction $englishConfirm 'ConfirmExecute'
     Capture '14-reshade-preflight-en-scrolled'
     Invoke-Control 'ConfirmExecute'
+    $clearAction = Find-Control -name (Label 'ClearDeployment') -Action -IncludeOffscreen
+    if ($clearAction.Current.IsOffscreen) {
+        (Find-Control -id 'GamesScroll').GetCurrentPattern([Windows.Automation.ScrollPattern]::Pattern).SetScrollPercent(-1, 100)
+        Start-Sleep -Milliseconds 250
+    }
     Find-Control -name (Label 'ClearDeployment') -Action | Out-Null
     Find-Control -name (Label 'Installed') | Out-Null
     Capture '15-reshade-deployed-en'

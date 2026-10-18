@@ -83,6 +83,7 @@ public sealed partial class GamesView : UserControl
             if (!locationAvailable) body.Children.Add(Ui.Label("GameLocationMissing"));
             Ui.AddToRow(headerActions, c.FolderAction("OpenDeploymentFolder", game.DeploymentRoot, "GameOpenFolder"));
             foreach (var column in headerActions.ColumnDefinitions) column.Width = new GridLength(132);
+            foreach (FrameworkElement button in headerActions.Children) button.VerticalAlignment = VerticalAlignment.Stretch;
             if (c.Session.TargetObservation is { } observed && observed.GameId == game.Id && observed.Revision == state.Revision)
                 body.Children.Add(Ui.Text(Strings.Format("LastChecked", observed.CheckedAt.ToLocalTime())));
             foreach (var operation in pending)
@@ -91,7 +92,7 @@ public sealed partial class GamesView : UserControl
             body.Children.Add(Ui.Label("LocalResources", 20));
             body.Children.Add(Ui.Label("PreflightHelp"));
             var table = new StackPanel();
-            selectAll = new CheckBox();
+            selectAll = new CheckBox { MinWidth = 0, Width = 32 };
             AutomationProperties.SetAutomationId(selectAll, "SelectAllLibraries");
             AutomationProperties.SetName(selectAll, Strings.Get("SelectAll"));
             ToolTipService.SetToolTip(selectAll, Strings.Get("SelectAll"));
@@ -134,7 +135,7 @@ public sealed partial class GamesView : UserControl
             MinWidth = 0, HorizontalAlignment = HorizontalAlignment.Stretch };
         box.SelectedIndex = receipt is null ? Array.FindIndex(versions, SourceAvailable) : Array.FindIndex(versions, v => v.Id == receipt.VersionId);
         AutomationProperties.SetAutomationId(box, "VersionChoice_" + library.Id.ToString("N"));
-        var check = new CheckBox();
+        var check = new CheckBox { MinWidth = 0, Width = 32 };
         selectionBoxes.Add(check);
         AutomationProperties.SetAutomationId(check, "SelectLibrary_" + library.Id.ToString("N"));
         AutomationProperties.SetName(check, Strings.Get("Select") + " " + library.Name);
@@ -158,6 +159,7 @@ public sealed partial class GamesView : UserControl
             Ui.AddToRow(actions, clear);
             Ui.AddToRow(actions, c.Button("ViewDifferences", () => ViewDifferences(game, library, receipt), !c.Session.Busy));
             foreach (var column in actions.ColumnDefinitions) column.Width = new GridLength(112);
+            foreach (FrameworkElement button in actions.Children) button.VerticalAlignment = VerticalAlignment.Stretch;
             var snapshot = c.Session.TargetObservation;
             var health = snapshot?.GameId == game.Id && snapshot.Revision == c.Session.State.Revision
                 ? snapshot.Receipts.FirstOrDefault(r => r.LibraryId == library.Id)?.Health.ToString() : null;
