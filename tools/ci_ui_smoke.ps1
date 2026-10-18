@@ -103,8 +103,13 @@ function Scroll-DialogToEnd([string]$action) {
     Write-Host "Dialog scroll before: $($pattern.Current.VerticalScrollPercent), view size: $($pattern.Current.VerticalViewSize)"
     $pattern.SetScrollPercent([Windows.Automation.ScrollPattern]::NoScroll, 100)
     $scrollWait = [Diagnostics.Stopwatch]::StartNew()
-    while ($pattern.Current.VerticalScrollPercent -lt 99 -and $scrollWait.Elapsed.TotalSeconds -lt 5) {
+    while ($pattern.Current.VerticalScrollPercent -lt 99 -and $scrollWait.Elapsed.TotalSeconds -lt 1) {
         Start-Sleep -Milliseconds 100
+    }
+    for ($step = 0; $step -lt 5 -and $pattern.Current.VerticalScrollPercent -lt 99; $step++) {
+        Write-Host "Dialog page scroll from: $($pattern.Current.VerticalScrollPercent)"
+        $pattern.Scroll([Windows.Automation.ScrollAmount]::NoAmount, [Windows.Automation.ScrollAmount]::LargeIncrement)
+        Start-Sleep -Milliseconds 500
     }
     Write-Host "Dialog scroll after: $($pattern.Current.VerticalScrollPercent), view size: $($pattern.Current.VerticalViewSize)"
     if ($pattern.Current.VerticalScrollPercent -lt 99) { throw 'Dialog content did not scroll to its end.' }
