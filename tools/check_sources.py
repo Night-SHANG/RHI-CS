@@ -49,6 +49,8 @@ for folder in (root / "src", root / "tests"):
     for path in folder.rglob("*"):
         if not is_source_file(path):
             continue
+        if path.suffix.lower() in {".ico", ".png"}:
+            continue
         text = path.read_text(encoding="utf-8-sig")
         checked += 1
         if "\ufffd" in text:
@@ -89,6 +91,8 @@ for language, values in catalogs.items():
             errors.append(f"empty locale: {language}: {key}")
 
 if args.published is not None:
+    if not (args.published / "Assets/app.ico").is_file():
+        errors.append("missing published application icon")
     xaml_resources = sorted(str(path.relative_to(args.published))
                             for path in args.published.rglob("*")
                             if path.suffix.lower() in {".xbf", ".pri"})

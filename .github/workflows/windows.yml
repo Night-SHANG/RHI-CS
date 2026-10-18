@@ -49,7 +49,12 @@ jobs:
       - name: Prepare isolated visual fixture
         run: dotnet run --project tests/Rhi.UiSmoke.Seed/Rhi.UiSmoke.Seed.csproj -c Release -- --visual
       - name: Verify theme layout and available display scales
-        run: powershell.exe -NoProfile -File tools/ci_ui_smoke.ps1 -AppDirectory artifacts/app -OutputDirectory artifacts/ui-visual -Visual
+        run: |
+          dotnet run --project tests/Rhi.UiSmoke.Seed/Rhi.UiSmoke.Seed.csproj -c Release -- --offline artifacts/offline-context.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          powershell.exe -NoProfile -File tools/ci_ui_smoke.ps1 -AppDirectory artifacts/app -OutputDirectory artifacts/ui-visual -Visual -FixtureMetadata artifacts/offline-context.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          dotnet run --project tests/Rhi.UiSmoke.Seed/Rhi.UiSmoke.Seed.csproj -c Release -- --verify-offline artifacts/offline-context.json
       - name: Upload UI evidence
         if: always()
         uses: actions/upload-artifact@v4

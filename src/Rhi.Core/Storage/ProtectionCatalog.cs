@@ -5,6 +5,18 @@ namespace Rhi.Core.Storage;
 
 public static class ProtectionCatalog
 {
+    public static ProtectedOperation? Find(WorkspaceStore store, Guid operationId)
+    {
+        store.CheckAvailable();
+        var root = Path.Combine(store.Root, "protection");
+        var path = Path.Combine(root, operationId.ToString("N") + ".json");
+        PathPolicy.CheckNoLinks(path);
+        if (!File.Exists(path)) return null;
+        var entry = AtomicJson.Read<ProtectionEntry>(path);
+        if (entry.OperationId != operationId) throw new DeploymentException("InspectionFailed", path);
+        return new(entry, ProtectionLayout.FilesDirectory(root, entry));
+    }
+
     public static ProtectionInventory Read(WorkspaceStore store)
     {
         store.CheckAvailable();

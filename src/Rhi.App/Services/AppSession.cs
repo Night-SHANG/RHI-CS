@@ -12,6 +12,7 @@ public sealed partial class AppSession : ObservableObject, IDisposable
     public WorkspaceState? State => Store?.State;
     public DataPointer? Pointer { get; private set; }
     public string? StartupError { get; private set; }
+    public bool InitializationBlocked { get; private set; }
     public IReadOnlyList<OperationResult> Results { get; private set; } = [];
     public OperationContext? TaskContext { get; private set; }
     private bool busy;
@@ -26,10 +27,18 @@ public sealed partial class AppSession : ObservableObject, IDisposable
 
     public AppSession()
     {
+        try { Pointer = Bootstrap.Read(); }
+        catch (Exception ex) { StartupError = ex.Message; InitializationBlocked = true; return; }
         try
         {
-            Pointer = Bootstrap.Read();
-            if (Pointer is not null) Store = WorkspaceStore.Open(Pointer.Root, expectedId: Pointer.Id);
+            var store = StartupWorkspace.Open(AppContext.BaseDirectory, Pointer?.Root, Pointer?.Id);
+            try
+            {
+                var pointer = new DataPointer(store.Root, store.State.Id);
+                Bootstrap.Save(pointer);
+                Store = store; Pointer = pointer;
+            }
+            catch { store.Dispose(); throw; }
         }
         catch (Exception ex) { StartupError = ex.Message; }
     }
@@ -38,7 +47,7 @@ public sealed partial class AppSession : ObservableObject, IDisposable
     {
         RequireIdle();
         if (Store is not null) throw new DeploymentException("MigrationNotSupported");
-        if (StartupError is not null && Pointer is null) throw new DeploymentException("BootstrapInvalid");
+        if (InitializationBlocked) throw new DeploymentException("BootstrapInvalid");
         var store = WorkspaceStore.Open(path, create, Pointer?.Id);
         try
         {

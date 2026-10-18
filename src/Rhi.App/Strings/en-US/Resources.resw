@@ -212,4 +212,17 @@
   <data name="RelocationFilesChanged" xml:space="preserve"><value>Managed files at the new location do not match the deployment records. Existing records are unchanged; check the moved files.</value></data>
   <data name="GameLocationMissing" xml:space="preserve"><value>The game location is unavailable. Deployment records are retained. Locate and verify the moved game; it has not been cleared.</value></data>
   <data name="ManagedPathHelp" xml:space="preserve"><value>Paths are locked in ordinary editing while deployments exist. Use Locate moved game after moving the game. Pending recovery must be completed first.</value></data>
+  <data name="DefaultDataUnavailable" xml:space="preserve"><value>The Data folder beside the application could not be used. Choose a separate empty folder for configuration, deployment records, and backups, outside game and source folders. Cancelling leaves deployment unavailable.</value></data>
+  <data name="DataLocationHelp" xml:space="preserve"><value>First use defaults to Data beside the application; existing data keeps its original location. Preserve the data folder when updating. Keep resource source files in a separate location.</value></data>
+  <data name="MakeOfflineReShade" xml:space="preserve"><value>Create offline ReShade</value></data>
+  <data name="CreateOffline" xml:space="preserve"><value>Create</value></data>
+  <data name="OfflineInstaller" xml:space="preserve"><value>Local official installer (EXE)</value></data>
+  <data name="OfflineOutputParent" xml:space="preserve"><value>Output location</value></data>
+  <data name="OfflineFolderName" xml:space="preserve"><value>New folder name</value></data>
+  <data name="OfflineArchitecture" xml:space="preserve"><value>Game architecture</value></data>
+  <data name="OfflineHelp" xml:space="preserve"><value>Extract the matching DLL and create a basic ReShade.ini from a local official installer without running it. Match the game architecture and graphics API; Vulkan is not supported by this method. Add shaders and presets yourself; nothing is downloaded automatically.</value></data>
+  <data name="OfflineOutputInvalid" xml:space="preserve"><value>Choose an available output folder and enter a new folder name without path separators.</value></data>
+  <data name="OfflineOutputExists" xml:space="preserve"><value>The output name already exists. Choose another name; existing files are never overwritten.</value></data>
+  <data name="OfflineReady" xml:space="preserve"><value>Offline ReShade created</value></data>
+  <data name="OfflineNextStep" xml:space="preserve"><value>Add shaders under reshade-shaders/Shaders, textures under reshade-shaders/Textures, and any presets you need. Then add a library and version, choose Ordinary files, and select this output folder as its source. Deploy to the location used by the actual game executable; select the preset in-game. No game files or library configuration have been changed.</value></data>
 </root>

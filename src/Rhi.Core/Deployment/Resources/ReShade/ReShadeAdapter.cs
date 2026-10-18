@@ -12,18 +12,34 @@ internal sealed class ReShadeAdapter : IResourceAdapter
     {
         if (PathPolicy.Relative(version.TargetOverride ?? library.TargetRelative).Length != 0)
             throw new DeploymentException("ReShadeTargetMustBeRoot");
-        var proxy = game.Api switch
-        {
-            "DirectX 9" => "d3d9.dll",
-            "DirectX 10/11/12" or "DirectX 10" or "DirectX 11" or "DirectX 12" => "dxgi.dll",
-            "OpenGL" => "opengl32.dll",
-            _ => throw new DeploymentException("ReShadeUnsupportedApi", game.Api)
-        };
+        var proxy = ProxyName(game.Api);
         var architecture = PeInspector.Architecture(game.ExePath);
         if (architecture is not ("x86" or "x64") || architecture != game.Architecture)
             throw new DeploymentException("ReShadeInvalidBinary", game.ExePath);
 
         var source = PathPolicy.Full(version.SourcePath);
+        var (module, inputHash) = LoadModule(source, architecture);
+        var configPath = PathPolicy.Target(game.DeploymentRoot, "ReShade.ini");
+        var config = Read(configPath, ReShadeConfiguration.MaximumBytes, required: false);
+        var prepared = ReShadeConfiguration.Prepare(config, game.DeploymentRoot);
+        return new(new(PathPolicy.Comparer)
+        {
+            [proxy] = new(null, module),
+            ["ReShade.ini"] = new(null, prepared.Content, prepared.Edits)
+        }, [new(source, inputHash), new(configPath, config is null ? null : Hash(config))]);
+    }
+
+    internal static string ProxyName(string api) => api switch
+    {
+        "DirectX 9" => "d3d9.dll",
+        "DirectX 10/11/12" or "DirectX 10" or "DirectX 11" or "DirectX 12" => "dxgi.dll",
+        "OpenGL" => "opengl32.dll",
+        _ => throw new DeploymentException("ReShadeUnsupportedApi", api)
+    };
+
+    internal static (byte[] Module, string InputHash) LoadModule(string source, string architecture)
+    {
+        if (architecture is not ("x86" or "x64")) throw new DeploymentException("ReShadeInvalidBinary", source);
         var extension = Path.GetExtension(source);
         if (!extension.Equals(".dll", StringComparison.OrdinalIgnoreCase) &&
             !extension.Equals(".exe", StringComparison.OrdinalIgnoreCase))
@@ -38,14 +54,7 @@ internal sealed class ReShadeAdapter : IResourceAdapter
         catch (InvalidDataException) { throw new DeploymentException("ReShadeInvalidArchive", source); }
         ValidateModule(module, architecture, source);
 
-        var configPath = PathPolicy.Target(game.DeploymentRoot, "ReShade.ini");
-        var config = Read(configPath, ReShadeConfiguration.MaximumBytes, required: false);
-        var prepared = ReShadeConfiguration.Prepare(config, game.DeploymentRoot);
-        return new(new(PathPolicy.Comparer)
-        {
-            [proxy] = new(null, module),
-            ["ReShade.ini"] = new(null, prepared.Content, prepared.Edits)
-        }, [new(source, Hash(input)), new(configPath, config is null ? null : Hash(config))]);
+        return (module, Hash(input));
     }
 
     private static byte[]? Read(string path, int maximum, bool required)

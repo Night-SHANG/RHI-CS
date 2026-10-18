@@ -18,6 +18,7 @@ public sealed partial class MainWindow : Window
     public MainWindow(AppSession session)
     {
         InitializeComponent();
+        AppWindow.SetIcon(Path.Combine(AppContext.BaseDirectory, "Assets", "app.ico"));
         Root.Loaded += (_, _) =>
         {
             var scale = Root.XamlRoot.RasterizationScale;

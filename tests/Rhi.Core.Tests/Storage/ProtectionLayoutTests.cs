@@ -24,6 +24,7 @@ public sealed class ProtectionLayoutTests
         Assert.Equal("original", File.ReadAllText(target, Encoding.UTF8));
         Assert.Equal("v1", File.ReadAllText(f.Source, Encoding.UTF8));
         var copy = Assert.Single(ProtectionCatalog.Read(f.Store).Operations);
+        Assert.Equal(copy.Directory, ProtectionCatalog.Find(f.Store, copy.Entry.OperationId)!.Directory);
         var relative = Assert.IsType<string>(copy.Entry.ProtectionDirectory);
         var parts = relative.Split(Path.DirectorySeparatorChar);
         Assert.Equal("测试游戏", parts[0]);
@@ -63,8 +64,9 @@ public sealed class ProtectionLayoutTests
         f.Run(new(f.Library.Id, null, OperationKind.Clear));
         var inventory = ProtectionCatalog.Read(f.Store);
         Assert.Equal(2, inventory.Operations.Length);
-        var legacy = Assert.Single(inventory.Operations.Where(x => x.Entry.OperationId == id));
+        var legacy = Assert.Single(inventory.Operations, x => x.Entry.OperationId == id);
         Assert.Null(legacy.Entry.ProtectionDirectory);
+        Assert.Equal(legacy.Directory, ProtectionCatalog.Find(f.Store, id)!.Directory);
         Assert.Equal(legacyFolder, legacy.Directory);
         Assert.Equal(before, File.ReadAllBytes(json));
         Assert.Equal("old edit", File.ReadAllText(legacyFile, Encoding.UTF8));

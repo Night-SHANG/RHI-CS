@@ -3,6 +3,7 @@ using Rhi.App.Localization;
 using Rhi.App.Presentation;
 using Rhi.App.Services;
 using Rhi.Core.Models;
+using Rhi.Core.Storage;
 
 namespace Rhi.App;
 
@@ -31,8 +32,9 @@ public sealed partial class MainWindow
                 row.Children.Add(Ui.Text(Strings.Get(result.Detail)));
             if (session.Store is { } store && result.OperationId is { } operation)
             {
-                var copies = Path.Combine(store.Root, "protection", operation.ToString("N"), "files");
-                if (Directory.Exists(copies)) row.Children.Add(context.Action("OpenProtectedCopies", () => WindowsIntegration.OpenFolder(copies)));
+                var copies = ProtectionCatalog.Find(store, operation)?.Directory;
+                if (copies is not null && Directory.Exists(copies))
+                    row.Children.Add(context.Action("OpenProtectedCopies", () => WindowsIntegration.OpenFolder(copies)));
             }
             panel.Children.Add(Ui.Card(row));
         }

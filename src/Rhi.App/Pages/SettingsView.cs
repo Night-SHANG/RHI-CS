@@ -26,8 +26,20 @@ public sealed class SettingsView : UserControl
             c.Refresh();
         }, !c.Session.Busy);
         var root = c.Session.Store!.Root;
-        var general = Ui.Card(Ui.Stack(theme, language, save));
-        var data = Ui.Card(Ui.Stack(Ui.Label("ApplicationData", 20), Ui.Text(root), Ui.Label("NoMigration"),
+        var fields = Ui.Row(theme, language, save);
+        save.VerticalAlignment = VerticalAlignment.Bottom;
+        fields.SizeChanged += (_, e) =>
+        {
+            var narrow = e.NewSize.Width < 560;
+            fields.ColumnDefinitions.Clear(); fields.RowDefinitions.Clear();
+            for (var i = 0; i < (narrow ? 1 : 3); i++) fields.ColumnDefinitions.Add(new() { Width = new GridLength(1, GridUnitType.Star) });
+            for (var i = 0; i < (narrow ? 3 : 1); i++) fields.RowDefinitions.Add(new() { Height = GridLength.Auto });
+            for (var i = 0; i < fields.Children.Count; i++)
+            { Grid.SetRow((FrameworkElement)fields.Children[i], narrow ? i : 0); Grid.SetColumn((FrameworkElement)fields.Children[i], narrow ? 0 : i); }
+        };
+        fields.RowSpacing = 12;
+        var general = Ui.Card(Ui.Stack(Ui.Label("General", 20), fields));
+        var data = Ui.Card(Ui.Stack(Ui.Label("ApplicationData", 20), Ui.Label("DataLocationHelp"), Ui.Text(root), Ui.Label("NoMigration"),
             c.Action("OpenFolder", () => WindowsIntegration.OpenFolder(root))));
         var protectionBody = Ui.Stack(Ui.Label("ProtectedCopies", 20), Ui.Text(Path.Combine(root, "protection")),
             Ui.Label("ProtectionRetention"),
@@ -51,16 +63,16 @@ public sealed class SettingsView : UserControl
         }
         else protectionBody.Children.Add(Ui.Label(c.Session.ProtectionReadAttempted && !c.Session.Busy ? "ProtectionReadFailed" : "ProtectionNotCounted"));
         var protection = Ui.Card(protectionBody);
-        var scope = Ui.Card(Ui.Stack(Ui.Label("DevelopmentScope", 20), Ui.Label("CurrentScope"), Ui.Label("LicenseNotice"),
-            c.Action("OpenLicenseFolder", () => WindowsIntegration.OpenFolder(AppContext.BaseDirectory))));
-        var content = Ui.Stack(Ui.Label("Settings", 28), general, data, protection, scope);
+        var license = new HyperlinkButton { Content = Strings.Get("OpenLicenseFolder"),
+            HorizontalAlignment = HorizontalAlignment.Left };
+        license.Click += async (_, _) => await c.Run(() =>
+        { WindowsIntegration.OpenFolder(AppContext.BaseDirectory); return System.Threading.Tasks.Task.CompletedTask; });
+        var content = Ui.Stack(Ui.Label("Settings", 28), general, data, protection, license);
+        content.MaxWidth = 960;
+        content.HorizontalAlignment = HorizontalAlignment.Stretch;
         var scroll = Ui.Scroll(content);
         AutomationProperties.SetAutomationId(scroll, "SettingsScroll");
-        var left = Ui.Stack(Ui.Label("Settings", 23),
-            c.Action("General", () => general.StartBringIntoView()),
-            c.Action("DataBackups", () => data.StartBringIntoView()),
-            c.Action("DevelopmentScope", () => scope.StartBringIntoView()));
-        Content = Ui.Split(Ui.Scroll(left), scroll);
+        Content = new Border { Padding = new Thickness(24), Child = scroll };
         Loaded += async (_, _) =>
         {
             if (!c.Session.Busy && !c.Session.ProtectionReadAttempted)

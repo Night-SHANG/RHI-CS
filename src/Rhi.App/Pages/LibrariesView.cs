@@ -43,7 +43,9 @@ public sealed partial class LibrariesView : UserControl
         list.SelectionChanged += (_, _) => { if (!filtering) ShowLibrary(list.SelectedItem as ResourceLibrary); };
         search.TextChanged += (_, _) => Filter();
         Filter();
-        var left = Ui.Stack(Ui.Label("Libraries", 23), search, c.Button("AddLibrary", () => EditLibrary(null), !c.Session.Busy), list);
+        var prepare = c.Button("MakeOfflineReShade", PrepareOfflineReShade, !c.Session.Busy);
+        AutomationProperties.SetAutomationId(prepare, "MakeOfflineReShade");
+        var left = Ui.Stack(Ui.Label("Libraries", 23), search, c.Button("AddLibrary", () => EditLibrary(null), !c.Session.Busy), prepare, list);
         left.Children.Add(empty);
         Content = Ui.Split(Ui.Scroll(left), detail);
     }

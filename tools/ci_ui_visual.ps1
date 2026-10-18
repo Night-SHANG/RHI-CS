@@ -100,6 +100,7 @@ function Check-Pages([string]$prefix) {
 }
 
 Record-Dpi 'initial' | Out-Null
+. (Join-Path $PSScriptRoot 'ci_ui_offline.ps1')
 foreach ($language in @('zh-CN', 'en-US')) {
     foreach ($theme in @('Light', 'Dark')) {
         Set-Appearance $theme $language
