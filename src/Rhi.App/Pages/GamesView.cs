@@ -103,7 +103,7 @@ public sealed partial class GamesView : UserControl
         batchButton.HorizontalAlignment = HorizontalAlignment.Right;
     }
     private static bool SourceAvailable(ResourceVersion v) => v.Kind == ResourceKind.Files && (File.Exists(v.SourcePath) || Directory.Exists(v.SourcePath));
-    private static Grid TableRow(params UIElement[] cells)
+    private static Grid TableRow(params FrameworkElement[] cells)
     {
         var grid = new Grid { ColumnSpacing = 12, Padding = new Thickness(12), MinHeight = 62 };
         foreach (var width in new[] { 36d, 1.1, 1.0, 1.0, 2.0 })

@@ -27,7 +27,7 @@ public static class Ui
     {
         var panel = Stack(children); panel.Orientation = Orientation.Horizontal; return panel;
     }
-    public static Grid Columns(double[] widths, params UIElement[] cells)
+    public static Grid Columns(double[] widths, params FrameworkElement[] cells)
     {
         var grid = new Grid { ColumnSpacing = 12, Padding = new Thickness(12), MinHeight = 58 };
         foreach (var width in widths) grid.ColumnDefinitions.Add(new() { Width = new GridLength(width, GridUnitType.Star) });
