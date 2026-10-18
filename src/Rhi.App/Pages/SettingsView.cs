@@ -7,10 +7,12 @@ using Rhi.App.Services;
 
 namespace Rhi.App.Pages;
 
-public sealed class SettingsView : UserControl
+public sealed partial class SettingsView : UserControl
 {
+    private readonly PageContext c;
     public SettingsView(PageContext c)
     {
+        this.c = c;
         var state = c.Session.State!;
         var themes = new[] { "Light", "Dark", "System" };
         var languages = new[] { "System" }.Concat(Strings.AvailableLanguages).ToArray();
@@ -39,6 +41,10 @@ public sealed class SettingsView : UserControl
         };
         fields.RowSpacing = 12;
         var general = Ui.Card(Ui.Stack(Ui.Label("General", 20), fields));
+        var prepare = c.Button("MakeOfflineReShade", PrepareOfflineReShade, !c.Session.Busy);
+        prepare.MinHeight = 44;
+        AutomationProperties.SetAutomationId(prepare, "MakeOfflineReShade");
+        var offline = Ui.Card(Ui.Stack(Ui.Label("MakeOfflineReShade", 20), Ui.Label("OfflineHelp"), prepare));
         var data = Ui.Card(Ui.Stack(Ui.Label("ApplicationData", 20), Ui.Label("DataLocationHelp"), Ui.Text(root), Ui.Label("NoMigration"),
             c.Action("OpenFolder", () => WindowsIntegration.OpenFolder(root))));
         var protectionBody = Ui.Stack(Ui.Label("ProtectedCopies", 20), Ui.Text(Path.Combine(root, "protection")),
@@ -67,7 +73,7 @@ public sealed class SettingsView : UserControl
             HorizontalAlignment = HorizontalAlignment.Left };
         license.Click += async (_, _) => await c.Run(() =>
         { WindowsIntegration.OpenFolder(AppContext.BaseDirectory); return System.Threading.Tasks.Task.CompletedTask; });
-        var content = Ui.Stack(Ui.Label("Settings", 28), general, data, protection, license);
+        var content = Ui.Stack(Ui.Label("Settings", 28), general, offline, data, protection, license);
         content.MaxWidth = 960;
         content.HorizontalAlignment = HorizontalAlignment.Stretch;
         var scroll = Ui.Scroll(content);

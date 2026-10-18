@@ -18,7 +18,8 @@ public static class OfflineFixture
         Directory.CreateDirectory(parent);
         var installer = Path.Combine(parent, "ReShade-setup.exe");
         File.WriteAllBytes(installer, ReShadeFixture.Archive());
-        AtomicJson.Write(metadataPath, new Metadata(pointer.Root, installer, parent, AtomicJson.Fingerprint(store.State), BlobStore.Hash(installer)!));
+        AtomicJson.Write(metadataPath, new Metadata(pointer.Root, installer, parent,
+            AtomicJson.Fingerprint(new { store.State.Games, store.State.Libraries, store.State.Receipts }), BlobStore.Hash(installer)!));
     }
 
     public static void Verify(string metadataPath)
@@ -30,9 +31,9 @@ public static class OfflineFixture
         if (!File.ReadAllBytes(Path.Combine(output, "dxgi.dll")).SequenceEqual(ReShadeFixture.Pe(true)) ||
             !File.ReadAllText(Path.Combine(output, "ReShade.ini"), Encoding.UTF8).Contains(@".\reshade-shaders\Shaders\**") ||
             BlobStore.Hash(data.Installer) != data.InputHash) throw new InvalidOperationException("Invalid offline export or modified installer.");
-        // Visual tests change preferences, but must not implicitly add or deploy this source.
-        if (store.State.Libraries.SelectMany(l => l.Versions).Any(v => PathPolicy.Within(v.SourcePath, output)))
-            throw new InvalidOperationException("Export unexpectedly changed the resource catalog.");
+        // Visual tests change preferences, but must not implicitly change games, sources or deployment records.
+        if (AtomicJson.Fingerprint(new { store.State.Games, store.State.Libraries, store.State.Receipts }) != data.StateHash)
+            throw new InvalidOperationException("Export unexpectedly changed configuration or deployment records.");
         Console.WriteLine("PASS: offline UI exported the expected DLL and INI; installer preserved; no implicit library registration.");
     }
 }

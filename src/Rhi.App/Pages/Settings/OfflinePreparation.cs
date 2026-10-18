@@ -6,7 +6,7 @@ using Rhi.Core.Preparation;
 
 namespace Rhi.App.Pages;
 
-public sealed partial class LibrariesView
+public sealed partial class SettingsView
 {
     private async Task PrepareOfflineReShade()
     {

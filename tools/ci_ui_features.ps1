@@ -6,16 +6,27 @@ $beta = $fixture.BetaId.Replace('-', '')
 $reshade = $fixture.ReShadeId.Replace('-', '')
 $taskPrefix = 'CI Game ' + [char]0x00B7 + ' '
 function Reveal-Control([string]$id, [string]$scrollId) {
-    $element = Find-Control -id $id -IncludeOffscreen
-    if (-not $element.Current.IsOffscreen) { return $element }
-    $scroll = (Find-Control -id $scrollId).GetCurrentPattern([Windows.Automation.ScrollPattern]::Pattern)
-    for ($i = 0; $i -lt 12 -and $element.Current.IsOffscreen; $i++) {
-        $scroll.Scroll([Windows.Automation.ScrollAmount]::NoAmount, [Windows.Automation.ScrollAmount]::LargeIncrement)
-        Start-Sleep -Milliseconds 200
+    # Search/selection can replace the detail view before its first layout has settled.
+    Start-Sleep -Milliseconds 400
+    $stable = $false
+    for ($i = 0; $i -lt 16; $i++) {
         $element = Find-Control -id $id -IncludeOffscreen
+        $viewer = Find-Control -id $scrollId
+        $bounds = $element.Current.BoundingRectangle
+        $viewport = $viewer.Current.BoundingRectangle
+        $visible = -not $element.Current.IsOffscreen -and $bounds.Height -gt 0 -and
+            $bounds.Top -ge $viewport.Top -and $bounds.Bottom -le $viewport.Bottom
+        if ($visible -and $stable) { return $element }
+        $stable = $visible
+        if (-not $visible) {
+            $scroll = $viewer.GetCurrentPattern([Windows.Automation.ScrollPattern]::Pattern)
+            if ($scroll.Current.VerticallyScrollable -and $scroll.Current.VerticalScrollPercent -lt 100) {
+                $scroll.Scroll([Windows.Automation.ScrollAmount]::NoAmount, [Windows.Automation.ScrollAmount]::LargeIncrement)
+            }
+        }
+        Start-Sleep -Milliseconds 200
     }
-    if ($element.Current.IsOffscreen) { throw "Cannot reveal control: $id" }
-    return $element
+    throw "Cannot reveal complete control: $id"
 }
 function Invoke-Id([string]$id) {
     $node = Find-Control -id $id -Enabled

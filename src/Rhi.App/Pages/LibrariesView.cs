@@ -43,9 +43,11 @@ public sealed partial class LibrariesView : UserControl
         list.SelectionChanged += (_, _) => { if (!filtering) ShowLibrary(list.SelectedItem as ResourceLibrary); };
         search.TextChanged += (_, _) => Filter();
         Filter();
-        var prepare = c.Button("MakeOfflineReShade", PrepareOfflineReShade, !c.Session.Busy);
-        AutomationProperties.SetAutomationId(prepare, "MakeOfflineReShade");
-        var left = Ui.Stack(Ui.Label("Libraries", 23), search, c.Button("AddLibrary", () => EditLibrary(null), !c.Session.Busy), prepare, list);
+        var add = c.Button("AddLibrary", () => EditLibrary(null), !c.Session.Busy);
+        add.HorizontalAlignment = HorizontalAlignment.Stretch;
+        add.MinHeight = 44;
+        AutomationProperties.SetAutomationId(add, "AddLibrary");
+        var left = Ui.Stack(Ui.Label("Libraries", 23), search, add, list);
         left.Children.Add(empty);
         Content = Ui.Split(Ui.Scroll(left), detail);
     }

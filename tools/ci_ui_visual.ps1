@@ -36,6 +36,12 @@ function Record-Dpi([string]$phase) {
 }
 function Check-Pages([string]$prefix) {
     Capture "$prefix-settings"
+    Invoke-VisualId 'MakeOfflineReShade'
+    Assert-InWindow (Find-Control -name (Label 'CreateOffline') -Action)
+    Assert-InWindow (Find-Control -name (Label 'Cancel') -Action)
+    Scroll-DialogToEnd 'CreateOffline' -IfNeeded
+    Capture "$prefix-offline-form"
+    Invoke-Control 'Cancel'
     Invoke-Control 'Games'
     Assert-InWindow (Find-Control -id 'GameEdit')
     Assert-InWindow (Find-Control -id 'BatchPreflight')
@@ -44,6 +50,14 @@ function Check-Pages([string]$prefix) {
     [Windows.Forms.Cursor]::Position = [Drawing.Point]::new([int]($hover.X + $hover.Width / 2), [int]($hover.Y + $hover.Height / 2))
     Capture "$prefix-hover"
     Invoke-Control 'Libraries'
+    $window = [Windows.Automation.AutomationElement]::FromHandle($process.MainWindowHandle)
+    $offlineId = [Windows.Automation.PropertyCondition]::new([Windows.Automation.AutomationElement]::AutomationIdProperty, 'MakeOfflineReShade')
+    if ($window.FindFirst([Windows.Automation.TreeScope]::Descendants, $offlineId)) { throw 'Offline creation belongs in Settings only.' }
+    $searchBounds = (Find-Control -id 'LibrariesSearch').Current.BoundingRectangle
+    $addBounds = (Find-Control -id 'AddLibrary').Current.BoundingRectangle
+    if ([Math]::Abs($searchBounds.Left - $addBounds.Left) -gt 2 -or [Math]::Abs($searchBounds.Width - $addBounds.Width) -gt 2) {
+        throw 'Library action is not aligned with the search field.'
+    }
     Capture "$prefix-library"
     Invoke-Control 'AddLibrary'
     $before = Assert-ActionOrder 'Save'

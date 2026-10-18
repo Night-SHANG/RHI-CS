@@ -9,7 +9,6 @@ try {
     $graphics.CopyFromScreen($desktop.X, $desktop.Y, 0, 0, $bitmap.Size)
     $bitmap.Save((Join-Path $captureRoot 'desktop-icons.png'), [Drawing.Imaging.ImageFormat]::Png)
 } finally { $graphics.Dispose(); $bitmap.Dispose() }
-Invoke-Control 'Libraries'
 Invoke-VisualId 'MakeOfflineReShade'
 if ((Find-Control -name (Label 'CreateOffline') -Action).Current.IsEnabled) { throw 'Empty offline form is valid.' }
 Capture 'offline-empty'
@@ -26,7 +25,6 @@ Capture 'offline-created'
 Invoke-Control 'Close'
 Set-Appearance 'Dark' 'en-US'
 Capture 'settings-redesign-dark'
-Invoke-Control 'Libraries'
 Invoke-VisualId 'MakeOfflineReShade'
 foreach ($field in @(@('OfflineInstallerInput', $offline.Installer), @('OfflineParentInput', $offline.Parent), @('OfflineNameInput', 'UI-offline'))) {
     (Find-Control -id $field[0] -IncludeOffscreen).GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).SetValue($field[1])
