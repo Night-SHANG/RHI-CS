@@ -225,4 +225,5 @@
   <data name="OfflineOutputExists" xml:space="preserve"><value>输出名称已存在，请换一个名称。不会覆盖已有文件。</value></data>
   <data name="OfflineReady" xml:space="preserve"><value>离线 ReShade 已制作</value></data>
   <data name="OfflineNextStep" xml:space="preserve"><value>可将着色器放入 reshade-shaders/Shaders、纹理放入 reshade-shaders/Textures，并自行补充预设。然后添加资源库和版本，选择“普通文件”，以此输出文件夹为来源。文件应部署到实际游戏程序对应的位置；预设仍需在游戏内选择。当前未修改游戏或资源库配置。</value></data>
+  <data name="ReconnectDataHelp" xml:space="preserve"><value>请重新连接保存原配置、部署记录和备份的数据文件夹。不会创建空数据替代原记录，也不会自动迁移文件。</value></data>
 </root>
