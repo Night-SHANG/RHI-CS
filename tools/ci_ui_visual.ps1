@@ -34,14 +34,44 @@ function Record-Dpi([string]$phase) {
     $evidence.Add("$phase : actual DPI=$dpi; per-monitor awareness=$awareness")
     return $dpi
 }
+function Reveal-SettingsControl([string]$id) {
+    for ($attempt = 0; $attempt -lt 25; $attempt++) {
+        $node = Find-Control -id $id -IncludeOffscreen
+        $viewer = Find-Control -id 'SettingsScroll'
+        $bounds = $node.Current.BoundingRectangle
+        $viewport = $viewer.Current.BoundingRectangle
+        if (-not $node.Current.IsOffscreen -and $bounds.Height -gt 0 -and $bounds.Top -ge $viewport.Top -and $bounds.Bottom -le $viewport.Bottom) { return $node }
+        $scroll = $viewer.GetCurrentPattern([Windows.Automation.ScrollPattern]::Pattern)
+        if ($bounds.Top -lt $viewport.Top) { $scroll.SetScrollPercent([Windows.Automation.ScrollPattern]::NoScroll, 0) }
+        elseif ($scroll.Current.VerticallyScrollable) { $scroll.Scroll([Windows.Automation.ScrollAmount]::NoAmount, [Windows.Automation.ScrollAmount]::SmallIncrement) }
+        Start-Sleep -Milliseconds 150
+    }
+    throw "Settings control is not fully visible: $id"
+}
+function Assert-OfflineLayout {
+    $left = (Find-Control -id 'SettingsGeneralTitle' -IncludeOffscreen).Current.BoundingRectangle
+    $right = (Find-Control -id 'OfflineTitle' -IncludeOffscreen).Current.BoundingRectangle
+    $dpiScale = [SmokeWindow]::GetDpiForWindow($process.MainWindowHandle) / 96.0
+    $width = (Find-Control -id 'SettingsScroll').Current.BoundingRectangle.Width / $dpiScale
+    if ($width -ge 1016 -and ($right.Left -le $left.Right -or [Math]::Abs($right.Top - $left.Top) -gt 2)) { throw 'Wide Settings must have top-aligned left settings and right offline form.' }
+    if ($width -le 992) {
+        # Offscreen peers may not expose usable bounds. Bring the lower card into view before comparing alignment.
+        $right = (Reveal-SettingsControl 'OfflineTitle').Current.BoundingRectangle
+        if ([Math]::Abs($right.Left - $left.Left) -gt 2) { throw 'Narrow Settings must align the stacked cards.' }
+        $scroll = (Find-Control -id 'SettingsScroll').GetCurrentPattern([Windows.Automation.ScrollPattern]::Pattern)
+        $scroll.SetScrollPercent([Windows.Automation.ScrollPattern]::NoScroll, 0)
+        Start-Sleep -Milliseconds 200
+    }
+}
 function Check-Pages([string]$prefix) {
+    Assert-OfflineLayout
     Capture "$prefix-settings"
-    Invoke-VisualId 'MakeOfflineReShade'
-    Assert-InWindow (Find-Control -name (Label 'CreateOffline') -Action)
-    Assert-InWindow (Find-Control -name (Label 'Cancel') -Action)
-    Scroll-DialogToEnd 'CreateOffline' -IfNeeded
+    Reveal-SettingsControl 'OfflineChooseFolder' | Out-Null
+    Assert-InWindow (Find-Control -id 'OfflineChooseFolder')
+    Reveal-SettingsControl 'OfflineCreate' | Out-Null
+    Assert-InWindow (Find-Control -id 'OfflineReset')
+    Assert-InWindow (Find-Control -id 'OfflineCreate')
     Capture "$prefix-offline-form"
-    Invoke-Control 'Cancel'
     Invoke-Control 'Games'
     Assert-InWindow (Find-Control -id 'GameEdit')
     Assert-InWindow (Find-Control -id 'BatchPreflight')
@@ -51,7 +81,7 @@ function Check-Pages([string]$prefix) {
     Capture "$prefix-hover"
     Invoke-Control 'Libraries'
     $window = [Windows.Automation.AutomationElement]::FromHandle($process.MainWindowHandle)
-    $offlineId = [Windows.Automation.PropertyCondition]::new([Windows.Automation.AutomationElement]::AutomationIdProperty, 'MakeOfflineReShade')
+    $offlineId = [Windows.Automation.PropertyCondition]::new([Windows.Automation.AutomationElement]::AutomationIdProperty, 'OfflineInstallerInput')
     if ($window.FindFirst([Windows.Automation.TreeScope]::Descendants, $offlineId)) { throw 'Offline creation belongs in Settings only.' }
     $searchBounds = (Find-Control -id 'LibrariesSearch').Current.BoundingRectangle
     $addBounds = (Find-Control -id 'AddLibrary').Current.BoundingRectangle
@@ -128,6 +158,14 @@ Set-Appearance 'Dark' 'en-US'
 [SmokeWindow]::SetWindowPos($process.MainWindowHandle, [IntPtr]::Zero, $screen.X, $screen.Y,
     [Math]::Min(800, $screen.Width), [Math]::Min(600, $screen.Height), 0x0040) | Out-Null
 Start-Sleep -Milliseconds 300
+Invoke-Control 'Settings'
+Assert-OfflineLayout
+Capture 'compact-dark-settings-top'
+Reveal-SettingsControl 'OfflineChooseFolder' | Out-Null
+Capture 'compact-dark-settings-offline'
+Reveal-SettingsControl 'OfflineCreate' | Out-Null
+Assert-InWindow (Find-Control -id 'OfflineReset')
+Capture 'compact-dark-settings-actions'
 Invoke-Control 'Libraries'
 Invoke-Control 'AddLibrary'
 Assert-InWindow (Find-Control -name (Label 'Save') -Action)

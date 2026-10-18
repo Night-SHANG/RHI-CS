@@ -40,11 +40,11 @@ public sealed partial class SettingsView : UserControl
             { Grid.SetRow((FrameworkElement)fields.Children[i], narrow ? i : 0); Grid.SetColumn((FrameworkElement)fields.Children[i], narrow ? 0 : i); }
         };
         fields.RowSpacing = 12;
-        var general = Ui.Card(Ui.Stack(Ui.Label("General", 20), fields));
-        var prepare = c.Button("MakeOfflineReShade", PrepareOfflineReShade, !c.Session.Busy);
-        prepare.MinHeight = 44;
-        AutomationProperties.SetAutomationId(prepare, "MakeOfflineReShade");
-        var offline = Ui.Card(Ui.Stack(Ui.Label("MakeOfflineReShade", 20), Ui.Label("OfflineHelp"), prepare));
+        var generalTitle = Ui.Label("General", 20);
+        AutomationProperties.SetAutomationId(generalTitle, "SettingsGeneralTitle");
+        var general = Ui.Card(Ui.Stack(generalTitle, fields));
+        AutomationProperties.SetAutomationId(general, "SettingsGeneralCard");
+        var offline = OfflinePreparationPanel();
         var data = Ui.Card(Ui.Stack(Ui.Label("ApplicationData", 20), Ui.Label("DataLocationHelp"), Ui.Text(root), Ui.Label("NoMigration"),
             c.Action("OpenFolder", () => WindowsIntegration.OpenFolder(root))));
         var protectionBody = Ui.Stack(Ui.Label("ProtectedCopies", 20), Ui.Text(Path.Combine(root, "protection")),
@@ -73,8 +73,24 @@ public sealed partial class SettingsView : UserControl
             HorizontalAlignment = HorizontalAlignment.Left };
         license.Click += async (_, _) => await c.Run(() =>
         { WindowsIntegration.OpenFolder(AppContext.BaseDirectory); return System.Threading.Tasks.Task.CompletedTask; });
-        var content = Ui.Stack(Ui.Label("Settings", 28), general, offline, data, protection, license);
-        content.MaxWidth = 960;
+        var left = Ui.Stack(general, data, protection, license);
+        var columns = new Grid { ColumnSpacing = 24, RowSpacing = 24 };
+        columns.ColumnDefinitions.Add(new() { Width = new GridLength(780, GridUnitType.Star) });
+        columns.ColumnDefinitions.Add(new() { Width = new GridLength(540, GridUnitType.Star) });
+        columns.RowDefinitions.Add(new() { Height = GridLength.Auto });
+        columns.RowDefinitions.Add(new() { Height = GridLength.Auto });
+        Grid.SetColumn(offline, 1);
+        columns.Children.Add(left); columns.Children.Add(offline);
+        offline.VerticalAlignment = VerticalAlignment.Top;
+        columns.SizeChanged += (_, e) =>
+        {
+            var narrow = e.NewSize.Width < 1000;
+            columns.ColumnDefinitions[0].Width = new GridLength(narrow ? 1 : 780, GridUnitType.Star);
+            columns.ColumnDefinitions[1].Width = narrow ? new GridLength(0) : new GridLength(540, GridUnitType.Star);
+            Grid.SetColumn(offline, narrow ? 0 : 1); Grid.SetRow(offline, narrow ? 1 : 0);
+        };
+        var content = Ui.Stack(Ui.Label("Settings", 28), columns);
+        content.MaxWidth = 1360;
         content.HorizontalAlignment = HorizontalAlignment.Stretch;
         var scroll = Ui.Scroll(content);
         AutomationProperties.SetAutomationId(scroll, "SettingsScroll");

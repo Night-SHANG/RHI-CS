@@ -226,4 +226,6 @@
   <data name="OfflineReady" xml:space="preserve"><value>Offline ReShade created</value></data>
   <data name="OfflineNextStep" xml:space="preserve"><value>Add shaders under reshade-shaders/Shaders, textures under reshade-shaders/Textures, and any presets you need. Then add a library and version, choose Ordinary files, and select this output folder as its source. Deploy to the location used by the actual game executable; select the preset in-game. No game files or library configuration have been changed.</value></data>
   <data name="ReconnectDataHelp" xml:space="preserve"><value>Reconnect the original folder containing your configuration, deployment records, and backups. Existing records will not be replaced with empty data, and files will not be migrated automatically.</value></data>
+  <data name="ResetOffline" xml:space="preserve"><value>Reset</value></data>
+  <data name="BrowseFolder" xml:space="preserve"><value>Browse folder</value></data>
 </root>

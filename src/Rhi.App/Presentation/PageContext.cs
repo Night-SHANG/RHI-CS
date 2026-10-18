@@ -17,6 +17,7 @@ public sealed partial class PageContext(AppSession session, WindowsIntegration w
     public Guid? VersionId { get; set; }
     public string GameQuery { get; set; } = "";
     public string LibraryQuery { get; set; } = "";
+    public OfflineDraft Offline { get; set; } = OfflineDraft.Empty;
     public async Task Run(Func<Task> action)
     {
         try { await action(); }

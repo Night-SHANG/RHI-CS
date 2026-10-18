@@ -19,7 +19,7 @@ public static partial class Ui
     {
         var brush = key switch
         {
-            "Installed" or "Available" or "TargetMatched" => "SuccessBrush",
+            "Installed" or "Available" or "TargetMatched" or "OfflineReady" => "SuccessBrush",
             "SourceUnavailable" or "NeedsRepair" or "TargetModified" or "TargetMissing" or "TargetUnavailable" => "WarningBrush",
             _ => "SecondaryTextBrush"
         };
