@@ -25,13 +25,13 @@ public static partial class Ui
         foreach (var child in children) panel.Children.Add(child);
         return panel;
     }
-    public static Grid Row(params UIElement[] children)
+    public static Grid Row(params FrameworkElement[] children)
     {
         var panel = new Grid { ColumnSpacing = 8 };
         foreach (var child in children) AddToRow(panel, child);
         return panel;
     }
-    public static void AddToRow(Grid panel, UIElement child)
+    public static void AddToRow(Grid panel, FrameworkElement child)
     {
         Grid.SetColumn(child, panel.ColumnDefinitions.Count);
         panel.ColumnDefinitions.Add(new() { Width = new GridLength(1, GridUnitType.Star) });
