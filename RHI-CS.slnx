@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Rhi.Core/Rhi.Core.csproj" />
+    <Project Path="src/Rhi.App/Rhi.App.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Rhi.Core.Tests/Rhi.Core.Tests.csproj" />
+  </Folder>
+</Solution>

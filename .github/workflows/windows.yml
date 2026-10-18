@@ -1,0 +1,58 @@
+name: Windows development build
+on:
+  push:
+    branches: [main, 'development/**']
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: windows-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: windows-2025
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Static manifest and localization checks
+        run: python tools/check_sources.py
+      - name: Test deployment and recovery against temporary directories
+        run: dotnet test tests/Rhi.Core.Tests/Rhi.Core.Tests.csproj -c Release --logger "trx;LogFileName=core.trx" --results-directory artifacts/tests
+      - name: Publish self-contained WinUI application
+        run: dotnet publish src/Rhi.App/Rhi.App.csproj -c Release -r win-x64 -p:Platform=x64 --self-contained true -o artifacts/app -bl:artifacts/winui.binlog
+      - name: Upload application
+        uses: actions/upload-artifact@v4
+        with:
+          name: RHI-CS-win-x64-development
+          path: artifacts/app/
+          if-no-files-found: error
+          retention-days: 14
+      - name: Upload matching source and notices
+        uses: actions/upload-artifact@v4
+        with:
+          name: RHI-CS-source-${{ github.sha }}
+          path: |
+            src/
+            tests/
+            tools/
+            Directory.Build.props
+            global.json
+            RHI-CS.slnx
+            LICENSE
+            THIRD-PARTY-NOTICES.md
+            docs/development/
+            !**/bin/**
+            !**/obj/**
+      - name: Upload build diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: RHI-CS-build-diagnostics
+          path: |
+            artifacts/tests/
+            artifacts/winui.binlog
+          if-no-files-found: ignore

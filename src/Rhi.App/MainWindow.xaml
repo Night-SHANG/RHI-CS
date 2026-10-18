@@ -1,0 +1,28 @@
+<Window x:Class="Rhi.App.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="RHI-CS">
+ <Grid x:Name="Root" Background="{ThemeResource CanvasBrush}" RequestedTheme="Light">
+  <Grid.RowDefinitions><RowDefinition Height="56" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+  <Border BorderBrush="{ThemeResource LineBrush}" BorderThickness="0,0,0,1" Padding="24,0">
+   <Grid>
+    <TextBlock Text="RHI-CS" FontSize="23" FontWeight="SemiBold" VerticalAlignment="Center" />
+    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="12">
+     <ToggleButton x:Name="GamesNav" Width="110" Height="38" Click="Games_Click" />
+     <ToggleButton x:Name="LibrariesNav" Width="110" Height="38" Click="Libraries_Click" />
+     <ToggleButton x:Name="SettingsNav" Width="110" Height="38" Click="Settings_Click" />
+    </StackPanel>
+   </Grid>
+  </Border>
+  <ContentControl x:Name="PageHost" Grid.Row="1" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" />
+  <Border Grid.Row="2" BorderBrush="{ThemeResource LineBrush}" BorderThickness="0,1,0,0" Padding="24,10">
+   <Grid ColumnSpacing="16">
+    <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+    <StackPanel>
+     <TextBlock x:Name="TaskText" TextWrapping="Wrap" />
+     <ProgressBar x:Name="TaskProgressBar" IsIndeterminate="True" Visibility="Collapsed" Height="3" Margin="0,8,0,0" />
+    </StackPanel>
+    <Button x:Name="StopButton" Grid.Column="1" Click="Stop_Click" Visibility="Collapsed" />
+    <Button x:Name="ResultButton" Grid.Column="2" Click="Result_Click" />
+   </Grid>
+  </Border>
+ </Grid>
+</Window>

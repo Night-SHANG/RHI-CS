@@ -1,0 +1,101 @@
+using CommunityToolkit.Mvvm.ComponentModel;
+using Rhi.Core.Deployment;
+using Rhi.Core.Models;
+using Rhi.Core.Storage;
+
+namespace Rhi.App.Services;
+
+public sealed class AppSession : ObservableObject, IDisposable
+{
+    public WorkspaceStore? Store { get; private set; }
+    public WorkspaceState? State => Store?.State;
+    public DataPointer? Pointer { get; private set; }
+    public string? StartupError { get; private set; }
+    public IReadOnlyList<OperationResult> Results { get; private set; } = [];
+    private bool busy;
+    public bool Busy { get => busy; private set => SetProperty(ref busy, value); }
+    public bool IsWriting { get; private set; }
+    public bool StopRequested { get; private set; }
+    public TaskProgress? CurrentProgress { get; private set; }
+    public bool Recovering => CurrentProgress?.Phase == "Recovering";
+    private CancellationTokenSource? cancellation;
+    public event Action? Changed;
+    public event Action<TaskProgress>? Progress;
+
+    public AppSession()
+    {
+        try
+        {
+            Pointer = Bootstrap.Read();
+            if (Pointer is not null) Store = WorkspaceStore.Open(Pointer.Root, expectedId: Pointer.Id);
+        }
+        catch (Exception ex) { StartupError = ex.Message; }
+    }
+
+    public void Connect(string path, bool create)
+    {
+        RequireIdle();
+        if (Store is not null) throw new DeploymentException("MigrationNotSupported");
+        if (StartupError is not null && Pointer is null) throw new DeploymentException("BootstrapInvalid");
+        var store = WorkspaceStore.Open(path, create, Pointer?.Id);
+        try
+        {
+            var pointer = new DataPointer(store.Root, store.State.Id);
+            Bootstrap.Save(pointer);
+            Store = store; Pointer = pointer; StartupError = null;
+        }
+        catch { store.Dispose(); throw; }
+        Changed?.Invoke();
+    }
+
+    public void Save(WorkspaceState state)
+    {
+        RequireIdle();
+        Store!.Save(state);
+        Changed?.Invoke();
+    }
+
+    public void InspectConnection()
+    {
+        if (Busy || Store is null) return;
+        try { Store.CheckAvailable(); }
+        catch (Exception ex)
+        { StartupError = ex.Message; Store.Dispose(); Store = null; }
+    }
+
+    public async Task<BatchPlan> Preflight(Guid game, DeploymentRequest[] requests)
+    {
+        RequireIdle();
+        Busy = true; Changed?.Invoke();
+        try { return await Task.Run(() => new DeploymentPlanner(Store!).Build(State!, game, requests)); }
+        finally { Busy = false; Changed?.Invoke(); }
+    }
+
+    public async Task Execute(BatchPlan plan, OperationConsent consent)
+    {
+        RequireIdle();
+        Results = []; CurrentProgress = null;
+        IsWriting = true; StopRequested = false; Busy = true; Changed?.Invoke();
+        cancellation = new();
+        var reporter = new Progress<TaskProgress>(p => { CurrentProgress = p; Progress?.Invoke(p); });
+        try
+        {
+            Results = await Task.Run(() => new DeploymentEngine(Store!, gameSafetyCheck: CheckGame).Execute(plan, consent, reporter, cancellation.Token));
+        }
+        finally { cancellation.Dispose(); cancellation = null; IsWriting = false; Busy = false; Changed?.Invoke(); }
+    }
+
+    public async Task Recover(Guid id)
+    {
+        RequireIdle(); Results = []; CurrentProgress = new("Recovering", "", 0, 0);
+        IsWriting = true; StopRequested = true; Busy = true; Changed?.Invoke();
+        try { Results = [await Task.Run(() => new DeploymentEngine(Store!, gameSafetyCheck: CheckGame).Recover(id))]; }
+        finally { IsWriting = false; Busy = false; Changed?.Invoke(); }
+    }
+
+    public void Stop() { if (Recovering) return; StopRequested = true; cancellation?.Cancel(); }
+    private static void CheckGame(string exe)
+    { if (WindowsIntegration.IsGameRunning(exe)) throw new DeploymentException("GameRunning"); }
+    private void RequireIdle() { if (Busy) throw new DeploymentException("Busy"); }
+    public void Dispose() { cancellation?.Dispose(); Store?.Dispose(); }
+}
