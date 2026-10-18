@@ -8,11 +8,6 @@ public sealed partial class PageContext
     private void TrackDialogSize(ContentDialog dialog, ScrollViewer scroll, FrameworkElement? feedback = null)
     {
         var preferredHeight = 360d;
-        if (feedback is not null && scroll.Content is FrameworkElement fields)
-        {
-            fields.Measure(new Windows.Foundation.Size(scroll.Width, double.PositiveInfinity));
-            preferredHeight = Math.Clamp(fields.DesiredSize.Height, 64, 360);
-        }
         void Resize()
         {
             scroll.Width = Math.Clamp(Root.ActualWidth - 96, 120, 480);
@@ -24,7 +19,18 @@ public sealed partial class PageContext
             }
         }
         void Changed(object sender, SizeChangedEventArgs args) => Resize();
-        dialog.Opened += (_, _) => { Resize(); Root.SizeChanged += Changed; };
+        dialog.Opened += (_, _) =>
+        {
+            // Native input templates must be attached before their headers can be measured.
+            if (feedback is not null && scroll.Content is FrameworkElement fields)
+            {
+                fields.UpdateLayout();
+                fields.Measure(new Windows.Foundation.Size(scroll.Width, double.PositiveInfinity));
+                preferredHeight = Math.Clamp(fields.DesiredSize.Height, 64, 360);
+            }
+            Resize();
+            Root.SizeChanged += Changed;
+        };
         dialog.Closed += (_, _) => Root.SizeChanged -= Changed;
         Resize();
     }
