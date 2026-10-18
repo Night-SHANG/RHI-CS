@@ -95,7 +95,8 @@ public sealed partial class GamesView : UserControl
             return TableRow(Ui.Text(""), Ui.Text(library.Name), Ui.Text(receipt.VersionLabel), status, actions);
         }
         var versions = library.Versions;
-        var box = new ComboBox { ItemsSource = versions.Select(ResourcePresentation.VersionName).ToArray(), MinWidth = 150, MaxWidth = 230 };
+        var box = new ComboBox { ItemsSource = versions.Select(ResourcePresentation.VersionName).ToArray(),
+            MinWidth = 0, HorizontalAlignment = HorizontalAlignment.Stretch };
         box.SelectedIndex = Array.FindIndex(versions, SourceAvailable);
         var check = new CheckBox();
         var deploy = c.Button("Deploy", async () =>
@@ -105,6 +106,7 @@ public sealed partial class GamesView : UserControl
         var statusText = Ui.Label("NotDeployed");
         void Update()
         {
+            ToolTipService.SetToolTip(box, box.SelectedIndex >= 0 ? ResourcePresentation.VersionName(versions[box.SelectedIndex]) : null);
             var usable = !c.Session.Busy && !locked && box.SelectedIndex >= 0 && SourceAvailable(versions[box.SelectedIndex]);
             check.IsEnabled = usable; deploy.IsEnabled = usable; box.IsEnabled = !c.Session.Busy && !locked;
             if (!usable) check.IsChecked = false;
@@ -129,7 +131,7 @@ public sealed partial class GamesView : UserControl
     private static Grid TableRow(params FrameworkElement[] cells)
     {
         var grid = new Grid { ColumnSpacing = 12, Padding = new Thickness(12), MinHeight = 62 };
-        foreach (var width in new[] { 36d, 1.1, 1.0, 1.0, 2.0 })
+        foreach (var width in new[] { 36d, 1.1, 1.6, 1.0, 1.4 })
             grid.ColumnDefinitions.Add(new() { Width = width == 36 ? new GridLength(width) : new GridLength(width, GridUnitType.Star) });
         for (var i = 0; i < cells.Length; i++) { Grid.SetColumn(cells[i], i); grid.Children.Add(cells[i]); }
         return grid;

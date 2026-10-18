@@ -29,21 +29,27 @@ public sealed class PageContext(AppSession session, WindowsIntegration windows, 
         return button;
     }
     public Button Action(string key, Action action, bool enabled = true) => Button(key, () => { action(); return Task.CompletedTask; }, enabled);
+    private ScrollViewer DialogContent(UIElement content) => new()
+    {
+        Content = content, Width = Math.Clamp(Root.ActualWidth - 96, 280, 480),
+        MaxHeight = Math.Clamp(Root.ActualHeight - 180, 180, 480),
+        HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
+        VerticalScrollBarVisibility = ScrollBarVisibility.Auto
+    };
     public async Task Message(string title, string text)
     {
         var dialog = new ContentDialog { XamlRoot = Root.XamlRoot, Title = Strings.Get(title),
-            Content = Ui.Scroll(Ui.Text(text)), CloseButtonText = Strings.Get("Close"),
+            Content = DialogContent(Ui.Text(text)), CloseButtonText = Strings.Get("Close"),
             RequestedTheme = Root.RequestedTheme };
         await dialog.ShowAsync();
     }
     public async Task<bool> Confirm(string title, UIElement content, string primary = "Save", bool enabled = true)
     {
         var dialog = new ContentDialog { XamlRoot = Root.XamlRoot, Title = Strings.Get(title),
-            Content = new ScrollViewer { Content = content, MaxHeight = 480,
-                HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled },
-            PrimaryButtonText = Strings.Get(primary), CloseButtonText = Strings.Get("Cancel"),
-            IsPrimaryButtonEnabled = enabled, DefaultButton = ContentDialogButton.Close,
+            Content = DialogContent(content),
+            PrimaryButtonText = Strings.Get("Cancel"), SecondaryButtonText = Strings.Get(primary),
+            IsSecondaryButtonEnabled = enabled, DefaultButton = ContentDialogButton.Secondary,
             RequestedTheme = Root.RequestedTheme };
-        return await dialog.ShowAsync() == ContentDialogResult.Primary;
+        return await dialog.ShowAsync() == ContentDialogResult.Secondary;
     }
 }

@@ -72,6 +72,29 @@ function Capture([string]$name) {
         $bitmap.Save((Join-Path $captureRoot "$name.png"), [Drawing.Imaging.ImageFormat]::Png)
     } finally { $graphics.Dispose(); $bitmap.Dispose() }
 }
+function Assert-ActionOrder([string]$action) {
+    $cancel = (Find-Control -name (Label 'Cancel') -Action).Current.BoundingRectangle
+    $confirm = (Find-Control -name (Label $action) -Action).Current.BoundingRectangle
+    if ($cancel.X -ge $confirm.X -or [Math]::Abs($cancel.Y - $confirm.Y) -gt 1) {
+        throw "Dialog actions do not follow cancel-left / confirm-right layout: $action"
+    }
+    return $confirm
+}
+function Select-ResourceKind([string]$key) {
+    $kind = Find-Control -id 'VersionResourceType'
+    $kind.GetCurrentPattern([Windows.Automation.ExpandCollapsePattern]::Pattern).Expand()
+    $option = Find-Control -name (Label $key)
+    $option.GetCurrentPattern([Windows.Automation.SelectionItemPattern]::Pattern).Select()
+    Start-Sleep -Milliseconds 250
+}
+function Assert-FixedAction($before) {
+    $after = Assert-ActionOrder 'Save'
+    foreach ($property in @('X', 'Y', 'Width', 'Height')) {
+        if ([Math]::Abs($before.$property - $after.$property) -gt 1) {
+            throw "Version type change moved action bounds: $property ($($before.$property) -> $($after.$property))"
+        }
+    }
+}
 try {
     Find-Control -name (Label 'Libraries') | Out-Null
     $process.Refresh()
@@ -83,19 +106,27 @@ try {
     Find-Control -name (Label 'AddVersion') | Out-Null
     Capture '02-library'
     Invoke-Control 'AddVersion'
-    $kind = Find-Control -id 'VersionResourceType'
+    Find-Control -id 'VersionResourceType' | Out-Null
+    $filesSave = Assert-ActionOrder 'Save'
     Capture '03-version-files'
-    $expand = $kind.GetCurrentPattern([Windows.Automation.ExpandCollapsePattern]::Pattern)
-    $expand.Expand()
-    $option = Find-Control -name (Label 'ReShadeStandard')
-    $option.GetCurrentPattern([Windows.Automation.SelectionItemPattern]::Pattern).Select()
+    Select-ResourceKind 'ReShadeStandard'
     if ((Find-Control -id 'VersionChooseFolder').Current.IsEnabled) { throw 'ReShade folder picker must be disabled.' }
     if ((Find-Control -id 'VersionTargetOverride').Current.IsEnabled) { throw 'ReShade subfolder override must be disabled.' }
+    Assert-FixedAction $filesSave
     Capture '04-version-reshade'
+    Select-ResourceKind 'ReShadeAddon'
+    Assert-FixedAction $filesSave
+    Capture '07-version-addon'
+    Select-ResourceKind 'Files'
+    Assert-FixedAction $filesSave
+    if (-not (Find-Control -id 'VersionChooseFolder').Current.IsEnabled) { throw 'Ordinary file folder picker must be enabled.' }
+    if (-not (Find-Control -id 'VersionTargetOverride').Current.IsEnabled) { throw 'Ordinary file subfolder override must be enabled.' }
+    Capture '08-version-files-restored'
     Invoke-Control 'Cancel'
     Invoke-Control 'Games'
     Invoke-Control 'Deploy'
     Find-Control -name (Label 'ConfigurationChanges') | Out-Null
+    Assert-ActionOrder 'ConfirmExecute' | Out-Null
     Capture '05-reshade-preflight'
     Invoke-Control 'Cancel'
     $search = Find-Control -id 'GamesSearch'
