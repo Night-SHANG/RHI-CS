@@ -35,19 +35,28 @@ function Record-Dpi([string]$phase) {
     return $dpi
 }
 function Reveal-SettingsControl([string]$id) {
+    Start-Sleep -Milliseconds 300
     for ($attempt = 0; $attempt -lt 25; $attempt++) {
         $node = Find-Control -id $id -IncludeOffscreen
         $viewer = Find-Control -id 'SettingsScroll'
         $bounds = $node.Current.BoundingRectangle
         $viewport = $viewer.Current.BoundingRectangle
-        if (-not $node.Current.IsOffscreen -and $bounds.Height -gt 0 -and $bounds.Top -ge $viewport.Top -and $bounds.Bottom -le $viewport.Bottom) { return $node }
+        if ($viewport.IsEmpty -or $viewport.Height -le 0) { Start-Sleep -Milliseconds 200; continue }
+        if (-not $bounds.IsEmpty -and -not $node.Current.IsOffscreen -and $bounds.Height -gt 0 -and $bounds.Top -ge $viewport.Top -and $bounds.Bottom -le $viewport.Bottom) { return $node }
         $scroll = $viewer.GetCurrentPattern([Windows.Automation.ScrollPattern]::Pattern)
         if ($scroll.Current.VerticallyScrollable) {
             $viewSize = $scroll.Current.VerticalViewSize
             if ($viewSize -le 0 -or $viewSize -ge 100) { throw "Invalid Settings viewport size: $viewSize" }
-            $travel = $viewport.Height * (100 / $viewSize - 1)
-            $delta = if ($bounds.Top -lt $viewport.Top) { $bounds.Top - $viewport.Top - 8 } else { $bounds.Bottom - $viewport.Bottom + 8 }
-            $target = [Math]::Max(0, [Math]::Min(100, $scroll.Current.VerticalScrollPercent + 100 * $delta / $travel))
+            $position = $scroll.Current.VerticalScrollPercent
+            if ($bounds.IsEmpty -or [double]::IsInfinity($bounds.Top) -or [double]::IsInfinity($bounds.Bottom)) {
+                # A refreshed/offscreen peer can expose Rect.Empty until it is laid out in the viewport.
+                $requested = if ($position -ge 100) { 0.0 } else { $position + 10.0 }
+            } else {
+                $travel = $viewport.Height * (100 / $viewSize - 1)
+                $delta = if ($bounds.Top -lt $viewport.Top) { $bounds.Top - $viewport.Top - 8 } else { $bounds.Bottom - $viewport.Bottom + 8 }
+                $requested = $position + 100 * $delta / $travel
+            }
+            $target = [Math]::Max(0.0, [Math]::Min(100.0, [double]$requested))
             $scroll.SetScrollPercent([Windows.Automation.ScrollPattern]::NoScroll, $target)
         }
         Start-Sleep -Milliseconds 150

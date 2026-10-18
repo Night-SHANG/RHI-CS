@@ -228,4 +228,6 @@
   <data name="ReconnectDataHelp" xml:space="preserve"><value>Reconnect the original folder containing your configuration, deployment records, and backups. Existing records will not be replaced with empty data, and files will not be migrated automatically.</value></data>
   <data name="ResetOffline" xml:space="preserve"><value>Reset</value></data>
   <data name="BrowseFolder" xml:space="preserve"><value>Browse folder</value></data>
+  <data name="OfflineFillForm" xml:space="preserve"><value>Select a local official installer and output location, then confirm the game architecture, graphics API, and new folder name.</value></data>
+  <data name="OfflineReadyToCreate" xml:space="preserve"><value>Ready to create the offline files. This does not deploy anything to a game.</value></data>
 </root>

@@ -39,7 +39,7 @@ public sealed partial class SettingsView
             try
             {
                 var output = await c.Session.CreateOfflineReShade(request);
-                c.Offline = c.Offline with { Output = output };
+                c.Offline = c.Offline with { Output = output, CompletedRequest = request };
             }
             catch (Exception ex) { c.Offline = c.Offline with { Failure = ex }; }
             c.Refresh();
@@ -55,12 +55,16 @@ public sealed partial class SettingsView
             feedback.Foreground = Ui.ThemeBrush("SecondaryTextBrush");
             create.IsEnabled = false;
             if (c.Session.Busy) { feedback.Text = Strings.Get("FormChecking"); return; }
+            if (string.IsNullOrWhiteSpace(c.Offline.Request.Installer) || string.IsNullOrWhiteSpace(c.Offline.Request.Parent))
+            { feedback.Text = Strings.Get("OfflineFillForm"); return; }
             try
             {
                 OfflineReShade.Validate(c.Session.State!, c.Session.Store!.Root, c.Offline.Request);
                 create.IsEnabled = true;
-                feedback.Text = Strings.Get("FormReady");
+                feedback.Text = Strings.Get("OfflineReadyToCreate");
             }
+            catch (DeploymentException ex) when (ex.Code == "OfflineOutputExists" && c.Offline.CompletedRequest == c.Offline.Request)
+            { feedback.Text = Strings.Get("OfflineReady"); feedback.Foreground = Ui.ThemeBrush("SuccessBrush"); }
             catch (Exception ex) when (ex is DeploymentException or IOException or UnauthorizedAccessException or ArgumentException)
             { feedback.Text = ErrorText(ex); feedback.Foreground = Ui.ThemeBrush("ErrorBrush"); }
             if (c.Offline.Failure is { } failure)

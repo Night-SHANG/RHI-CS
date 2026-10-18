@@ -23,18 +23,30 @@ foreach ($field in @(@('OfflineInstallerInput', $offline.Installer), @('OfflineP
 }
 Reveal-SettingsControl 'OfflineChooseFolder' | Out-Null
 Invoke-VisualId 'OfflineChooseFolder'
-$pickerHandle = [IntPtr]::Zero
-for ($attempt = 0; $attempt -lt 30; $attempt++) {
+$picker = $null
+$pickerCancel = $null
+for ($attempt = 0; $attempt -lt 50; $attempt++) {
     Start-Sleep -Milliseconds 200
-    $candidate = [SmokeWindow]::GetForegroundWindow()
-    if ($candidate -ne [IntPtr]::Zero -and $candidate -ne $process.MainWindowHandle) { $pickerHandle = $candidate; break }
+    $windows = [Windows.Automation.AutomationElement]::RootElement.FindAll([Windows.Automation.TreeScope]::Children, [Windows.Automation.Condition]::TrueCondition)
+    foreach ($candidate in $windows) {
+        if ($candidate.Current.IsOffscreen -or $candidate.Current.NativeWindowHandle -eq $process.MainWindowHandle.ToInt64()) { continue }
+        $buttons = $candidate.FindAll([Windows.Automation.TreeScope]::Descendants,
+            [Windows.Automation.PropertyCondition]::new([Windows.Automation.AutomationElement]::ControlTypeProperty, [Windows.Automation.ControlType]::Button))
+        $selectFolder = @($buttons | Where-Object { -not $_.Current.IsOffscreen -and $_.Current.Name -match '^(Select Folder|Select folder|Choose folder|\u9009\u62e9\u6587\u4ef6\u5939|\u9009\u62e9\u76ee\u5f55)$' })
+        $cancelFolder = @($buttons | Where-Object { -not $_.Current.IsOffscreen -and $_.Current.Name -match '^(Cancel|\u53d6\u6d88)$' })
+        if ($selectFolder.Count -gt 0 -and $cancelFolder.Count -gt 0) { $picker = $candidate; $pickerCancel = $cancelFolder[0]; break }
+    }
+    if ($null -ne $picker) { break }
 }
-if ($pickerHandle -eq [IntPtr]::Zero) { throw 'Native folder picker did not open.' }
-$picker = [Windows.Automation.AutomationElement]::FromHandle($pickerHandle)
-$windowPattern = $null
-if (-not $picker.TryGetCurrentPattern([Windows.Automation.WindowPattern]::Pattern, [ref]$windowPattern)) { throw 'Folder picker is not an inspectable native window.' }
+if ($null -eq $picker) {
+    Capture-Desktop 'offline-folder-picker-not-found'
+    $evidence.Add('Native windows: ' + (($windows | ForEach-Object { "$($_.Current.Name) [$($_.Current.ClassName)]" }) -join ' | '))
+    throw 'Native folder picker with selection and cancel buttons did not open.'
+}
+[SmokeWindow]::SetForegroundWindow([IntPtr]$picker.Current.NativeWindowHandle) | Out-Null
+Start-Sleep -Milliseconds 500
 Capture-Desktop 'offline-native-folder-picker'
-$windowPattern.Close()
+$pickerCancel.GetCurrentPattern([Windows.Automation.InvokePattern]::Pattern).Invoke()
 Start-Sleep -Milliseconds 400
 if ((Find-Control -id 'OfflineParentInput' -IncludeOffscreen).GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).Current.Value -ne $offline.Parent) { throw 'Cancelling the folder picker changed the output parent.' }
 Invoke-Control 'Libraries'
@@ -49,12 +61,19 @@ Capture 'offline-ready-to-create'
 Invoke-VisualId 'OfflineCreate'
 Find-Control -id 'OfflineOutput' -IncludeOffscreen | Out-Null
 Reveal-SettingsControl 'OfflineOpenOutput' | Out-Null
+if ((Find-Control -id 'OfflineValidation' -IncludeOffscreen).Current.Name -ne (Label 'OfflineReady')) { throw 'Successful export shows an error instead of success.' }
 Capture 'offline-created'
 Set-Appearance 'Dark' 'en-US'
 Capture 'settings-redesign-dark'
 if ((Find-Control -id 'OfflineNameInput' -IncludeOffscreen).GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).Current.Value -ne 'UI-offline') { throw 'Appearance change lost the offline draft.' }
+Reveal-SettingsControl 'OfflineReset' | Out-Null
+Invoke-VisualId 'OfflineReset'
+foreach ($field in @(@('OfflineInstallerInput', $offline.Installer), @('OfflineParentInput', $offline.Parent), @('OfflineNameInput', 'UI-offline'))) {
+    (Find-Control -id $field[0] -IncludeOffscreen).GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).SetValue($field[1])
+}
 Reveal-SettingsControl 'OfflineCreate' | Out-Null
 if ((Find-Control -id 'OfflineCreate').Current.IsEnabled) { throw 'Existing output would be overwritten.' }
+if ((Find-Control -id 'OfflineValidation' -IncludeOffscreen).Current.Name -ne (Label 'OfflineOutputExists')) { throw 'Existing output conflict is not explained.' }
 Capture 'offline-existing-output-dark'
 Invoke-VisualId 'OfflineReset'
 if ((Find-Control -id 'OfflineInstallerInput' -IncludeOffscreen).GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).Current.Value -ne '') { throw 'Reset did not clear the offline draft.' }

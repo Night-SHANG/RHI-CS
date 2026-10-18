@@ -228,4 +228,6 @@
   <data name="ReconnectDataHelp" xml:space="preserve"><value>请重新连接保存原配置、部署记录和备份的数据文件夹。不会创建空数据替代原记录，也不会自动迁移文件。</value></data>
   <data name="ResetOffline" xml:space="preserve"><value>重置</value></data>
   <data name="BrowseFolder" xml:space="preserve"><value>浏览文件夹</value></data>
+  <data name="OfflineFillForm" xml:space="preserve"><value>请选择本地官方安装包和输出位置，再确认游戏位数、图形 API 和新文件夹名称。</value></data>
+  <data name="OfflineReadyToCreate" xml:space="preserve"><value>输入有效。点击“制作”生成离线文件，不会向游戏部署。</value></data>
 </root>
