@@ -90,6 +90,8 @@ $protectionRecord = @(Get-ChildItem -LiteralPath (Join-Path $fixture.Root 'prote
 if ($protectionRecord.Count -ne 1) { throw 'Expected one complete protection copy.' }
 $copy = [IO.File]::ReadAllText($protectionRecord[0].FullName, [Text.Encoding]::UTF8) | ConvertFrom-Json
 $copyId = 'OpenProtection_' + $copy.OperationId.Replace('-', '')
+$inventoryScroll = (Find-Control -id 'SettingsScroll').GetCurrentPattern([Windows.Automation.ScrollPattern]::Pattern)
+if ($inventoryScroll.Current.VerticallyScrollable) { $inventoryScroll.SetScrollPercent(-1, 100) }
 Reveal-Control $copyId 'SettingsScroll' | Out-Null
 Capture '25-protection-version-entry'
 $copyFolder = Join-Path (Join-Path (Join-Path $fixture.Root 'protection') $copy.ProtectionDirectory) $copy.VersionLabel

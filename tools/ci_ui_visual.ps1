@@ -99,7 +99,7 @@ function Assert-OfflineLayout {
         $right = (Reveal-SettingsControl 'OfflineTitle').Current.BoundingRectangle
         if ([Math]::Abs($right.Left - $left.Left) -gt 2) { throw 'Narrow Settings must align the stacked cards.' }
         $scroll = (Find-Control -id 'SettingsScroll').GetCurrentPattern([Windows.Automation.ScrollPattern]::Pattern)
-        $scroll.SetScrollPercent([Windows.Automation.ScrollPattern]::NoScroll, 0)
+        if ($scroll.Current.VerticallyScrollable) { $scroll.SetScrollPercent([Windows.Automation.ScrollPattern]::NoScroll, 0) }
         Start-Sleep -Milliseconds 200
     }
 }

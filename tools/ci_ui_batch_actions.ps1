@@ -9,6 +9,7 @@ $choice = Find-Control -id "VersionChoice_$alpha"
 $choice.GetCurrentPattern([Windows.Automation.ExpandCollapsePattern]::Pattern).Expand()
 (Find-Control -name 'v2').GetCurrentPattern([Windows.Automation.SelectionItemPattern]::Pattern).Select()
 Find-Control -id "ChangeLibrary_$alpha" -Enabled -IncludeOffscreen | Out-Null
+Capture '33-change-version-enabled'
 Select-Batch
 Capture '33-mixed-change-deploy-preflight'
 Invoke-Control 'ConfirmExecute'
