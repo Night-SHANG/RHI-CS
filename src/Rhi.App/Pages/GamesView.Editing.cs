@@ -25,7 +25,7 @@ public sealed partial class GamesView
         var name = Ui.Input("GameName", existing?.Name ?? discovered?.Name ?? "");
         var exe = Ui.Input("Executable", existing?.ExePath ?? "");
         var install = Ui.Input("InstallRoot", existing?.InstallRoot ?? discovered?.InstallRoot ?? "");
-        var target = Ui.Input("DeploymentRoot", existing?.DeploymentRoot ?? "");
+        var target = Ui.Input("DeploymentRoot", existing?.DeploymentRoot ?? discovered?.SuggestedDeploymentRoot ?? "");
         var apiNames = new[] { "Unknown", "DirectX 9", "DirectX 10/11/12", "OpenGL", "Vulkan" };
         var api = Ui.Choice("GraphicsApi", apiNames.Select(Strings.Get), Math.Max(0, Array.IndexOf(apiNames, existing?.Api)));
         var pick = c.Button("SelectExecutable", async () =>
@@ -36,6 +36,8 @@ public sealed partial class GamesView
             target.Text = Path.GetDirectoryName(path)!;
             if (string.IsNullOrWhiteSpace(install.Text)) install.Text = target.Text;
             if (string.IsNullOrWhiteSpace(name.Text)) name.Text = Path.GetFileNameWithoutExtension(path);
+            var suggestedApi = await Task.Run(() => GraphicsInspection.SuggestApi(path));
+            api.SelectedIndex = Math.Max(0, Array.IndexOf(apiNames, suggestedApi));
         });
         if (!await c.Confirm(existing is null ? "AddGame" : "Edit", Ui.Stack(name, exe, pick, install, target, api, Ui.Label("ExeHelp")))) return;
         if (string.IsNullOrWhiteSpace(name.Text)) throw new DeploymentException("NameRequired");

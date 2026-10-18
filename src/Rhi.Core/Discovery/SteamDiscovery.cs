@@ -6,7 +6,7 @@ using Rhi.Core.Deployment;
 
 namespace Rhi.Core.Discovery;
 
-public sealed record DiscoveredGame(string Name, string InstallRoot, string Source);
+public sealed record DiscoveredGame(string Name, string InstallRoot, string Source, string? SuggestedDeploymentRoot = null);
 public sealed record DiscoveryResult(DiscoveredGame[] Games, string[] Warnings);
 
 public static class SteamDiscovery

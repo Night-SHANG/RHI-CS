@@ -11,6 +11,8 @@
     <ProjectReference Include="../../src/Rhi.Core/Rhi.Core.csproj" />
     <ProjectReference Include="../Rhi.CrashWorker/Rhi.CrashWorker.csproj" ReferenceOutputAssembly="false" />
     <Using Include="Xunit" />
+    <Compile Include="../../src/Rhi.App/Vendor/Rhi/Services/GameDetectionService.cs" Link="Vendor/Rhi/GameDetectionService.cs" />
+    <Compile Include="../../src/Rhi.App/Vendor/Rhi/Models/EngineType.cs" Link="Vendor/Rhi/EngineType.cs" />
   </ItemGroup>
   <Target Name="CopyCrashWorker" AfterTargets="Build">
     <ItemGroup><CrashWorkerFiles Include="$(MSBuildThisFileDirectory)../Rhi.CrashWorker/bin/$(Configuration)/net10.0/*" /></ItemGroup>

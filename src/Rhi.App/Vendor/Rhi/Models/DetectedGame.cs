@@ -1,0 +1,21 @@
+// Adapted from RankFTW/RHI, commit b0570336431bfce265e0f6dc19156ea751e404f7 (GPL-3.0).
+// Copyright retained by the upstream authors and contributors; see LICENSE and THIRD-PARTY-NOTICES.md.
+namespace Rhi.App.Vendor.Rhi.Models;
+
+public class DetectedGame
+{
+    public string Name { get; set; } = "";
+    public string InstallPath { get; set; } = "";
+    public string Source { get; set; } = "";
+    public bool IsManuallyAdded { get; set; }
+    public int? SteamAppId { get; set; }
+
+    /// <summary>Epic Games Store catalog namespace (for protocol launch).</summary>
+    public string? EpicCatalogNamespace { get; set; }
+
+    /// <summary>Epic Games Store app name (for protocol launch).</summary>
+    public string? EpicAppName { get; set; }
+
+    /// <summary>Xbox/Game Pass App User Model ID (for shell:AppsFolder launch).</summary>
+    public string? XboxAumid { get; set; }
+}
