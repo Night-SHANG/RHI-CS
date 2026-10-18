@@ -36,14 +36,15 @@ public sealed class ProcessRecoveryTests
         catch { process.Kill(entireProcessTree: true); throw; }
         Assert.True(process.ExitCode == 97, $"Exit {process.ExitCode}: {await output}\n{await error}");
         using var reopened = WorkspaceStore.Open(f.Box.Data);
-        var library = reopened.State.Libraries.Single();
-        reopened.Save(reopened.State with { Libraries = [library with { Versions =
-            [f.Version with { SourcePath = Path.Combine(Path.GetDirectoryName(f.Source)!, "offline.exe") }] }] });
+        // Simulate external source loss in this disposable fixture without editing locked configuration.
+        var offlineSource = f.Source + ".offline";
+        File.Move(f.Source, offlineSource);
+        Assert.False(File.Exists(f.Source));
         var journal = Assert.Single(reopened.Pending());
         Assert.Equal(OperationStatus.Restored, new DeploymentEngine(reopened).Recover(journal.Id).Status);
         Assert.Equal(before, File.ReadAllBytes(f.Config));
         Assert.False(File.Exists(Path.Combine(f.Box.Game.DeploymentRoot, "dxgi.dll")));
-        Assert.Equal(sourceHash, BlobStore.Hash(f.Source));
+        Assert.Equal(sourceHash, BlobStore.Hash(offlineSource));
         Assert.Empty(reopened.Pending());
         Assert.Empty(reopened.State.Receipts);
         Assert.Empty(Directory.GetFiles(f.Box.Game.DeploymentRoot, ".rhi-*"));
