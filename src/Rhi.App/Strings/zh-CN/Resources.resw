@@ -48,7 +48,7 @@
   <data name="Remove" xml:space="preserve"><value>移除</value></data>
   <data name="OverwriteConsent" xml:space="preserve"><value>继续后会先备份已有原件，再部署整个资源库。即使内容相同，也不会静默认领。</value></data>
   <data name="ProtectionConsent" xml:space="preserve"><value>继续后会先备份并核验目标修改，再更换或清除。修改副本不会写回源库，不会自动合并到新版，也不代表修改继续生效。</value></data>
-  <data name="SkipLibraryHelp" xml:space="preserve"><value>如需跳过某个库，请取消本次确认、取消勾选该库后重新预检。</value></data>
+  <data name="SkipLibraryHelp" xml:space="preserve"><value>可按整库选择本次跳过。改变选择后先重新预检；新计划确认前不会修改游戏文件。</value></data>
   <data name="ProtectAndExecute" xml:space="preserve"><value>备份修改并执行</value></data>
   <data name="BackupAndExecute" xml:space="preserve"><value>备份原件并部署</value></data>
   <data name="ConfirmExecute" xml:space="preserve"><value>确认执行</value></data>
@@ -171,4 +171,29 @@
   <data name="NotSet" xml:space="preserve"><value>未设置</value></data>
   <data name="NoFileChange" xml:space="preserve"><value>无需改动</value></data>
   <data name="PendingConfigurationLocked" xml:space="preserve"><value>存在未完成操作，相关游戏与资源库配置已锁定。请到游戏页完成检查与恢复后再修改。</value></data>
+  <data name="ConfigurationReferenced" xml:space="preserve"><value>配置仍被部署记录引用，请先清除对应部署。</value></data>
+  <data name="CheckTargets" xml:space="preserve"><value>核对目标</value></data>
+  <data name="ViewDifferences" xml:space="preserve"><value>查看差异</value></data>
+  <data name="TargetDifferences" xml:space="preserve"><value>目标差异与后续操作</value></data>
+  <data name="TargetMatched" xml:space="preserve"><value>目标一致</value></data>
+  <data name="TargetModified" xml:space="preserve"><value>目标已变化</value></data>
+  <data name="TargetMissing" xml:space="preserve"><value>目标文件缺失</value></data>
+  <data name="TargetUnavailable" xml:space="preserve"><value>目标无法核对</value></data>
+  <data name="LastChecked" xml:space="preserve"><value>上次核对：{0:g}。操作前仍会重新预检。</value></data>
+  <data name="InspectionOnly" xml:space="preserve"><value>此次只核对目标，不修改游戏文件。继续后仍需预检并确认实际影响。</value></data>
+  <data name="NextAction" xml:space="preserve"><value>后续操作</value></data>
+  <data name="RemoveLibrary" xml:space="preserve"><value>移除资源库</value></data>
+  <data name="RemoveVersion" xml:space="preserve"><value>移除版本</value></data>
+  <data name="RemoveConfigurationHelp" xml:space="preserve"><value>仅移除此配置记录，不删除来源文件、游戏文件或已保留的保护副本。此操作不能撤销，请核对名称。</value></data>
+  <data name="ReferenceNotice" xml:space="preserve"><value>以下游戏正在使用此库，不能移除库及其被引用版本：{0}</value></data>
+  <data name="SkipLibrary" xml:space="preserve"><value>本次跳过：{0}</value></data>
+  <data name="SkippedByUser" xml:space="preserve"><value>按本次选择跳过，未执行</value></data>
+  <data name="RecheckSelection" xml:space="preserve"><value>重新预检所选</value></data>
+  <data name="FinishReview" xml:space="preserve"><value>结束，本次不部署</value></data>
+  <data name="BatchOperation" xml:space="preserve"><value>批量操作</value></data>
+  <data name="RefreshProtection" xml:space="preserve"><value>重新统计</value></data>
+  <data name="ProtectionUsage" xml:space="preserve"><value>修改副本 {0:N0} 组 · 保护目录占用 {1:N0} 字节（含记录及未完成副本）</value></data>
+  <data name="ProtectionNotCounted" xml:space="preserve"><value>正在读取保护副本信息。</value></data>
+  <data name="ProtectionReadFailed" xml:space="preserve"><value>无法完整统计保护副本，请检查数据目录后重新统计。</value></data>
+  <data name="ProtectionMeasuredAt" xml:space="preserve"><value>统计时间：{0:g}</value></data>
 </root>

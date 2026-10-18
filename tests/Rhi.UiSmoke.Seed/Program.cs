@@ -5,6 +5,12 @@ using Rhi.UiSmoke.Seed;
 
 if (Environment.GetEnvironmentVariable("GITHUB_ACTIONS") != "true")
     throw new InvalidOperationException("This fixture is restricted to disposable GitHub Actions runners.");
+if (args.FirstOrDefault() is "--features" or "--verify-features")
+{
+    if (args.Length != 2) throw new ArgumentException("Expected explicit fixture metadata path.");
+    if (args[0] == "--features") FeatureFixture.Prepare(args[1]); else FeatureFixture.Verify(args[1]);
+    return;
+}
 if (args.FirstOrDefault() == "--pending-configuration")
 {
     PendingConfigurationFixture.Prepare();

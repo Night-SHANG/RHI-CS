@@ -2,6 +2,7 @@ using Rhi.App.Localization;
 using Rhi.App.Presentation;
 using Rhi.App.Services;
 using Rhi.Core.Models;
+using Microsoft.UI.Xaml.Controls;
 
 namespace Rhi.App.Pages;
 
@@ -10,9 +11,13 @@ public sealed partial class GamesView
     private async Task Preflight(GameEntry game, DeploymentRequest[] requests)
     {
         if (WindowsIntegration.IsGameRunning(game.ExePath)) throw new DeploymentException("GameRunning");
-        var plan = await c.Session.Preflight(game.Id, requests);
+        var skipped = new HashSet<Guid>();
+        while (true)
+        {
+        var active = requests.Where(r => !skipped.Contains(r.LibraryId)).ToArray();
+        var plan = active.Length > 0 ? await c.Session.Preflight(game.Id, active) : null;
         var panel = Ui.Stack(Ui.Text(game.Name, 22), Ui.Text(game.DeploymentRoot), Ui.Label("NotWrittenYet"));
-        foreach (var library in plan.Libraries)
+        foreach (var library in plan?.Libraries ?? [])
         {
             panel.Children.Add(Ui.Text(library.LibraryName + " · " + library.VersionLabel + " · " + Strings.Get(library.Request.Kind.ToString()), 18));
             panel.Children.Add(Ui.Text(Strings.Format("PlanCounts", library.Changes.Count(f => f.BeforeHash is null && f.DesiredHash is not null),
@@ -31,16 +36,45 @@ public sealed partial class GamesView
                 panel.Children.Add(Ui.Card(detail));
             }
         }
-        foreach (var issue in plan.Issues) panel.Children.Add(Ui.Text(Strings.Get(issue.Code) + "\n" + issue.Detail));
-        var overwrite = plan.Libraries.Any(l => l.RequiresOverwrite);
-        var protect = plan.Libraries.Any(l => l.RequiresProtection);
+        foreach (var issue in plan?.Issues ?? []) panel.Children.Add(Ui.Text(Strings.Get(issue.Code) + "\n" + issue.Detail));
+        var overwrite = plan?.Libraries.Any(l => l.RequiresOverwrite) == true;
+        var protect = plan?.Libraries.Any(l => l.RequiresProtection) == true;
         if (overwrite) panel.Children.Add(Ui.Label("OverwriteConsent"));
         if (protect) panel.Children.Add(Ui.Label("ProtectionConsent"));
-        panel.Children.Add(Ui.Label("SkipLibraryHelp"));
+        var reviewedSkip = new HashSet<Guid>(skipped);
+        Action? updateAction = null;
+        if (requests.Length > 1)
+        {
+            panel.Children.Add(Ui.Label("SkipLibraryHelp"));
+            foreach (var request in requests)
+            {
+                var name = c.Session.State!.Libraries.Single(l => l.Id == request.LibraryId).Name;
+                var check = new CheckBox { Content = Strings.Format("SkipLibrary", name), IsChecked = skipped.Contains(request.LibraryId) };
+                Microsoft.UI.Xaml.Automation.AutomationProperties.SetAutomationId(check, "SkipLibrary_" + request.LibraryId.ToString("N"));
+                void Update() { if (check.IsChecked == true) reviewedSkip.Add(request.LibraryId); else reviewedSkip.Remove(request.LibraryId); updateAction?.Invoke(); }
+                check.Checked += (_, _) => Update(); check.Unchecked += (_, _) => Update();
+                panel.Children.Add(check);
+                if (skipped.Contains(request.LibraryId)) panel.Children.Add(Ui.Text(name + " · " + Strings.Get("SkippedByUser")));
+            }
+        }
         var action = protect ? "ProtectAndExecute" : overwrite ? "BackupAndExecute" : "ConfirmExecute";
-        if (!await c.Confirm("Preflight", panel, action, plan.CanExecute)) return;
+        if (!await c.Confirm("Preflight", panel, action, configure: dialog =>
+        {
+            updateAction = () =>
+            {
+                var changed = !skipped.SetEquals(reviewedSkip);
+                dialog.SecondaryButtonText = Strings.Get(changed ? "RecheckSelection" : active.Length == 0 ? "FinishReview" : action);
+                dialog.IsSecondaryButtonEnabled = changed || active.Length == 0 || plan?.CanExecute == true;
+            };
+            updateAction();
+        })) return;
+        if (!skipped.SetEquals(reviewedSkip)) { skipped = reviewedSkip; continue; }
+        var omitted = requests.Where(r => skipped.Contains(r.LibraryId)).ToArray();
+        if (active.Length == 0) { c.Session.RecordSkipped(game.Id, omitted); return; }
         if (WindowsIntegration.IsGameRunning(game.ExePath)) throw new DeploymentException("GameRunning");
-        await c.Session.Execute(plan, new(overwrite, protect));
+        await c.Session.Execute(plan!, new(overwrite, protect), omitted);
+        return;
+        }
     }
 
     private async Task Recover(OperationJournal journal)

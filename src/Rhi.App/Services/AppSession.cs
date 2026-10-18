@@ -2,16 +2,18 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Rhi.Core.Deployment;
 using Rhi.Core.Models;
 using Rhi.Core.Storage;
+using Rhi.App.Services.Operations;
 
 namespace Rhi.App.Services;
 
-public sealed class AppSession : ObservableObject, IDisposable
+public sealed partial class AppSession : ObservableObject, IDisposable
 {
     public WorkspaceStore? Store { get; private set; }
     public WorkspaceState? State => Store?.State;
     public DataPointer? Pointer { get; private set; }
     public string? StartupError { get; private set; }
     public IReadOnlyList<OperationResult> Results { get; private set; } = [];
+    public OperationContext? TaskContext { get; private set; }
     private bool busy;
     public bool Busy { get => busy; private set => SetProperty(ref busy, value); }
     public bool IsWriting { get; private set; }
@@ -43,6 +45,7 @@ public sealed class AppSession : ObservableObject, IDisposable
             var pointer = new DataPointer(store.Root, store.State.Id);
             Bootstrap.Save(pointer);
             Store = store; Pointer = pointer; StartupError = null;
+            TargetObservation = null; ProtectionObservation = null; ProtectionReadAttempted = false;
         }
         catch { store.Dispose(); throw; }
         Changed?.Invoke();
@@ -52,6 +55,7 @@ public sealed class AppSession : ObservableObject, IDisposable
     {
         RequireIdle();
         Store!.Save(state);
+        TargetObservation = null;
         Changed?.Invoke();
     }
 
@@ -60,7 +64,7 @@ public sealed class AppSession : ObservableObject, IDisposable
         if (Busy || Store is null) return;
         try { Store.CheckAvailable(); }
         catch (Exception ex)
-        { StartupError = ex.Message; Store.Dispose(); Store = null; }
+        { StartupError = ex.Message; Store.Dispose(); Store = null; TargetObservation = null; ProtectionObservation = null; }
     }
 
     public async Task<BatchPlan> Preflight(Guid game, DeploymentRequest[] requests)
@@ -71,9 +75,12 @@ public sealed class AppSession : ObservableObject, IDisposable
         finally { Busy = false; Changed?.Invoke(); }
     }
 
-    public async Task Execute(BatchPlan plan, OperationConsent consent)
+    public async Task Execute(BatchPlan plan, OperationConsent consent, DeploymentRequest[]? skipped = null)
     {
         RequireIdle();
+        skipped ??= [];
+        TaskContext = OperationContext.Capture(State!, plan.GameId, plan.Libraries.Select(l => l.Request).Concat(skipped));
+        TargetObservation = null; ProtectionObservation = null; ProtectionReadAttempted = false;
         Results = []; CurrentProgress = null;
         IsWriting = true; StopRequested = false; Busy = true; Changed?.Invoke();
         cancellation = new();
@@ -81,6 +88,7 @@ public sealed class AppSession : ObservableObject, IDisposable
         try
         {
             Results = await Task.Run(() => new DeploymentEngine(Store!, gameSafetyCheck: CheckGame).Execute(plan, consent, reporter, cancellation.Token));
+            Results = Results.Concat(skipped.Select(r => new OperationResult(r.LibraryId, OperationStatus.NotExecuted, "SkippedByUser"))).ToArray();
         }
         finally { cancellation.Dispose(); cancellation = null; IsWriting = false; Busy = false; Changed?.Invoke(); }
     }
@@ -88,6 +96,9 @@ public sealed class AppSession : ObservableObject, IDisposable
     public async Task Recover(Guid id)
     {
         RequireIdle(); Results = []; CurrentProgress = new("Recovering", "", 0, 0);
+        var journal = Store!.Pending().Single(j => j.Id == id);
+        TaskContext = OperationContext.Capture(State!, journal.GameId, [new(journal.LibraryId, null, journal.Kind)], recovery: true);
+        TargetObservation = null; ProtectionObservation = null; ProtectionReadAttempted = false;
         IsWriting = true; StopRequested = true; Busy = true; Changed?.Invoke();
         try { Results = [await Task.Run(() => new DeploymentEngine(Store!, gameSafetyCheck: CheckGame).Recover(id))]; }
         finally { IsWriting = false; Busy = false; Changed?.Invoke(); }

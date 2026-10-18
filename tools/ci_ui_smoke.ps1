@@ -1,5 +1,5 @@
 param([Parameter(Mandatory)][string]$AppDirectory, [Parameter(Mandatory)][string]$OutputDirectory,
-    [switch]$PendingConfiguration)
+    [switch]$PendingConfiguration, [switch]$Features, [string]$FixtureMetadata)
 $ErrorActionPreference = 'Stop'
 if ($env:GITHUB_ACTIONS -ne 'true') { throw 'UI smoke runs only on disposable GitHub Actions runners.' }
 Add-Type -AssemblyName UIAutomationClient, UIAutomationTypes, System.Windows.Forms, System.Drawing
@@ -26,7 +26,7 @@ $launchTime = Get-Date
 $process = Start-Process -FilePath (Join-Path $appRoot 'RHI-CS.exe') -PassThru `
     -RedirectStandardOutput (Join-Path $captureRoot 'stdout.txt') -RedirectStandardError (Join-Path $captureRoot 'stderr.txt')
 $processHandle = $process.Handle
-function Find-Control([string]$name = '', [string]$id = '', [switch]$Action, [switch]$IncludeOffscreen) {
+function Find-Control([string]$name = '', [string]$id = '', [switch]$Action, [switch]$IncludeOffscreen, [switch]$Enabled) {
     $limit = [Diagnostics.Stopwatch]::StartNew()
     while ($limit.Elapsed.TotalSeconds -lt 25) {
         if ($process.HasExited) { throw "Application exited with code $($process.ExitCode)." }
@@ -38,6 +38,7 @@ function Find-Control([string]$name = '', [string]$id = '', [switch]$Action, [sw
         $items = [Windows.Automation.AutomationElement]::RootElement.FindAll([Windows.Automation.TreeScope]::Descendants, $condition)
         foreach ($item in $items) {
             if ($item.Current.IsOffscreen -and -not $IncludeOffscreen) { continue }
+            if ($Enabled -and -not $item.Current.IsEnabled) { continue }
             if ($Action) {
                 $candidatePattern = $null
                 if (-not $item.TryGetCurrentPattern([Windows.Automation.InvokePattern]::Pattern, [ref]$candidatePattern) -and
@@ -50,7 +51,7 @@ function Find-Control([string]$name = '', [string]$id = '', [switch]$Action, [sw
     throw "UI control not found: $name $id"
 }
 function Invoke-Control([string]$key) {
-    $item = Find-Control -name (Label $key) -Action
+    $item = Find-Control -name (Label $key) -Action -Enabled
     $pattern = $null
     if ($item.TryGetCurrentPattern([Windows.Automation.InvokePattern]::Pattern, [ref]$pattern)) { $pattern.Invoke() }
     elseif ($item.TryGetCurrentPattern([Windows.Automation.TogglePattern]::Pattern, [ref]$pattern)) { $pattern.Toggle() }
@@ -96,11 +97,14 @@ function Assert-FixedAction($before, [string]$action = 'Save') {
         }
     }
 }
-function Scroll-DialogToEnd([string]$action) {
+function Scroll-DialogToEnd([string]$action, [switch]$IfNeeded) {
     (Find-Control -name (Label $action) -Action).SetFocus()
     $node = Find-Control -id 'DialogContentScroll'
     $pattern = $node.GetCurrentPattern([Windows.Automation.ScrollPattern]::Pattern)
-    if (-not $pattern.Current.VerticallyScrollable) { throw 'Long dialog content is not scrollable.' }
+    if (-not $pattern.Current.VerticallyScrollable) {
+        if ($IfNeeded) { return }
+        throw 'Long dialog content is not scrollable.'
+    }
     Write-Host "Dialog scroll before: $($pattern.Current.VerticalScrollPercent), view size: $($pattern.Current.VerticalViewSize)"
     $pattern.SetScrollPercent([Windows.Automation.ScrollPattern]::NoScroll, 100)
     $scrollWait = [Diagnostics.Stopwatch]::StartNew()
@@ -121,6 +125,7 @@ try {
     $screen = [Windows.Forms.Screen]::PrimaryScreen.WorkingArea
     [SmokeWindow]::SetWindowPos($process.MainWindowHandle, [IntPtr]::Zero, $screen.X, $screen.Y,
         [Math]::Min(1320, $screen.Width), [Math]::Min(860, $screen.Height), 0x0040) | Out-Null
+    if ($Features) { . (Join-Path $PSScriptRoot 'ci_ui_features.ps1'); return }
     if ($PendingConfiguration) {
         if ((Find-Control -id 'GameEdit').Current.IsEnabled) { throw 'Pending game configuration is editable.' }
         Invoke-Control 'Libraries'
@@ -135,7 +140,7 @@ try {
         if (-not (Find-Control -id 'LibraryEdit').Current.IsEnabled) { throw 'Unrelated library was incorrectly locked.' }
         $query.SetValue('')
         Invoke-Control 'Settings'
-        $language = Find-Control -id 'SettingsLanguage'
+        $language = Find-Control -id 'SettingsLanguage' -Enabled
         $language.GetCurrentPattern([Windows.Automation.ExpandCollapsePattern]::Pattern).Expand()
         (Find-Control -name (Label 'en-US')).GetCurrentPattern([Windows.Automation.SelectionItemPattern]::Pattern).Select()
         Invoke-Control 'Save'
@@ -208,7 +213,7 @@ try {
     }
     Capture '06-search-retained'
     Invoke-Control 'Settings'
-    $language = Find-Control -id 'SettingsLanguage'
+    $language = Find-Control -id 'SettingsLanguage' -Enabled
     Capture '09-settings-zh'
     $language.GetCurrentPattern([Windows.Automation.ExpandCollapsePattern]::Pattern).Expand()
     (Find-Control -name (Label 'en-US')).GetCurrentPattern([Windows.Automation.SelectionItemPattern]::Pattern).Select()
@@ -234,7 +239,7 @@ try {
     $configurationChanges = Find-Control -name (Label 'ConfigurationChanges')
     $englishConfirm = Assert-ActionOrder 'ConfirmExecute'
     Capture '12-reshade-preflight-en'
-    Scroll-DialogToEnd 'ConfirmExecute'
+    Scroll-DialogToEnd 'ConfirmExecute' -IfNeeded
     Assert-FixedAction $englishConfirm 'ConfirmExecute'
     Capture '14-reshade-preflight-en-scrolled'
     Invoke-Control 'ConfirmExecute'

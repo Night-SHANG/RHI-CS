@@ -34,6 +34,12 @@ jobs:
         run: dotnet run --project tests/Rhi.UiSmoke.Seed/Rhi.UiSmoke.Seed.csproj -c Release -- --pending-configuration
       - name: Verify pending configuration locks and recovery UI
         run: powershell.exe -NoProfile -File tools/ci_ui_smoke.ps1 -AppDirectory artifacts/app -OutputDirectory artifacts/ui-pending -PendingConfiguration
+      - name: Prepare feature integration fixture
+        run: dotnet run --project tests/Rhi.UiSmoke.Seed/Rhi.UiSmoke.Seed.csproj -c Release -- --features artifacts/feature-context.json
+      - name: Verify inspection management batch and protection UI
+        run: powershell.exe -NoProfile -File tools/ci_ui_smoke.ps1 -AppDirectory artifacts/app -OutputDirectory artifacts/ui-features -Features -FixtureMetadata artifacts/feature-context.json
+      - name: Verify feature results against files and receipts
+        run: dotnet run --project tests/Rhi.UiSmoke.Seed/Rhi.UiSmoke.Seed.csproj -c Release -- --verify-features artifacts/feature-context.json
       - name: Upload UI evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -42,6 +48,7 @@ jobs:
           path: |
             artifacts/ui/
             artifacts/ui-pending/
+            artifacts/ui-features/
           if-no-files-found: warn
       - name: Upload application
         uses: actions/upload-artifact@v4

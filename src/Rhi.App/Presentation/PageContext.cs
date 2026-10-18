@@ -42,20 +42,23 @@ public sealed class PageContext(AppSession session, WindowsIntegration windows, 
         AutomationProperties.SetAutomationId(scroll, "DialogContentScroll");
         return scroll;
     }
-    public async Task Message(string title, string text)
+    public Task Message(string title, string text) => Show(title, Ui.Text(text));
+    public async Task Show(string title, UIElement content)
     {
         var dialog = new ContentDialog { XamlRoot = Root.XamlRoot, Title = Strings.Get(title),
-            Content = DialogContent(Ui.Text(text)), CloseButtonText = Strings.Get("Close"),
+            Content = DialogContent(content), CloseButtonText = Strings.Get("Close"),
             RequestedTheme = Root.RequestedTheme };
         await dialog.ShowAsync();
     }
-    public async Task<bool> Confirm(string title, UIElement content, string primary = "Save", bool enabled = true)
+    public async Task<bool> Confirm(string title, UIElement content, string primary = "Save", bool enabled = true,
+        Action<ContentDialog>? configure = null)
     {
         var dialog = new ContentDialog { XamlRoot = Root.XamlRoot, Title = Strings.Get(title),
             Content = DialogContent(content),
             PrimaryButtonText = Strings.Get("Cancel"), SecondaryButtonText = Strings.Get(primary),
             IsSecondaryButtonEnabled = enabled, DefaultButton = ContentDialogButton.Secondary,
             RequestedTheme = Root.RequestedTheme };
+        configure?.Invoke(dialog);
         return await dialog.ShowAsync() == ContentDialogResult.Secondary;
     }
 }

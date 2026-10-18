@@ -13,6 +13,7 @@
     <Using Include="Xunit" />
     <Compile Include="../../src/Rhi.App/Vendor/Rhi/Services/GameDetectionService.cs" Link="Vendor/Rhi/GameDetectionService.cs" />
     <Compile Include="../../src/Rhi.App/Vendor/Rhi/Models/EngineType.cs" Link="Vendor/Rhi/EngineType.cs" />
+    <Compile Include="../../src/Rhi.App/Services/Operations/OperationContext.cs" Link="App/OperationContext.cs" />
   </ItemGroup>
   <Target Name="CopyCrashWorker" AfterTargets="Build">
     <ItemGroup><CrashWorkerFiles Include="$(MSBuildThisFileDirectory)../Rhi.CrashWorker/bin/$(Configuration)/net10.0/*" /></ItemGroup>

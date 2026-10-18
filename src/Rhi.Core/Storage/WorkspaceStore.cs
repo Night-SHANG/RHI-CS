@@ -92,6 +92,10 @@ public sealed class WorkspaceStore : IDisposable
                 AtomicJson.Fingerprint(next.Libraries.SingleOrDefault(l => l.Id == pending.LibraryId));
             if (gameChanged || libraryChanged) throw new DeploymentException("PendingConfigurationLocked");
         }
+        foreach (var receipt in next.Receipts)
+            if (!next.Games.Any(g => g.Id == receipt.GameId) ||
+                !next.Libraries.Any(l => l.Id == receipt.LibraryId && l.Versions.Any(v => v.Id == receipt.VersionId)))
+                throw new DeploymentException("ConfigurationReferenced");
         next = next with { Revision = State.Revision + 1 };
         AtomicJson.Write(statePath, next);
         State = next;

@@ -55,7 +55,7 @@ public sealed partial class GamesView : UserControl
     {
         var state = c.Session.State!;
         var body = Ui.Stack();
-        if (game is null) body.Children.Add(Ui.Label("AddGameHelp", 22));
+        if (game is null) body.Children.Add(Ui.Label(state.Games.Length == 0 ? "AddGameHelp" : "NoMatches", 22));
         else
         {
             c.GameId = game.Id;
@@ -65,7 +65,10 @@ public sealed partial class GamesView : UserControl
             var pending = c.Session.Store!.Pending().Where(j => j.GameId == game.Id).ToArray();
             var edit = c.Button("Edit", () => EditGame(game), !c.Session.Busy && pending.Length == 0);
             AutomationProperties.SetAutomationId(edit, "GameEdit");
-            body.Children.Add(edit);
+            body.Children.Add(Ui.Row(edit, c.Button("CheckTargets", async () => { await c.Session.InspectTargets(game.Id); },
+                !c.Session.Busy && state.Receipts.Any(r => r.GameId == game.Id))));
+            if (c.Session.TargetObservation is { } observed && observed.GameId == game.Id && observed.Revision == state.Revision)
+                body.Children.Add(Ui.Text(Strings.Format("LastChecked", observed.CheckedAt.ToLocalTime())));
             foreach (var operation in pending)
                 body.Children.Add(Ui.Stack(Ui.Label("NeedsRepair"), Ui.Text(operation.Error ?? ""),
                     c.Button("CheckRecovery", () => Recover(operation), !c.Session.Busy)));
@@ -79,8 +82,11 @@ public sealed partial class GamesView : UserControl
         {
             if (game is not null) await Preflight(game, selected.Select(s => new DeploymentRequest(s.Key, s.Value, OperationKind.Deploy)).ToArray());
         }, false);
+        AutomationProperties.SetAutomationId(batchButton, "BatchPreflight");
         UpdateSelection();
-        return Ui.Dock(Ui.Scroll(body), batchButton);
+        var scroll = Ui.Scroll(body);
+        AutomationProperties.SetAutomationId(scroll, "GamesScroll");
+        return Ui.Dock(scroll, batchButton);
     }
 
     private UIElement ResourceRow(GameEntry game, ResourceLibrary library, bool locked)
@@ -88,10 +94,16 @@ public sealed partial class GamesView : UserControl
         var receipt = c.Session.State!.Receipts.SingleOrDefault(r => r.GameId == game.Id && r.LibraryId == library.Id);
         if (receipt is not null)
         {
-            var actions = Ui.Row(c.Button("ChangeVersion", () => ChooseVersion(game, library, receipt),
+            var clear = c.Button("ClearDeployment", () => Preflight(game, [new(library.Id, null, OperationKind.Clear)]), !c.Session.Busy && !locked);
+            AutomationProperties.SetAutomationId(clear, "ClearLibrary_" + library.Id.ToString("N"));
+            var actions = Ui.Stack(c.Button("ChangeVersion", () => ChooseVersion(game, library, receipt),
                 !c.Session.Busy && !locked && library.Versions.Any(v => v.Id != receipt.VersionId && SourceAvailable(v))),
-                c.Button("ClearDeployment", () => Preflight(game, [new(library.Id, null, OperationKind.Clear)]), !c.Session.Busy && !locked));
-            var status = Ui.Stack(Ui.Label("Installed"), Ui.Label("NotChecked"));
+                clear,
+                c.Button("ViewDifferences", () => ViewDifferences(game, library, receipt), !c.Session.Busy));
+            var snapshot = c.Session.TargetObservation;
+            var health = snapshot?.GameId == game.Id && snapshot.Revision == c.Session.State.Revision
+                ? snapshot.Receipts.FirstOrDefault(r => r.LibraryId == library.Id)?.Health.ToString() : null;
+            var status = Ui.Stack(Ui.Label("Installed"), Ui.Label(health ?? "NotChecked"));
             if (!library.Versions.Any(v => v.Id != receipt.VersionId && SourceAvailable(v))) status.Children.Add(Ui.Label("NoOtherVersion"));
             if (!library.Versions.Any(v => v.Id == receipt.VersionId && SourceAvailable(v))) status.Children.Add(Ui.Label("SourceUnavailable"));
             return TableRow(Ui.Text(""), Ui.Text(library.Name), Ui.Text(receipt.VersionLabel), status, actions);
@@ -101,10 +113,12 @@ public sealed partial class GamesView : UserControl
             MinWidth = 0, HorizontalAlignment = HorizontalAlignment.Stretch };
         box.SelectedIndex = Array.FindIndex(versions, SourceAvailable);
         var check = new CheckBox();
+        AutomationProperties.SetAutomationId(check, "SelectLibrary_" + library.Id.ToString("N"));
         var deploy = c.Button("Deploy", async () =>
         {
             if (box.SelectedIndex >= 0) await Preflight(game, [new(library.Id, versions[box.SelectedIndex].Id, OperationKind.Deploy)]);
         });
+        AutomationProperties.SetAutomationId(deploy, "DeployLibrary_" + library.Id.ToString("N"));
         var statusText = Ui.Label("NotDeployed");
         void Update()
         {

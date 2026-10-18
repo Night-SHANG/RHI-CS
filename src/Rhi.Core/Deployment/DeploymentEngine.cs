@@ -92,7 +92,8 @@ public sealed partial class DeploymentEngine(WorkspaceStore store, Action<string
             var modified = library.Changes.Where(c => c.ExternalChange && c.BeforeHash is not null)
                 .Select(c => new JournalFile(c.RelativePath, c.BeforeHash, c.DesiredHash)).ToArray();
             if (modified.Length > 0) store.Protect(new(id, batch.GameId, library.Request.LibraryId,
-                batch.TargetRoot, modified, DateTimeOffset.UtcNow));
+                batch.TargetRoot, modified, DateTimeOffset.UtcNow,
+                store.State.Games.Single(g => g.Id == batch.GameId).Name, library.LibraryName));
             journal = journal with { Status = OperationStatus.Executing };
             store.WriteJournal(journal);
             foreach (var relative in FileWriter.MissingDirectories(targetLease.Identity.Path, library.Changes))

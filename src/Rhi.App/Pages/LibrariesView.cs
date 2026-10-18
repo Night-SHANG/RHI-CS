@@ -8,7 +8,7 @@ using Rhi.Core.Models;
 
 namespace Rhi.App.Pages;
 
-public sealed class LibrariesView : UserControl
+public sealed partial class LibrariesView : UserControl
 {
     private readonly PageContext c;
     public LibrariesView(PageContext context)
@@ -52,7 +52,7 @@ public sealed class LibrariesView : UserControl
         var state = c.Session.State!;
         var right = Ui.Stack(Ui.Label("Libraries", 28), Ui.Label("LibraryExplanation"));
         var locked = selected is not null && c.Session.Store!.Pending().Any(j => j.LibraryId == selected.Id);
-        if (selected is null) right.Children.Add(Ui.Label("NoLibraries"));
+        if (selected is null) right.Children.Add(Ui.Label(state.Libraries.Length == 0 ? "NoLibraries" : "NoMatches"));
         else
         {
             right.Children.Add(Ui.Text(selected.Name, 23));
@@ -61,7 +61,11 @@ public sealed class LibrariesView : UserControl
             var addVersion = c.Button("AddVersion", () => EditVersion(selected), !c.Session.Busy && !locked);
             AutomationProperties.SetAutomationId(editLibrary, "LibraryEdit");
             AutomationProperties.SetAutomationId(addVersion, "LibraryAddVersion");
-            right.Children.Add(Ui.Row(editLibrary, addVersion));
+            var removeLibrary = c.Button("RemoveLibrary", () => RemoveLibrary(selected),
+                !c.Session.Busy && !locked && !state.Receipts.Any(r => r.LibraryId == selected.Id));
+            AutomationProperties.SetAutomationId(removeLibrary, "LibraryRemove");
+            right.Children.Add(Ui.Row(editLibrary, addVersion, removeLibrary));
+            AddReferenceNotice(right, selected.Id);
             right.Children.Add(Ui.Label("Versions", 20));
             right.Children.Add(Ui.Columns([1, 2, 1, 1], Ui.Label("VersionLabel"), Ui.Label("SourcePath"), Ui.Label("Status"), Ui.Label("Actions")));
             foreach (var version in selected.Versions)
@@ -78,12 +82,17 @@ public sealed class LibrariesView : UserControl
             {
                 var editVersion = c.Button("Edit", () => EditVersion(selected, detail), !c.Session.Busy && !locked);
                 AutomationProperties.SetAutomationId(editVersion, "VersionEdit");
+                var removeVersion = c.Button("RemoveVersion", () => RemoveVersion(selected, detail),
+                    !c.Session.Busy && !locked && !state.Receipts.Any(r => r.LibraryId == selected.Id && r.VersionId == detail.Id));
+                AutomationProperties.SetAutomationId(removeVersion, "VersionRemove");
                 right.Children.Add(Ui.Card(Ui.Stack(Ui.Label("VersionDetails", 20), Ui.Text(ResourcePresentation.VersionName(detail)),
                     Ui.Text(detail.SourcePath), Ui.Text(Strings.Get("TargetRelative") + ": " + (detail.TargetOverride ?? selected.TargetRelative)),
-                    editVersion)));
+                    Ui.Row(editVersion, removeVersion))));
             }
         }
-        return Ui.Dock(Ui.Scroll(right), Ui.Label(locked ? "PendingConfigurationLocked" : "ConfigOnly"));
+        var scroll = Ui.Scroll(right);
+        AutomationProperties.SetAutomationId(scroll, "LibraryScroll");
+        return Ui.Dock(scroll, Ui.Label(locked ? "PendingConfigurationLocked" : "ConfigOnly"));
     }
 
     private async Task EditLibrary(ResourceLibrary? existing)

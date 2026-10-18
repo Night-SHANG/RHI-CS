@@ -48,7 +48,7 @@
   <data name="Remove" xml:space="preserve"><value>Remove</value></data>
   <data name="OverwriteConsent" xml:space="preserve"><value>Continuing backs up existing originals before deploying the entire library. Identical contents are not silently claimed.</value></data>
   <data name="ProtectionConsent" xml:space="preserve"><value>Continuing saves and verifies changed targets before changing or clearing the deployment. Copies are not written back to sources, merged into the new version, or kept active in the game automatically.</value></data>
-  <data name="SkipLibraryHelp" xml:space="preserve"><value>To skip a library, cancel this confirmation, uncheck that library and run preflight again.</value></data>
+  <data name="SkipLibraryHelp" xml:space="preserve"><value>You can skip whole libraries for this operation. Changed selections require a new preflight; game files remain unchanged until the new plan is confirmed.</value></data>
   <data name="ProtectAndExecute" xml:space="preserve"><value>Protect changes and execute</value></data>
   <data name="BackupAndExecute" xml:space="preserve"><value>Back up originals and deploy</value></data>
   <data name="ConfirmExecute" xml:space="preserve"><value>Confirm and execute</value></data>
@@ -171,4 +171,29 @@
   <data name="NotSet" xml:space="preserve"><value>Not set</value></data>
   <data name="NoFileChange" xml:space="preserve"><value>No file change</value></data>
   <data name="PendingConfigurationLocked" xml:space="preserve"><value>An unfinished operation locks the related game and library configuration. Check and recover it on the Games page before editing.</value></data>
+  <data name="ConfigurationReferenced" xml:space="preserve"><value>This configuration is referenced by a deployment. Clear that deployment before removing it.</value></data>
+  <data name="CheckTargets" xml:space="preserve"><value>Check targets</value></data>
+  <data name="ViewDifferences" xml:space="preserve"><value>View differences</value></data>
+  <data name="TargetDifferences" xml:space="preserve"><value>Target differences and next action</value></data>
+  <data name="TargetMatched" xml:space="preserve"><value>Targets match</value></data>
+  <data name="TargetModified" xml:space="preserve"><value>Targets changed</value></data>
+  <data name="TargetMissing" xml:space="preserve"><value>Target files missing</value></data>
+  <data name="TargetUnavailable" xml:space="preserve"><value>Targets could not be checked</value></data>
+  <data name="LastChecked" xml:space="preserve"><value>Last checked: {0:g}. Actions still require a fresh preflight.</value></data>
+  <data name="InspectionOnly" xml:space="preserve"><value>This check does not modify game files. Continuing still requires preflight and confirmation of the actual changes.</value></data>
+  <data name="NextAction" xml:space="preserve"><value>Next action</value></data>
+  <data name="RemoveLibrary" xml:space="preserve"><value>Remove library</value></data>
+  <data name="RemoveVersion" xml:space="preserve"><value>Remove version</value></data>
+  <data name="RemoveConfigurationHelp" xml:space="preserve"><value>Only this configuration record is removed. Source files, game files and retained protection copies are kept. This cannot be undone; check the name before confirming.</value></data>
+  <data name="ReferenceNotice" xml:space="preserve"><value>This library is in use by these games; the library and referenced versions cannot be removed: {0}</value></data>
+  <data name="SkipLibrary" xml:space="preserve"><value>Skip this time: {0}</value></data>
+  <data name="SkippedByUser" xml:space="preserve"><value>Skipped by selection; not executed</value></data>
+  <data name="RecheckSelection" xml:space="preserve"><value>Recheck selection</value></data>
+  <data name="FinishReview" xml:space="preserve"><value>Finish without deploying</value></data>
+  <data name="BatchOperation" xml:space="preserve"><value>Batch operation</value></data>
+  <data name="RefreshProtection" xml:space="preserve"><value>Refresh usage</value></data>
+  <data name="ProtectionUsage" xml:space="preserve"><value>{0:N0} protection sets · {1:N0} bytes in the protection folder (including records and partial copies)</value></data>
+  <data name="ProtectionNotCounted" xml:space="preserve"><value>Reading protection copy information.</value></data>
+  <data name="ProtectionReadFailed" xml:space="preserve"><value>Protection copies could not be fully counted. Check the data folder and refresh usage.</value></data>
+  <data name="ProtectionMeasuredAt" xml:space="preserve"><value>Measured at: {0:g}</value></data>
 </root>
