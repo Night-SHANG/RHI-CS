@@ -11,4 +11,4 @@ public sealed record OperationJournal(Guid Id, Guid WorkspaceId, Guid GameId, Gu
     string[]? PreviouslyCreatedDirectories = null);
 public sealed record ProtectionEntry(Guid OperationId, Guid GameId, Guid LibraryId,
     string TargetRoot, JournalFile[] Files, DateTimeOffset CreatedAt,
-    string? GameName = null, string? LibraryName = null);
+    string? GameName = null, string? LibraryName = null, string? ProtectionDirectory = null);

@@ -117,7 +117,8 @@ public sealed class WorkspaceStore : IDisposable
     public void Protect(ProtectionEntry entry)
     {
         CheckAvailable();
-        var copies = Path.Combine(physicalRoot, "protection", entry.OperationId.ToString("N"), "files");
+        entry = entry with { ProtectionDirectory = ProtectionLayout.CreateDirectory(entry) };
+        var copies = ProtectionLayout.FilesDirectory(Path.Combine(physicalRoot, "protection"), entry);
         PathPolicy.CheckNoLinks(copies);
         foreach (var file in entry.Files)
         {

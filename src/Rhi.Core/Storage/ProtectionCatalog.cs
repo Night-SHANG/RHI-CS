@@ -29,7 +29,7 @@ public static class ProtectionCatalog
             var entry = AtomicJson.Read<ProtectionEntry>(path);
             if (!string.Equals(Path.GetFileNameWithoutExtension(path), entry.OperationId.ToString("N"), StringComparison.OrdinalIgnoreCase))
                 throw new DeploymentException("InspectionFailed", path);
-            var folder = Path.Combine(root, entry.OperationId.ToString("N"), "files");
+            var folder = ProtectionLayout.FilesDirectory(root, entry);
             PathPolicy.CheckNoLinks(folder);
             return new ProtectedOperation(entry, folder);
         }).OrderByDescending(x => x.Entry.CreatedAt).ToArray();
