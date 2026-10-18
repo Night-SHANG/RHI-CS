@@ -13,9 +13,12 @@ parser.add_argument("--published", type=Path)
 args = parser.parse_args()
 errors = []
 checked = 0
+def is_source_file(path):
+    return path.is_file() and not any(part in {"obj", "bin"} for part in path.relative_to(root).parts)
+
 for folder in (root / "src", root / "tests"):
     for path in folder.rglob("*"):
-        if any(p in {"obj", "bin"} for p in path.parts) or not path.is_file():
+        if not is_source_file(path):
             continue
         text = path.read_text(encoding="utf-8-sig")
         checked += 1
@@ -68,6 +71,8 @@ if args.published is not None:
     if not (args.published / "Licenses/WinUI3Localizer.txt").is_file():
         errors.append("missing published WinUI3Localizer license")
 for path in (root / "src").rglob("*.cs"):
+    if not is_source_file(path):
+        continue
     text = path.read_text(encoding="utf-8")
     for key in re.findall(r'(?:Strings\.(?:Get|Format)|Ui\.(?:Label|Input|Choice)|c\.(?:Button|Action|Confirm|Message)|context\.(?:Button|Action|Confirm|Message)|DeploymentException)\("([A-Za-z][A-Za-z0-9]+)"', text):
         if key not in en:
@@ -79,6 +84,8 @@ for path in (root / "src").rglob("*.cs"):
             if literal != "RHI-CS":
                 errors.append(f"hard-coded UI text: {path.name}: {literal}")
 for path in (root / "src/Rhi.App").rglob("*.xaml"):
+    if not is_source_file(path):
+        continue
     for element in ET.fromstring(path.read_text(encoding="utf-8")).iter():
         for name in ("Text", "Content", "Header", "PlaceholderText", "Title"):
             value = element.attrib.get(name, "")

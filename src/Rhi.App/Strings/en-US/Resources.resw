@@ -8,7 +8,7 @@
   <data name="SearchGames" xml:space="preserve"><value>Search games</value></data>
   <data name="Refresh" xml:space="preserve"><value>Refresh</value></data>
   <data name="AddGame" xml:space="preserve"><value>Add game</value></data>
-  <data name="NoGames" xml:space="preserve"><value>No games added. Scan Steam or select an executable manually.</value></data>
+  <data name="NoGames" xml:space="preserve"><value>No games added. Scan local game platforms or select an executable manually.</value></data>
   <data name="NoMatches" xml:space="preserve"><value>No matching games.</value></data>
   <data name="AddGameHelp" xml:space="preserve"><value>Add a game to select and check local resources.</value></data>
   <data name="GameName" xml:space="preserve"><value>Game name</value></data>
@@ -86,7 +86,7 @@
   <data name="ProtectionRetention" xml:space="preserve"><value>Modified copies and their path records are retained without automatic expiry. Originals and recovery snapshots are separate and must not be treated as disposable cache.</value></data>
   <data name="OpenProtectedCopies" xml:space="preserve"><value>Open protected copies</value></data>
   <data name="DevelopmentScope" xml:space="preserve"><value>Development build scope</value></data>
-  <data name="CurrentScope" xml:space="preserve"><value>Ordinary file deployment, version changes and clearing; manual games and Steam discovery. Dedicated ReShade adaptation and other store scanners are pending. Automatic Vulkan ReShade management is excluded from v1; ordinary resources are unaffected. OptiScaler is copied as ordinary files; BAT files are not run.</value></data>
+  <data name="CurrentScope" xml:space="preserve"><value>Ordinary file deployment, version changes and clearing; manual game entry and local scanning for Steam, GOG, Epic, EA, Xbox, Ubisoft, Battle.net, and Rockstar. Dedicated ReShade adaptation is pending. Automatic Vulkan ReShade management is excluded from v1; ordinary resources are unaffected. OptiScaler is copied as ordinary files; BAT files are not run.</value></data>
   <data name="License" xml:space="preserve"><value>Sources and license</value></data>
   <data name="LicenseNotice" xml:space="preserve"><value>RHI-CS includes code adapted from RankFTW/RHI under GPL-3.0. Provided without warranty. You may modify and redistribute it under the license conditions. The license and source notices are included with the application.</value></data>
   <data name="OpenLicenseFolder" xml:space="preserve"><value>Open license location</value></data>

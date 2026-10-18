@@ -8,7 +8,7 @@
   <data name="SearchGames" xml:space="preserve"><value>搜索游戏</value></data>
   <data name="Refresh" xml:space="preserve"><value>刷新</value></data>
   <data name="AddGame" xml:space="preserve"><value>添加游戏</value></data>
-  <data name="NoGames" xml:space="preserve"><value>尚未添加游戏。可以扫描 Steam 或手动选择 EXE。</value></data>
+  <data name="NoGames" xml:space="preserve"><value>尚未添加游戏。可以扫描本地游戏平台或手动选择 EXE。</value></data>
   <data name="NoMatches" xml:space="preserve"><value>没有匹配的游戏。</value></data>
   <data name="AddGameHelp" xml:space="preserve"><value>添加游戏后，在这里选择本地资源并预检。</value></data>
   <data name="GameName" xml:space="preserve"><value>游戏名称</value></data>
@@ -86,7 +86,7 @@
   <data name="ProtectionRetention" xml:space="preserve"><value>修改副本与路径说明长期保留，不自动过期。原件和恢复快照另存于数据目录，不能当作缓存清理。</value></data>
   <data name="OpenProtectedCopies" xml:space="preserve"><value>打开修改备份</value></data>
   <data name="DevelopmentScope" xml:space="preserve"><value>当前开发版范围</value></data>
-  <data name="CurrentScope" xml:space="preserve"><value>普通文件部署、换版与清除；手动游戏和 Steam 发现。ReShade 专用适配及其他商店扫描尚未接入。Vulkan ReShade 自动管理不在首版范围；普通资源不受此限制。OptiScaler 仅按普通文件复制，不执行 BAT。</value></data>
+  <data name="CurrentScope" xml:space="preserve"><value>普通文件部署、换版与清除；手动添加游戏，以及 Steam、GOG、Epic、EA、Xbox、Ubisoft、Battle.net、Rockstar 本地扫描。ReShade 专用适配尚未接入。Vulkan ReShade 自动管理不在首版范围；普通资源不受此限制。OptiScaler 仅按普通文件复制，不执行 BAT。</value></data>
   <data name="License" xml:space="preserve"><value>来源与许可</value></data>
   <data name="LicenseNotice" xml:space="preserve"><value>RHI-CS 含 RankFTW/RHI 的 GPL-3.0 适配代码。软件按 GPL-3.0 提供，无担保；你可按许可证条件修改和再分发。许可证和来源说明随程序提供。</value></data>
   <data name="OpenLicenseFolder" xml:space="preserve"><value>查看许可证所在目录</value></data>
