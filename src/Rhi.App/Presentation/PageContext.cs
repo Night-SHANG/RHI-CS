@@ -1,5 +1,6 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Automation;
 using Rhi.App.Localization;
 using Rhi.App.Services;
 
@@ -29,13 +30,18 @@ public sealed class PageContext(AppSession session, WindowsIntegration windows, 
         return button;
     }
     public Button Action(string key, Action action, bool enabled = true) => Button(key, () => { action(); return Task.CompletedTask; }, enabled);
-    private ScrollViewer DialogContent(UIElement content) => new()
+    private ScrollViewer DialogContent(UIElement content)
     {
-        Content = content, Width = Math.Clamp(Root.ActualWidth - 96, 280, 480),
-        MaxHeight = Math.Clamp(Root.ActualHeight - 180, 180, 480),
-        HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
-        VerticalScrollBarVisibility = ScrollBarVisibility.Auto
-    };
+        var scroll = new ScrollViewer
+        {
+            Content = content, Width = Math.Clamp(Root.ActualWidth - 96, 280, 480),
+            MaxHeight = Math.Clamp(Root.ActualHeight - 180, 180, 480),
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Auto
+        };
+        AutomationProperties.SetAutomationId(scroll, "DialogContentScroll");
+        return scroll;
+    }
     public async Task Message(string title, string text)
     {
         var dialog = new ContentDialog { XamlRoot = Root.XamlRoot, Title = Strings.Get(title),

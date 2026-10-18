@@ -95,20 +95,13 @@ function Assert-FixedAction($before, [string]$action = 'Save') {
         }
     }
 }
-function Scroll-DialogToEnd($anchor) {
-    $node = $anchor
-    while ($null -ne $node) {
-        $pattern = $null
-        if ($node.TryGetCurrentPattern([Windows.Automation.ScrollPattern]::Pattern, [ref]$pattern) -and
-            $pattern.Current.VerticallyScrollable) {
-            $pattern.SetScrollPercent([Windows.Automation.ScrollPattern]::NoScroll, 100)
-            Start-Sleep -Milliseconds 350
-            if ($pattern.Current.VerticalScrollPercent -lt 99) { throw 'Dialog content did not scroll to its end.' }
-            return
-        }
-        $node = [Windows.Automation.TreeWalker]::ControlViewWalker.GetParent($node)
-    }
-    throw 'Long dialog content has no accessible vertical scroll container.'
+function Scroll-DialogToEnd {
+    $node = Find-Control -id 'DialogContentScroll'
+    $pattern = $node.GetCurrentPattern([Windows.Automation.ScrollPattern]::Pattern)
+    if (-not $pattern.Current.VerticallyScrollable) { throw 'Long dialog content is not scrollable.' }
+    $pattern.SetScrollPercent([Windows.Automation.ScrollPattern]::NoScroll, 100)
+    Start-Sleep -Milliseconds 350
+    if ($pattern.Current.VerticalScrollPercent -lt 99) { throw 'Dialog content did not scroll to its end.' }
 }
 try {
     Find-Control -name (Label 'Libraries') | Out-Null
@@ -170,7 +163,7 @@ try {
     Select-ResourceKind 'ReShadeAddon'
     Assert-FixedAction $englishSave
     Capture '11-version-reshade-en'
-    Scroll-DialogToEnd (Find-Control -id 'VersionResourceType')
+    Scroll-DialogToEnd
     Assert-FixedAction $englishSave
     Capture '13-version-reshade-en-scrolled'
     Invoke-Control 'Cancel'
@@ -182,7 +175,7 @@ try {
     $configurationChanges = Find-Control -name (Label 'ConfigurationChanges')
     $englishConfirm = Assert-ActionOrder 'ConfirmExecute'
     Capture '12-reshade-preflight-en'
-    Scroll-DialogToEnd $configurationChanges
+    Scroll-DialogToEnd
     Assert-FixedAction $englishConfirm 'ConfirmExecute'
     Capture '14-reshade-preflight-en-scrolled'
     Invoke-Control 'ConfirmExecute'
@@ -197,8 +190,11 @@ try {
     Capture '16-reshade-cleared-en'
     [IO.File]::WriteAllText((Join-Path $captureRoot 'result.txt'), 'PASS: launch, type controls, fixed dialog actions, INI preview, search retention, live Chinese/English switching, and deploy/clear through confirmation. Screenshots require visual review; fixture binaries are synthetic and never executed.', [Text.Encoding]::UTF8)
 } catch {
+    $failure = $_
+    Write-Warning "$failure`n$($failure.ScriptStackTrace)"
     try { Capture 'failure' } catch { Write-Warning $_ }
     $diagnostic = @(
+        "Failure: $failure", "$($failure.ScriptStackTrace)",
         "Interactive: $([Environment]::UserInteractive)",
         "Process ID: $($process.Id)",
         "Exited: $($process.HasExited)",
@@ -207,7 +203,12 @@ try {
     )
     foreach ($stream in @('stdout.txt', 'stderr.txt')) {
         $streamPath = Join-Path $captureRoot $stream
-        if (Test-Path -LiteralPath $streamPath) { $diagnostic += [IO.File]::ReadAllText($streamPath, [Text.Encoding]::UTF8) }
+        if (Test-Path -LiteralPath $streamPath) {
+            try {
+                $reader = [IO.StreamReader]::new([IO.File]::Open($streamPath, [IO.FileMode]::Open, [IO.FileAccess]::Read, [IO.FileShare]::ReadWrite))
+                try { $diagnostic += $reader.ReadToEnd() } finally { $reader.Dispose() }
+            } catch { $diagnostic += "Stream unavailable: $stream $_" }
+        }
     }
     try {
         $diagnostic += Get-WinEvent -FilterHashtable @{LogName='Application'; StartTime=$launchTime.AddSeconds(-5)} -ErrorAction Stop |
@@ -216,7 +217,7 @@ try {
     } catch { $diagnostic += "Event log: $_" }
     [IO.File]::WriteAllLines((Join-Path $captureRoot 'startup-diagnostics.txt'), [string[]]$diagnostic, [Text.Encoding]::UTF8)
     $diagnostic | Write-Host
-    throw
+    throw $failure
 } finally {
     if (-not $process.HasExited) { $process.Kill(); $process.WaitForExit() }
 }
