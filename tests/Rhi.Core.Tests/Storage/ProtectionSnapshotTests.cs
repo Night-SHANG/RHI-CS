@@ -50,7 +50,7 @@ public sealed class ProtectionSnapshotTests
         using var f = new Sandbox();
         DeployPair(f);
         File.Move(f.Target, f.Target + ".outside-receipt");
-        var plan = f.Plan(new(f.Library.Id, null, OperationKind.Clear));
+        var plan = f.Plan(new DeploymentRequest(f.Library.Id, null, OperationKind.Clear));
         Assert.True(Assert.Single(plan.Libraries).RequiresProtection);
         Assert.Equal(OperationStatus.Succeeded, Assert.Single(f.Engine.Execute(plan, new(true, true))).Status);
         var copy = Assert.Single(ProtectionCatalog.Read(f.Store).Operations);
@@ -67,7 +67,7 @@ public sealed class ProtectionSnapshotTests
         File.WriteAllText(f.Target, "original");
         f.Deploy();
         File.WriteAllText(f.Target, "user edit");
-        var plan = f.Plan(new(f.Library.Id, null, OperationKind.Clear));
+        var plan = f.Plan(new DeploymentRequest(f.Library.Id, null, OperationKind.Clear));
         Assert.Equal("ConsentRequired", Assert.Throws<DeploymentException>(() => f.Engine.Execute(plan, new(true, false))).Code);
         Assert.Equal("user edit", File.ReadAllText(f.Target));
         Assert.Equal(OperationStatus.Succeeded, Assert.Single(f.Engine.Execute(plan, new(true, false, true))).Status);
@@ -82,7 +82,7 @@ public sealed class ProtectionSnapshotTests
         using var f = new Sandbox();
         f.Deploy(); File.WriteAllText(f.Target, "manual");
         var next = f.AddVersion("v2");
-        var plan = f.Plan(new(f.Library.Id, next.Id, OperationKind.Change));
+        var plan = f.Plan(new DeploymentRequest(f.Library.Id, next.Id, OperationKind.Change));
         Assert.Equal("ConsentRequired", Assert.Throws<DeploymentException>(() => f.Engine.Execute(plan, new(true, false, true))).Code);
         Assert.Equal("manual", File.ReadAllText(f.Target));
     }
@@ -93,7 +93,7 @@ public sealed class ProtectionSnapshotTests
         using var f = new Sandbox();
         f.Deploy(); File.WriteAllText(f.Target, "manual");
         var engine = new DeploymentEngine(f.Store, (phase, _) => { if (phase == "BeforeCommit") throw new IOException("fault"); });
-        var result = Assert.Single(engine.Execute(f.Plan(new(f.Library.Id, null, OperationKind.Clear)), new(true, false, true)));
+        var result = Assert.Single(engine.Execute(f.Plan(new DeploymentRequest(f.Library.Id, null, OperationKind.Clear)), new(true, false, true)));
         Assert.Equal(OperationStatus.Restored, result.Status);
         Assert.Equal("manual", File.ReadAllText(f.Target));
         Assert.Single(f.Store.State.Receipts);
@@ -107,7 +107,7 @@ public sealed class ProtectionSnapshotTests
         using var f = new Sandbox();
         DeployPair(f); File.WriteAllText(f.Target, "manual");
         var engine = new DeploymentEngine(f.Store, protectionDescription: _ => throw new IOException("description unavailable"));
-        Assert.Equal(OperationStatus.Restored, Assert.Single(engine.Execute(f.Plan(new(f.Library.Id, null, OperationKind.Clear)), new(true, true))).Status);
+        Assert.Equal(OperationStatus.Restored, Assert.Single(engine.Execute(f.Plan(new DeploymentRequest(f.Library.Id, null, OperationKind.Clear)), new(true, true))).Status);
         Assert.Equal("manual", File.ReadAllText(f.Target));
         Assert.Equal("binary", File.ReadAllText(Path.Combine(f.Game.DeploymentRoot, "unchanged.dll")));
         Assert.Single(f.Store.State.Receipts);
