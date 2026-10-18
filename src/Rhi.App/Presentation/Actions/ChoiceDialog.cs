@@ -19,13 +19,19 @@ public sealed partial class PageContext
             IsSecondaryButtonEnabled = secondaryEnabled, RequestedTheme = Root.RequestedTheme,
             DefaultButton = close == "Close" ? ContentDialogButton.None : ContentDialogButton.Primary };
         TrackDialogSize(dialog, scroll);
-        dialog.Opened += (_, _) => Identify(dialog);
+        // WinUI can recreate native footer buttons after Opened (theme/language/template updates).
+        // Keep semantic IDs on the current template instances, without replacing their styles.
+        EventHandler<object> identify = (_, _) => Identify(dialog);
+        dialog.LayoutUpdated += identify;
+        dialog.Closed += (_, _) => dialog.LayoutUpdated -= identify;
         void Identify(DependencyObject parent)
         {
             if (parent is Button button)
             {
-                if (button.Name == "PrimaryButton" && primaryId is not null) AutomationProperties.SetAutomationId(button, primaryId);
-                if (button.Name == "SecondaryButton" && secondaryId is not null) AutomationProperties.SetAutomationId(button, secondaryId);
+                if (button.Name == "PrimaryButton" && primaryId is not null && AutomationProperties.GetAutomationId(button) != primaryId)
+                    AutomationProperties.SetAutomationId(button, primaryId);
+                if (button.Name == "SecondaryButton" && secondaryId is not null && AutomationProperties.GetAutomationId(button) != secondaryId)
+                    AutomationProperties.SetAutomationId(button, secondaryId);
             }
             for (var i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++) Identify(VisualTreeHelper.GetChild(parent, i));
         }
