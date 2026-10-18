@@ -64,8 +64,10 @@ if args.published is not None:
                             for path in args.published.rglob("*")
                             if path.suffix.lower() in {".xbf", ".pri"})
     print("Published XAML resources: " + ", ".join(xaml_resources))
-    if not (args.published / "resources.pri").is_file():
-        errors.append("missing published application resource index: resources.pri")
+    app_project = ET.parse(root / "src/Rhi.App/Rhi.App.csproj").getroot()
+    resource_index = app_project.findtext("./PropertyGroup/AssemblyName") + ".pri"
+    if not (args.published / resource_index).is_file():
+        errors.append(f"missing published application resource index: {resource_index}")
     for language, values in catalogs.items():
         path = args.published / "Strings" / language / "Resources.resw"
         if not path.is_file():
