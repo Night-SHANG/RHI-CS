@@ -19,6 +19,9 @@
 
 ## 验证
 
+首轮远程结果：180 项核心测试通过；UseWindowsForms 引入 WindowsDesktop XAML 构建目标并触发 MC6000，与 WinUI XAML 冲突。改为仅 FrameworkReference Microsoft.WindowsDesktop.App.WindowsForms，直接引用系统对话框类与随包运行库，不导入 Forms/WPF 的项目构建目标。该修正仍须远程编译与实际原生窗口检查。
+
 补充授权：已部署复选框也用于批量清除；表头全选/取消全选及部分选中状态。采用 Microsoft selection modes 的复选框与批量命令模式（https://learn.microsoft.com/windows/uwp/design/controls-and-patterns/selection-modes），没有选择时禁用批量命令。候选默认仍是当前版本；全选不会隐式换到其他版本。混合选择时部署/换版和清除按钮分别显示适用项数量，预检列出实际处理对象；取消勾选不触发清除。
 
 本地只静态检查。GitHub 验证旧数据兼容、所属目录不改写来源、混合批次换版/部署、失效来源与禁用原因、取消不写入、清除恢复、局部刷新保持草稿/选择/滚动、目录选择器实际打开指定起点，以及中英文浅深色和高 DPI 截图。编译、自动检查、逐图视觉对照和用户实际使用分开记录。
+
