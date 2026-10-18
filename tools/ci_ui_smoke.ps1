@@ -185,8 +185,17 @@ try {
     Scroll-DialogToEnd $configurationChanges
     Assert-FixedAction $englishConfirm 'ConfirmExecute'
     Capture '14-reshade-preflight-en-scrolled'
-    Invoke-Control 'Cancel'
-    [IO.File]::WriteAllText((Join-Path $captureRoot 'result.txt'), 'PASS: launch, type controls, fixed dialog actions, INI preview, search retention, and live Chinese/English switching. Screenshots require visual review.', [Text.Encoding]::UTF8)
+    Invoke-Control 'ConfirmExecute'
+    Find-Control -name (Label 'ClearDeployment') -Action | Out-Null
+    Find-Control -name (Label 'Installed') | Out-Null
+    Capture '15-reshade-deployed-en'
+    Invoke-Control 'ClearDeployment'
+    Assert-ActionOrder 'ConfirmExecute' | Out-Null
+    Invoke-Control 'ConfirmExecute'
+    Find-Control -name (Label 'Deploy') -Action | Out-Null
+    Find-Control -name (Label 'NotDeployed') | Out-Null
+    Capture '16-reshade-cleared-en'
+    [IO.File]::WriteAllText((Join-Path $captureRoot 'result.txt'), 'PASS: launch, type controls, fixed dialog actions, INI preview, search retention, live Chinese/English switching, and deploy/clear through confirmation. Screenshots require visual review; fixture binaries are synthetic and never executed.', [Text.Encoding]::UTF8)
 } catch {
     try { Capture 'failure' } catch { Write-Warning $_ }
     $diagnostic = @(
