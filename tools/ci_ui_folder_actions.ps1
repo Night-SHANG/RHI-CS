@@ -23,10 +23,12 @@ $folderState = [IO.File]::ReadAllText((Join-Path $fixture.Root 'workspace.json')
 Invoke-Control 'Games'
 Check-FolderAction 'GameOpenFolder' $folderState.Games[0].DeploymentRoot 'GamesScroll'
 Invoke-Control 'Libraries'
+(Find-Control -id 'LibrariesSearch').GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).SetValue('Beta')
 if ((Find-Control -id 'LibraryOpenFolder').Current.IsEnabled) { throw 'Unset library directory can be opened.' }
 $alphaLibrary = @($folderState.Libraries | Where-Object { $_.Id.Replace('-', '') -eq $alpha })[0]
 (Find-Control -id 'LibrariesSearch').GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).SetValue('Alpha')
 Check-FolderAction 'LibraryOpenFolder' $alphaLibrary.SourceRoot 'LibraryScroll'
 Check-FolderAction ('VersionOpenFolder_' + $alphaLibrary.Versions[0].Id.Replace('-', '')) ([IO.Path]::GetDirectoryName($alphaLibrary.Versions[0].SourcePath)) 'LibraryScroll'
 Capture '20-library-folder-actions'
+(Find-Control -id 'LibrariesSearch').GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).SetValue('ReShade')
 (Find-Control -id 'LibrariesSearch').GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).SetValue('')
