@@ -71,8 +71,15 @@ function Assert-OfflineLayout {
     if ($width -ge 1016 -and ($right.Left -le $left.Right -or [Math]::Abs($right.Top - $left.Top) -gt 2)) { throw 'Wide Settings must have top-aligned left settings and right offline form.' }
     if ($width -ge 1016) {
         $viewport = (Find-Control -id 'SettingsScroll').Current.BoundingRectangle
-        $general = (Find-Control -id 'SettingsGeneralCard' -IncludeOffscreen).Current.BoundingRectangle
-        $offlineCard = (Find-Control -id 'OfflinePreparationCard' -IncludeOffscreen).Current.BoundingRectangle
+        # Border has no automation peer. Reconstruct card edges from existing full-width rows.
+        # Ui.Card has 18 DIP padding plus a 1 DIP border on each side.
+        $inset = 19 * $dpiScale
+        $generalStart = (Find-Control -id 'SettingsTheme').Current.BoundingRectangle.Left - $inset
+        $generalEnd = (Find-Control -id 'SettingsSave').Current.BoundingRectangle.Right + $inset
+        $offlineStart = (Find-Control -id 'OfflineInstallerInput').Current.BoundingRectangle.Left - $inset
+        $offlineEnd = (Find-Control -id 'OfflineChooseInstaller').Current.BoundingRectangle.Right + $inset
+        $general = [PSCustomObject]@{ Left=$generalStart; Right=$generalEnd; Width=$generalEnd-$generalStart }
+        $offlineCard = [PSCustomObject]@{ Left=$offlineStart; Right=$offlineEnd; Width=$offlineEnd-$offlineStart }
         $evidence.Add("Settings horizontal bounds: viewport=$viewport; general=$general; offline=$offlineCard")
         foreach ($card in @($general, $offlineCard)) {
             if ($card.Left -lt $viewport.Left - 2 -or $card.Right -gt $viewport.Right + 2) {

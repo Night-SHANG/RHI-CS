@@ -27,6 +27,7 @@ public sealed partial class SettingsView : UserControl
             await Strings.UseAsync(c.Session.State!.Preferences.Language);
             c.Refresh();
         }, !c.Session.Busy);
+        AutomationProperties.SetAutomationId(save, "SettingsSave");
         var root = c.Session.Store!.Root;
         var fields = Ui.Row(theme, language, save);
         save.VerticalAlignment = VerticalAlignment.Bottom;
