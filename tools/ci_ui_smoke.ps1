@@ -87,13 +87,28 @@ function Select-ResourceKind([string]$key) {
     $option.GetCurrentPattern([Windows.Automation.SelectionItemPattern]::Pattern).Select()
     Start-Sleep -Milliseconds 250
 }
-function Assert-FixedAction($before) {
-    $after = Assert-ActionOrder 'Save'
+function Assert-FixedAction($before, [string]$action = 'Save') {
+    $after = Assert-ActionOrder $action
     foreach ($property in @('X', 'Y', 'Width', 'Height')) {
         if ([Math]::Abs($before.$property - $after.$property) -gt 1) {
             throw "Version type change moved action bounds: $property ($($before.$property) -> $($after.$property))"
         }
     }
+}
+function Scroll-DialogToEnd($anchor) {
+    $node = $anchor
+    while ($null -ne $node) {
+        $pattern = $null
+        if ($node.TryGetCurrentPattern([Windows.Automation.ScrollPattern]::Pattern, [ref]$pattern) -and
+            $pattern.Current.VerticallyScrollable) {
+            $pattern.SetScrollPercent([Windows.Automation.ScrollPattern]::NoScroll, 100)
+            Start-Sleep -Milliseconds 350
+            if ($pattern.Current.VerticalScrollPercent -lt 99) { throw 'Dialog content did not scroll to its end.' }
+            return
+        }
+        $node = [Windows.Automation.TreeWalker]::ControlViewWalker.GetParent($node)
+    }
+    throw 'Long dialog content has no accessible vertical scroll container.'
 }
 try {
     Find-Control -name (Label 'Libraries') | Out-Null
@@ -141,8 +156,8 @@ try {
     }
     Capture '06-search-retained'
     Invoke-Control 'Settings'
-    Capture '09-settings-zh'
     $language = Find-Control -id 'SettingsLanguage'
+    Capture '09-settings-zh'
     $language.GetCurrentPattern([Windows.Automation.ExpandCollapsePattern]::Pattern).Expand()
     (Find-Control -name (Label 'en-US')).GetCurrentPattern([Windows.Automation.SelectionItemPattern]::Pattern).Select()
     Invoke-Control 'Save'
@@ -155,15 +170,21 @@ try {
     Select-ResourceKind 'ReShadeAddon'
     Assert-FixedAction $englishSave
     Capture '11-version-reshade-en'
+    Scroll-DialogToEnd (Find-Control -id 'VersionResourceType')
+    Assert-FixedAction $englishSave
+    Capture '13-version-reshade-en-scrolled'
     Invoke-Control 'Cancel'
     Invoke-Control 'Games'
     if ((Find-Control -id 'GamesSearch').GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).Current.Value -ne 'CI Game') {
         throw 'Search query was lost during language switching.'
     }
     Invoke-Control 'Deploy'
-    Find-Control -name (Label 'ConfigurationChanges') | Out-Null
-    Assert-ActionOrder 'ConfirmExecute' | Out-Null
+    $configurationChanges = Find-Control -name (Label 'ConfigurationChanges')
+    $englishConfirm = Assert-ActionOrder 'ConfirmExecute'
     Capture '12-reshade-preflight-en'
+    Scroll-DialogToEnd $configurationChanges
+    Assert-FixedAction $englishConfirm 'ConfirmExecute'
+    Capture '14-reshade-preflight-en-scrolled'
     Invoke-Control 'Cancel'
     [IO.File]::WriteAllText((Join-Path $captureRoot 'result.txt'), 'PASS: launch, type controls, fixed dialog actions, INI preview, search retention, and live Chinese/English switching. Screenshots require visual review.', [Text.Encoding]::UTF8)
 } catch {
