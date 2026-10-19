@@ -207,7 +207,7 @@
   <data name="RecheckSelection" xml:space="preserve"><value>Recheck selection</value></data>
   <data name="FinishReview" xml:space="preserve"><value>Finish without deploying</value></data>
   <data name="BatchOperation" xml:space="preserve"><value>Batch operation</value></data>
-  <data name="RefreshProtection" xml:space="preserve"><value>Refresh usage</value></data>
+  <data name="RefreshProtection" xml:space="preserve"><value>Refresh</value></data>
   <data name="ProtectionUsage" xml:space="preserve"><value>Protected copies: {0:N0} sets · {1:N0} bytes (including records and partial copies)</value></data>
   <data name="ProtectionNotCounted" xml:space="preserve"><value>Counting protected copies…</value></data>
   <data name="ProtectionReadFailed" xml:space="preserve"><value>Cannot count protected copies. Check the data folder and retry.</value></data>

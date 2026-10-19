@@ -24,8 +24,12 @@ public sealed partial class PageContext(AppSession session, WindowsIntegration w
     public async Task Run(Func<Task> action)
     {
         try { await action(); }
-        catch (Exception ex) { await Message("Error", ex is Rhi.Core.Models.DeploymentException de
-            ? Strings.Get(de.Code) + "\n" + de.Message : ex.Message); }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine(ex);
+            await Message("Error", ex is Rhi.Core.Models.DeploymentException de
+                ? Strings.Get(de.Code) + "\n" + de.Message : ex.Message);
+        }
     }
     public Button Button(string key, Func<Task> action, bool enabled = true)
     {

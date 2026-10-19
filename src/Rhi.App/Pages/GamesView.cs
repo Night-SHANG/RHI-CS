@@ -150,18 +150,19 @@ public sealed partial class GamesView : UserControl
         var versionCell = Ui.Stack(Ui.OneLine(receipt is null ? Strings.Get("PendingVersion") :
             Strings.Get("CurrentVersion") + ": " + receipt.VersionLabel, true), box);
         versionCell.Spacing = 4;
-        var actions = Ui.CompactActions(deploy);
+        var actionButtons = new List<Button> { deploy };
         if (receipt is not null)
         {
             var clear = c.Button("ClearDeployment", () => Preflight(game, [new(library.Id, null, OperationKind.Clear)]), !c.Session.Busy && !locked);
             AutomationProperties.SetAutomationId(clear, "ClearLibrary_" + library.Id.ToString("N"));
-            actions = Ui.CompactActions(deploy, clear,
-                c.Button("ViewDifferences", () => ViewDifferences(game, library, receipt), !c.Session.Busy));
+            actionButtons.Add(clear);
+            actionButtons.Add(c.Button("ViewDifferences", () => ViewDifferences(game, library, receipt), !c.Session.Busy));
             var snapshot = c.Session.TargetObservation;
             var health = snapshot?.GameId == game.Id && snapshot.Revision == c.Session.State.Revision
                 ? snapshot.Receipts.FirstOrDefault(r => r.LibraryId == library.Id)?.Health.ToString() : null;
             status.Children.Add(Ui.Status(health ?? "NotChecked", true));
         }
+        var actions = Ui.CompactActions(actionButtons.ToArray());
         void Update()
         {
             ToolTipService.SetToolTip(box, box.SelectedIndex >= 0 ? ResourcePresentation.VersionName(versions[box.SelectedIndex]) : null);

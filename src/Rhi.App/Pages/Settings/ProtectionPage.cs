@@ -57,6 +57,7 @@ public sealed partial class SettingsView
         async Task RefreshInventory()
         {
             refresh.IsEnabled = false;
+            measured.Text = Strings.Get("FormChecking");
             try { await c.Session.InspectProtection(); }
             finally { RenderInventory(); refresh.IsEnabled = !c.Session.Busy; }
         }
@@ -91,6 +92,7 @@ public sealed partial class SettingsView
     private static Grid ProtectionRow(FrameworkElement owner, FrameworkElement version, FrameworkElement time, FrameworkElement action, bool header = false)
     {
         var row = Ui.Columns([1.1, 2.5, 0.8, 1], owner, version, time, action);
+        row.MinHeight = 0;
         row.Padding = new Thickness(20, 12, 20, 12);
         row.Height = header ? 48 : 92;
         row.ColumnDefinitions[3].Width = new GridLength(128);

@@ -207,7 +207,7 @@
   <data name="RecheckSelection" xml:space="preserve"><value>重新预检所选</value></data>
   <data name="FinishReview" xml:space="preserve"><value>结束，本次不部署</value></data>
   <data name="BatchOperation" xml:space="preserve"><value>批量操作</value></data>
-  <data name="RefreshProtection" xml:space="preserve"><value>重新统计</value></data>
+  <data name="RefreshProtection" xml:space="preserve"><value>刷新</value></data>
   <data name="ProtectionUsage" xml:space="preserve"><value>修改保护副本 {0:N0} 组 · 占用 {1:N0} 字节（含记录及未完成副本）</value></data>
   <data name="ProtectionNotCounted" xml:space="preserve"><value>正在统计修改保护副本…</value></data>
   <data name="ProtectionReadFailed" xml:space="preserve"><value>无法统计修改保护副本，请检查数据目录后重试。</value></data>
