@@ -9,9 +9,33 @@ if ([Math]::Abs($open.Current.BoundingRectangle.Top - $move.Current.BoundingRect
 Capture '01-data-page'
 $move.GetCurrentPattern([Windows.Automation.InvokePattern]::Pattern).Invoke()
 if (-not $fixture.Interrupted) {
-    $input = Find-Control -id 'MigrationParentInput'
+    $migrationInput = Find-Control -id 'MigrationParentInput'
     Capture '02-move-picker'
-    $input.GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).SetValue($fixture.Parent)
+    (Find-Control -id 'MigrationBrowse').GetCurrentPattern([Windows.Automation.InvokePattern]::Pattern).Invoke()
+    $native = $null
+    for ($attempt = 0; $attempt -lt 40; $attempt++) {
+        Start-Sleep -Milliseconds 150
+        $filter = [Windows.Automation.AndCondition]::new(
+            [Windows.Automation.PropertyCondition]::new([Windows.Automation.AutomationElement]::ProcessIdProperty, $process.Id),
+            [Windows.Automation.PropertyCondition]::new([Windows.Automation.AutomationElement]::ClassNameProperty, '#32770'))
+        $native = [Windows.Automation.AutomationElement]::RootElement.FindFirst([Windows.Automation.TreeScope]::Descendants, $filter)
+        if ($native) { break }
+    }
+    if (-not $native) { throw 'Migration folder picker did not open.' }
+    $nodes = $native.FindAll([Windows.Automation.TreeScope]::Descendants, [Windows.Automation.Condition]::TrueCondition)
+    $cancel = @($nodes | Where-Object { $_.Current.ControlType -eq [Windows.Automation.ControlType]::Button -and $_.Current.Name -match '^(Cancel|\u53d6\u6d88)$' }) | Select-Object -First 1
+    if (-not $cancel) { throw 'Migration folder picker cancel missing.' }
+    $screen = [Windows.Forms.SystemInformation]::VirtualScreen
+    $bitmap = [Drawing.Bitmap]::new($screen.Width, $screen.Height)
+    $graphics = [Drawing.Graphics]::FromImage($bitmap)
+    try {
+        $graphics.CopyFromScreen($screen.Left, $screen.Top, 0, 0, $screen.Size)
+        $bitmap.Save((Join-Path $captureRoot '02-native-folder-picker.png'), [Drawing.Imaging.ImageFormat]::Png)
+    } finally { $graphics.Dispose(); $bitmap.Dispose() }
+    $cancel.GetCurrentPattern([Windows.Automation.InvokePattern]::Pattern).Invoke()
+    Start-Sleep -Milliseconds 250
+    if ($migrationInput.GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).Current.Value -ne '') { throw 'Cancelling folder picker changed the destination.' }
+    $migrationInput.GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).SetValue($fixture.Parent)
     Invoke-Control 'Next'
     Find-Control -name $fixture.Destination | Out-Null
     Capture '03-move-confirm'

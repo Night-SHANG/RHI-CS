@@ -33,7 +33,8 @@ public sealed partial class SettingsView
         AutomationProperties.SetAutomationId(feedback, "OfflineValidation");
         OfflineReShadeRequest Read() => new(installer.Text, parent.Text, name.Text, architecture.SelectedIndex == 1 ? "x86" : "x64", apis[Math.Max(0, api.SelectedIndex)]);
         Action? updateResult = null;
-        var create = c.Button("CreateOffline", async () =>
+        Button create = null!;
+        create = c.Button("CreateOffline", async () =>
         {
             var request = Read();
             c.Offline = c.Offline with { Request = request, Failure = null };

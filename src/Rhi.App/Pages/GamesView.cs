@@ -31,7 +31,8 @@ public sealed partial class GamesView : UserControl
         var filtering = false;
         void ShowGame(GameEntry? game)
         {
-            var stamp = AtomicJson.Fingerprint(new { Game = game, c.Session.State!.Libraries });
+            var stamp = AtomicJson.Fingerprint(new { Game = game, c.Session.State!.Libraries,
+                LocationAvailable = game is not null && Directory.Exists(game.InstallRoot) && Directory.Exists(game.DeploymentRoot) && File.Exists(game.ExePath) });
             if (detail.Content is not null && c.GameId == game?.Id && gameStamp == stamp) return;
             gameStamp = stamp;
             c.GameId = game?.Id;
