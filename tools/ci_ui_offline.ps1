@@ -1,5 +1,13 @@
 if ($env:GITHUB_ACTIONS -ne 'true' -or -not $Visual) { throw 'Remote visual fixture required.' }
 $offline = Get-Content -LiteralPath $FixtureMetadata -Raw -Encoding UTF8 | ConvertFrom-Json
+function Assert-OfflineTextCount([string]$key, [int]$expected) {
+    $condition = [Windows.Automation.AndCondition]::new(
+        [Windows.Automation.PropertyCondition]::new([Windows.Automation.AutomationElement]::NameProperty, (Label $key)),
+        [Windows.Automation.PropertyCondition]::new([Windows.Automation.AutomationElement]::ControlTypeProperty, [Windows.Automation.ControlType]::Text))
+    $offlineWindow = [Windows.Automation.AutomationElement]::FromHandle($process.MainWindowHandle)
+    $count = $offlineWindow.FindAll([Windows.Automation.TreeScope]::Descendants, $condition).Count
+    if ($count -ne $expected) { throw "Offline text count for ${key}: expected $expected, found $count." }
+}
 Set-Appearance 'Light' 'zh-CN'
 Capture 'settings-redesign-light'
 function Capture-Desktop([string]$name) {
@@ -61,26 +69,36 @@ if (-not (Find-Control -id 'OfflineCreate').Current.IsEnabled) { throw 'Valid of
 Capture 'offline-ready-to-create'
 $offlineIdentity = (Find-Control -id 'OfflineInstallerInput' -IncludeOffscreen).GetRuntimeId() -join ','
 $offlineNavigation = (Find-Control -id 'SettingsNavOffline' -IncludeOffscreen).GetRuntimeId() -join ','
+$offlineActionOffset = $createBounds.Top - (Find-Control -id 'OfflinePreparationCard' -IncludeOffscreen).Current.BoundingRectangle.Top
 Invoke-VisualId 'OfflineCreate'
 Find-Control -id 'OfflineOutput' -IncludeOffscreen | Out-Null
 if (((Find-Control -id 'OfflineInstallerInput' -IncludeOffscreen).GetRuntimeId() -join ',') -ne $offlineIdentity -or
     ((Find-Control -id 'SettingsNavOffline' -IncludeOffscreen).GetRuntimeId() -join ',') -ne $offlineNavigation) { throw 'Offline creation rebuilt the form or Settings navigation.' }
 Reveal-SettingsControl 'OfflineOpenOutput' | Out-Null
-if ((Find-Control -id 'OfflineValidation' -IncludeOffscreen).Current.Name -ne (Label 'OfflineReady')) { throw 'Successful export shows an error instead of success.' }
+Assert-OfflineTextCount 'OfflineReady' 1
+Assert-OfflineTextCount 'OfflineOutputExists' 0
+$completedActionOffset = (Find-Control -id 'OfflineCreate' -IncludeOffscreen).Current.BoundingRectangle.Top - (Find-Control -id 'OfflinePreparationCard' -IncludeOffscreen).Current.BoundingRectangle.Top
+if ([Math]::Abs($offlineActionOffset - $completedActionOffset) -gt 2) { throw 'Success feedback moved the offline actions within the card.' }
 Capture 'offline-created'
 Set-Appearance 'Dark' 'en-US'
 Capture 'settings-redesign-dark'
 Select-SettingsSection 'Offline'
+Assert-OfflineTextCount 'OfflineReady' 1
+Reveal-SettingsControl 'OfflineOpenOutput' | Out-Null
+Capture 'offline-created-dark-en'
 if ((Find-Control -id 'OfflineNameInput' -IncludeOffscreen).GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).Current.Value -ne 'UI-offline') { throw 'Appearance change lost the offline draft.' }
 Reveal-SettingsControl 'OfflineReset' | Out-Null
 Invoke-VisualId 'OfflineReset'
+Assert-OfflineTextCount 'OfflineReady' 0
 foreach ($field in @(@('OfflineInstallerInput', $offline.Installer), @('OfflineParentInput', $offline.Parent), @('OfflineNameInput', 'UI-offline'))) {
     (Find-Control -id $field[0] -IncludeOffscreen).GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).SetValue($field[1])
 }
 Reveal-SettingsControl 'OfflineCreate' | Out-Null
 if ((Find-Control -id 'OfflineCreate').Current.IsEnabled) { throw 'Existing output would be overwritten.' }
 if ((Find-Control -id 'OfflineValidation' -IncludeOffscreen).Current.Name -ne (Label 'OfflineOutputExists')) { throw 'Existing output conflict is not explained.' }
+Assert-OfflineTextCount 'OfflineOutputExists' 1
+Assert-OfflineTextCount 'OfflineReady' 0
 Capture 'offline-existing-output-dark'
 Invoke-VisualId 'OfflineReset'
 if ((Find-Control -id 'OfflineInstallerInput' -IncludeOffscreen).GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).Current.Value -ne '') { throw 'Reset did not clear the offline draft.' }
-$evidence.Add('PASS: inline Settings form, native folder picker open/cancel, persistent draft, DLL+INI export, reset and duplicate-output prevention in both languages.')
+$evidence.Add('PASS: inline Settings form, native folder picker open/cancel, persistent draft, DLL+INI export, one success message, stable action position, reset and duplicate-output prevention in both languages.')

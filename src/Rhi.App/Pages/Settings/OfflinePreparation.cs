@@ -74,7 +74,7 @@ public sealed partial class SettingsView
                 feedback.Text = Strings.Get("OfflineReadyToCreate");
             }
             catch (DeploymentException ex) when (ex.Code == "OfflineOutputExists" && c.Offline.CompletedRequest == c.Offline.Request)
-            { feedback.Text = Strings.Get("OfflineReady"); feedback.Foreground = Ui.ThemeBrush("SuccessBrush"); }
+            { feedback.Text = ""; } // The result section owns the success message; keep the validation slot stable.
             catch (Exception ex) when (ex is DeploymentException or IOException or UnauthorizedAccessException or ArgumentException)
             { feedback.Text = ErrorText(ex); feedback.Foreground = Ui.ThemeBrush("ErrorBrush"); }
             if (c.Offline.Failure is { } failure)

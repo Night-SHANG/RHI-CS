@@ -236,7 +236,7 @@
   <data name="OfflineOutputParent" xml:space="preserve"><value>输出位置</value></data>
   <data name="OfflineFolderName" xml:space="preserve"><value>新文件夹名称</value></data>
   <data name="OfflineArchitecture" xml:space="preserve"><value>游戏位数</value></data>
-  <data name="OfflineHelp" xml:space="preserve"><value>从本地官方安装包生成对应 DLL 和基础 ReShade.ini，不运行安装器。请按游戏选择位数和图形 API；Vulkan 不支持此方式。着色器、预设由你自行补入，不自动下载。</value></data>
+  <data name="OfflineHelp" xml:space="preserve"><value>请按游戏选择位数和图形 API；Vulkan 不支持此方式。着色器、预设由你自行补入，不自动下载。</value></data>
   <data name="OfflineOutputInvalid" xml:space="preserve"><value>请选择可用的输出文件夹，并填写不含路径分隔符的新文件夹名称。</value></data>
   <data name="OfflineOutputExists" xml:space="preserve"><value>输出名称已存在，请换一个名称。不会覆盖已有文件。</value></data>
   <data name="OfflineReady" xml:space="preserve"><value>离线 ReShade 已制作</value></data>
@@ -260,7 +260,7 @@
   <data name="SelectAll" xml:space="preserve"><value>全选／取消全选</value></data>
   <data name="BatchDeployCount" xml:space="preserve"><value>部署与更换版本（{0}）</value></data>
   <data name="BatchClearCount" xml:space="preserve"><value>清除部署（{0}）</value></data>
-  <data name="BatchSelectionHelp" xml:space="preserve"><value>按所选资源的状态分别计数；点击后先预检，取消勾选不会清除部署。</value></data>
+  <data name="BatchSelectionHelp" xml:space="preserve"><value>按所选资源的状态分别计数，点击后先预检。</value></data>
   <data name="BatchInstallCount" xml:space="preserve"><value>部署（{0}）</value></data>
   <data name="BatchChangeCount" xml:space="preserve"><value>更换版本（{0}）</value></data>
   <data name="OpenDeploymentFolder" xml:space="preserve"><value>打开部署目录</value></data>

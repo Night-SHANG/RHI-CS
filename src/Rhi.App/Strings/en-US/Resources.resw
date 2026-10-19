@@ -236,7 +236,7 @@
   <data name="OfflineOutputParent" xml:space="preserve"><value>Output location</value></data>
   <data name="OfflineFolderName" xml:space="preserve"><value>New folder name</value></data>
   <data name="OfflineArchitecture" xml:space="preserve"><value>Game architecture</value></data>
-  <data name="OfflineHelp" xml:space="preserve"><value>Extract the matching DLL and create a basic ReShade.ini from a local official installer without running it. Match the game architecture and graphics API; Vulkan is not supported by this method. Add shaders and presets yourself; nothing is downloaded automatically.</value></data>
+  <data name="OfflineHelp" xml:space="preserve"><value>Match the game architecture and graphics API; Vulkan is not supported by this method. Add shaders and presets yourself; nothing is downloaded automatically.</value></data>
   <data name="OfflineOutputInvalid" xml:space="preserve"><value>Choose an available output folder and enter a new folder name without path separators.</value></data>
   <data name="OfflineOutputExists" xml:space="preserve"><value>The output name already exists. Choose another name; existing files are never overwritten.</value></data>
   <data name="OfflineReady" xml:space="preserve"><value>Offline ReShade created</value></data>
@@ -260,7 +260,7 @@
   <data name="SelectAll" xml:space="preserve"><value>Select all / clear selection</value></data>
   <data name="BatchDeployCount" xml:space="preserve"><value>Deploy and change version ({0})</value></data>
   <data name="BatchClearCount" xml:space="preserve"><value>Clear deployment ({0})</value></data>
-  <data name="BatchSelectionHelp" xml:space="preserve"><value>Counts reflect applicable selected resources. Each action opens preflight; deselecting does not clear deployment.</value></data>
+  <data name="BatchSelectionHelp" xml:space="preserve"><value>Counts reflect applicable selected resources. Each action opens preflight.</value></data>
   <data name="BatchInstallCount" xml:space="preserve"><value>Deploy ({0})</value></data>
   <data name="BatchChangeCount" xml:space="preserve"><value>Change version ({0})</value></data>
   <data name="OpenDeploymentFolder" xml:space="preserve"><value>Open deployment folder</value></data>

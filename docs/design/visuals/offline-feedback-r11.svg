@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="680" viewBox="0 0 1040 680">
+<title>r11 局部状态样板：离线制作成功提示保留一处</title>
+<style>text{font-family:'Microsoft YaHei UI','Segoe UI',sans-serif;font-size:14px;fill:#202d42}.title{font-size:22px;font-weight:600}.muted{fill:#596579}.success{fill:#087b37}.button{fill:#fafbfc;stroke:#dce2e9}.center{text-anchor:middle}</style>
+<rect width="1040" height="680" fill="#f4f6f9"/>
+<text x="40" y="40" class="title">离线制作 · 完成状态（局部样板）</text>
+<rect x="40" y="64" width="960" height="468" rx="8" fill="white" stroke="#dce2e9"/>
+<text x="60" y="100">新文件夹名称</text><rect x="60" y="112" width="920" height="32" rx="4" class="button"/><text x="72" y="134">ReShade-offline</text>
+<text x="60" y="178">请按游戏选择位数和图形 API；Vulkan 不支持此方式。着色器、预设由你自行补入，不自动下载。</text>
+<rect x="748" y="290" width="112" height="36" rx="4" class="button"/><text x="804" y="313" class="center">重置</text>
+<rect x="868" y="290" width="112" height="36" rx="4" fill="#eceef1"/><text x="924" y="313" class="center muted">制作</text>
+<circle cx="64" cy="354" r="2" fill="#087b37"/><text x="78" y="359" class="success">离线 ReShade 已制作</text>
+<text x="60" y="390">F:\资源库\ReShade-offline</text>
+<text x="60" y="423">可将着色器放入 reshade-shaders/Shaders、纹理放入 reshade-shaders/Textures，并自行补充预设。</text>
+<text x="60" y="446">然后添加资源库和版本，选择此输出文件夹。当前未修改游戏或资源库配置。</text>
+<rect x="60" y="472" width="112" height="36" rx="4" class="button"/><text x="116" y="495" class="center">打开文件夹</text>
+<text x="40" y="578" class="title">游戏页批量区 · 仅精简重复说明</text>
+<text x="60" y="612">按所选资源的状态分别计数，点击后先预检。</text>
+<text x="40" y="654" class="muted">样板说明：上方校验槽保持 72 DIP；成功时不写文字，错误时原位显示。既有操作位置和流程不变。</text>
+</svg>
