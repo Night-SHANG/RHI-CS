@@ -37,13 +37,16 @@ function Record-Dpi([string]$phase) {
 }
 function Reveal-SettingsControl([string]$id) {
     Start-Sleep -Milliseconds 300
+    $minimumHeight = 30 * [SmokeWindow]::GetDpiForWindow($process.MainWindowHandle) / 96.0
     for ($attempt = 0; $attempt -lt 25; $attempt++) {
         $node = Find-Control -id $id -IncludeOffscreen
         $viewer = Find-Control -id 'SettingsScroll'
         $bounds = $node.Current.BoundingRectangle
         $viewport = $viewer.Current.BoundingRectangle
+        $requiredHeight = if ($node.Current.ControlType -eq [Windows.Automation.ControlType]::Button) { $minimumHeight } else { 1 }
         if ($viewport.IsEmpty -or $viewport.Height -le 0) { Start-Sleep -Milliseconds 200; continue }
-        if (-not $bounds.IsEmpty -and -not $node.Current.IsOffscreen -and $bounds.Height -gt 0 -and $bounds.Top -ge $viewport.Top -and $bounds.Bottom -le $viewport.Bottom) { return $node }
+        # WinUI may expose a clipped peer rectangle: one visible border is not a visible button.
+        if (-not $bounds.IsEmpty -and -not $node.Current.IsOffscreen -and $bounds.Height -ge $requiredHeight -and $bounds.Top -ge $viewport.Top -and $bounds.Bottom -le $viewport.Bottom - 2) { return $node }
         $scroll = $viewer.GetCurrentPattern([Windows.Automation.ScrollPattern]::Pattern)
         if ($scroll.Current.VerticallyScrollable) {
             $viewSize = $scroll.Current.VerticalViewSize
@@ -54,7 +57,7 @@ function Reveal-SettingsControl([string]$id) {
                 $requested = if ($position -ge 100) { 0.0 } else { $position + 10.0 }
             } else {
                 $travel = $viewport.Height * (100 / $viewSize - 1)
-                $delta = if ($bounds.Top -lt $viewport.Top) { $bounds.Top - $viewport.Top - 8 } else { $bounds.Bottom - $viewport.Bottom + 8 }
+                $delta = if ($bounds.Top -lt $viewport.Top) { $bounds.Top - $viewport.Top - 8 } else { [Math]::Max($minimumHeight, $bounds.Bottom - $viewport.Bottom + 8) }
                 $requested = $position + 100 * $delta / $travel
             }
             $target = [Math]::Max(0.0, [Math]::Min(100.0, [double]$requested))
