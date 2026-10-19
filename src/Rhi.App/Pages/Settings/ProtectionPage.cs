@@ -22,6 +22,7 @@ public sealed partial class SettingsView
         var usage = Ui.Text("");
         AutomationProperties.SetAutomationId(usage, "ProtectionUsage");
         var measured = Ui.Secondary("");
+        measured.TextAlignment = TextAlignment.Right;
         measured.HorizontalAlignment = HorizontalAlignment.Right;
         var refresh = c.Button("RefreshProtection", () => Task.CompletedTask, !c.Session.Busy);
         AutomationProperties.SetAutomationId(refresh, "RefreshProtection");
