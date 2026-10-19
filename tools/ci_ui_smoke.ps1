@@ -24,6 +24,7 @@ $appRoot = (Resolve-Path -LiteralPath $AppDirectory).Path
 $captureRoot = [IO.Path]::GetFullPath($OutputDirectory)
 [IO.Directory]::CreateDirectory($captureRoot) | Out-Null
 $initialLanguage = if ($Startup) { 'en-US' } else { 'zh-CN' }
+if ($Migration -and (Get-Content -LiteralPath $FixtureMetadata -Raw -Encoding UTF8 | ConvertFrom-Json).Interrupted) { $initialLanguage = 'en-US' }
 $labels = [xml][IO.File]::ReadAllText((Join-Path $appRoot "Strings/$initialLanguage/Resources.resw"), [Text.Encoding]::UTF8)
 function Label([string]$key) {
     $node = $labels.SelectSingleNode("/root/data[@name='$key']/value")

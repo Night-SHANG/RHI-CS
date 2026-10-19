@@ -5,7 +5,7 @@ namespace Rhi.Core.Storage.Migration;
 
 public static class RobocopyTransfer
 {
-    public static void Copy(string source, string destination)
+    public static void Copy(string source, string destination, Action? started = null)
     {
         var start = new ProcessStartInfo(Path.Combine(Environment.SystemDirectory, "robocopy.exe"))
         {
@@ -18,6 +18,7 @@ public static class RobocopyTransfer
         using var job = new TransferJob();
         using var process = Process.Start(start) ?? throw new DeploymentException("MigrationCopyFailed");
         job.Attach(process);
+        started?.Invoke();
         var output = process.StandardOutput.ReadToEndAsync();
         var error = process.StandardError.ReadToEndAsync();
         process.WaitForExit();

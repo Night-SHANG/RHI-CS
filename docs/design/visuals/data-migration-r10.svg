@@ -8,7 +8,7 @@
 <rect x="280" y="148" width="920" height="198" rx="8" fill="white" stroke="#dce2e9"/>
 <text x="304" y="183" class="muted">保存资源配置、部署记录、原件备份和修改保护副本。</text>
 <text x="304" y="220">C:\Tools\RHI-CS\Data</text>
-<text x="304" y="255" class="muted">迁移完成后使用新位置，并移除旧数据目录。游戏和资源来源保持原位。</text>
+<text x="304" y="255" class="muted">迁移整个 Data，完成后使用新位置并移除旧目录。Data 外的游戏和资源文件保持原位。</text>
 <rect x="304" y="286" width="180" height="36" rx="4" class="btn"/><text x="394" y="310" class="center">打开文件夹</text>
 <rect x="492" y="286" width="180" height="36" rx="4" class="btn"/><text x="582" y="310" class="center">迁移数据</text>
 <path d="M0 758H1320" stroke="#dfe5ed"/><text x="24" y="786">就绪</text><rect x="24" y="798" width="970" height="3" fill="#fafbfc"/>

@@ -4,6 +4,13 @@ using Rhi.Core.Storage;
 
 // CI only: terminate a separate process without executing finally/rollback handlers.
 using var store = WorkspaceStore.Open(args[0]);
+if (args[1].StartsWith("Migration:", StringComparison.Ordinal))
+{
+    Rhi.Core.Storage.Migration.WorkspaceMigration.Run(store, new(args[2]),
+        (root, _) => AtomicJson.Write(args[3], root),
+        checkpoint: phase => { if ("Migration:" + phase == args[1]) Environment.Exit(97); });
+    return 2;
+}
 var game = store.State.Games.Single();
 var library = store.State.Libraries.Single();
 var plan = new DeploymentPlanner(store).Build(store.State, game.Id,

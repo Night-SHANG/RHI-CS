@@ -64,7 +64,7 @@ public static class WorkspaceMigration
                         if (!record.Inventory.Files.Any(f => PathPolicy.Comparer.Equals(f.Path, Path.GetRelativePath(record.Destination, path))) &&
                             !PathPolicy.Comparer.Equals(Path.GetRelativePath(record.Destination, path), "workspace.lock"))
                             throw new DeploymentException("MigrationContentChanged", path);
-                    RobocopyTransfer.Copy(record.Source, record.Destination);
+                    RobocopyTransfer.Copy(record.Source, record.Destination, () => checkpoint?.Invoke("CopyStarted"));
                     checkpoint?.Invoke("Copied");
                     progress?.Invoke("MigrationVerifying");
                     MigrationFiles.Verify(record.Source, record.Inventory);

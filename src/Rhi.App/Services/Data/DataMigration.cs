@@ -51,5 +51,6 @@ public sealed partial class AppSession
             MigrationPhase = null; SavingConfiguration = false; Busy = false;
             Changed?.Invoke();
         }
+        if (Store is null) throw new DeploymentException("DataUnavailable", StartupError);
     }
 }

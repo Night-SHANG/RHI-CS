@@ -96,8 +96,10 @@ public sealed class WorkspaceMigrationTests
         using var f = new Sandbox();
         var log = new MigrationLog(Path.Combine(f.Root, "migration.json"));
         foreach (var target in new[] { f.Data, Path.Combine(f.Data, "nested"), f.Root,
-            Path.Combine(f.Game.InstallRoot, "Data"), Path.Combine(Path.GetDirectoryName(f.Source)!, "Data") })
+            Path.Combine(f.Game.InstallRoot, "Data"), f.Source })
             Assert.ThrowsAny<Exception>(() => WorkspaceMigration.Prepare(f.Store, target, log));
+        f.Store.Save(f.Store.State with { Libraries = [f.Library with { SourceRoot = Path.GetDirectoryName(f.Source) }] });
+        Assert.Throws<DeploymentException>(() => WorkspaceMigration.Prepare(f.Store, Path.Combine(Path.GetDirectoryName(f.Source)!, "Data"), log));
         var occupied = Path.Combine(f.Root, "occupied");
         Directory.CreateDirectory(occupied);
         Assert.Equal("MigrationTargetExists", Assert.Throws<DeploymentException>(() => WorkspaceMigration.Prepare(f.Store, occupied, log)).Code);
