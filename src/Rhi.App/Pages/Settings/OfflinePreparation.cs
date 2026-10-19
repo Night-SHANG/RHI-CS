@@ -48,7 +48,6 @@ public sealed partial class SettingsView
         AutomationProperties.SetAutomationId(create, "OfflineCreate");
         var reset = c.Action("ResetOffline", () => { c.Offline = OfflineDraft.Empty; c.Refresh(); }, !c.Session.Busy);
         AutomationProperties.SetAutomationId(reset, "OfflineReset");
-        reset.MinHeight = create.MinHeight = 44;
         void Check(bool changed)
         {
             if (changed) c.Offline = c.Offline with { Request = Read(), Failure = null };
@@ -78,11 +77,11 @@ public sealed partial class SettingsView
         }
         var notice = new ScrollViewer { Content = feedback, Height = 72,
             HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled, VerticalScrollBarVisibility = ScrollBarVisibility.Auto };
-        var title = Ui.Label("MakeOfflineReShade", 20);
-        AutomationProperties.SetAutomationId(title, "OfflineTitle");
-        var body = Ui.Stack(title, Ui.Label("OfflineHelp"),
-            PickerRow(installer, file), Ui.Row(architecture, api), PickerRow(parent, folder), name,
-            notice, Ui.Row(reset, create));
+        var actions = Ui.CompactActions(reset, create);
+        actions.HorizontalAlignment = HorizontalAlignment.Right;
+        var body = Ui.Stack(PickerRow(installer, file), Ui.Row(architecture, api), PickerRow(parent, folder), name,
+            Ui.Label("OfflineHelp"), notice, actions);
+        body.Spacing = 20;
         if (c.Offline.Output is { } completed)
         {
             var output = Ui.Text(completed);
@@ -103,8 +102,7 @@ public sealed partial class SettingsView
     private static Grid PickerRow(TextBox input, Button browse)
     {
         var row = Ui.Row(input, browse);
-        row.ColumnDefinitions[1].Width = GridLength.Auto;
-        browse.MaxWidth = 140;
+        row.ColumnDefinitions[1].Width = new GridLength(112);
         browse.VerticalAlignment = VerticalAlignment.Bottom;
         return row;
     }

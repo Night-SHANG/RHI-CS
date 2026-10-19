@@ -290,4 +290,14 @@
 
 状态 | 相对路径 | 校验值
 {10}</value></data>
+  <data name="PendingVersion" xml:space="preserve"><value>待部署版本</value></data>
+  <data name="OfflineSection" xml:space="preserve"><value>离线 ReShade</value></data>
+  <data name="OfflinePageSummary" xml:space="preserve"><value>从本地安装包生成 DLL 和基础配置，不运行安装器。</value></data>
+  <data name="ProtectionPageSummary" xml:space="preserve"><value>按游戏、资源库和版本查看保留的副本。</value></data>
+  <data name="OpenProtectionRoot" xml:space="preserve"><value>打开副本目录</value></data>
+  <data name="OpenProtectionItem" xml:space="preserve"><value>打开此副本</value></data>
+  <data name="ProtectionOwner" xml:space="preserve"><value>游戏 / 资源库</value></data>
+  <data name="ProtectionVersionTarget" xml:space="preserve"><value>版本 / 原部署目录</value></data>
+  <data name="ProtectionTime" xml:space="preserve"><value>时间</value></data>
+  <data name="ProtectionEmpty" xml:space="preserve"><value>暂无修改保护副本。</value></data>
 </root>

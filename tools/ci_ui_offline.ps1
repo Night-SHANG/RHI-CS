@@ -66,6 +66,7 @@ if ((Find-Control -id 'OfflineValidation' -IncludeOffscreen).Current.Name -ne (L
 Capture 'offline-created'
 Set-Appearance 'Dark' 'en-US'
 Capture 'settings-redesign-dark'
+Select-SettingsSection 'Offline'
 if ((Find-Control -id 'OfflineNameInput' -IncludeOffscreen).GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).Current.Value -ne 'UI-offline') { throw 'Appearance change lost the offline draft.' }
 Reveal-SettingsControl 'OfflineReset' | Out-Null
 Invoke-VisualId 'OfflineReset'

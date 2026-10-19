@@ -8,6 +8,7 @@ function Select-Option([string]$id, [string]$key) {
 }
 function Set-Appearance([string]$theme, [string]$language) {
     Invoke-Control 'Settings'
+    Select-SettingsSection 'General'
     Select-Option 'SettingsTheme' $theme
     Select-Option 'SettingsLanguage' $language
     Invoke-Control 'Save'
@@ -64,46 +65,46 @@ function Reveal-SettingsControl([string]$id) {
     throw "Settings control is not fully visible: $id"
 }
 function Assert-OfflineLayout {
-    $left = (Find-Control -id 'SettingsGeneralTitle' -IncludeOffscreen).Current.BoundingRectangle
-    $right = (Find-Control -id 'OfflineTitle' -IncludeOffscreen).Current.BoundingRectangle
+    Select-SettingsSection 'Offline'
+    $title = (Reveal-SettingsControl 'OfflineTitle').Current.BoundingRectangle
+    $nav = (Find-Control -id 'SettingsNavOffline').Current.BoundingRectangle
     $dpiScale = [SmokeWindow]::GetDpiForWindow($process.MainWindowHandle) / 96.0
-    $width = (Find-Control -id 'SettingsScroll').Current.BoundingRectangle.Width / $dpiScale
-    if ($width -ge 1016 -and ($right.Left -le $left.Right -or [Math]::Abs($right.Top - $left.Top) -gt 2)) { throw 'Wide Settings must have top-aligned left settings and right offline form.' }
-    if ($width -ge 1016) {
-        $viewport = (Find-Control -id 'SettingsScroll').Current.BoundingRectangle
-        # Border has no automation peer. Reconstruct card edges from existing full-width rows.
-        # Ui.Card has 18 DIP padding plus a 1 DIP border on each side.
-        $inset = 19 * $dpiScale
-        # ComboBox peers include an extra left visual margin. Titles share the card's content origin.
-        $generalStart = $left.Left - $inset
-        $generalEnd = (Find-Control -id 'SettingsSave').Current.BoundingRectangle.Right + $inset
-        $offlineStart = $right.Left - $inset
-        $offlineEnd = (Find-Control -id 'OfflineChooseInstaller').Current.BoundingRectangle.Right + $inset
-        $general = [PSCustomObject]@{ Left=$generalStart; Right=$generalEnd; Width=$generalEnd-$generalStart }
-        $offlineCard = [PSCustomObject]@{ Left=$offlineStart; Right=$offlineEnd; Width=$offlineEnd-$offlineStart }
-        $evidence.Add("Settings horizontal bounds: viewport=$viewport; general=$general; offline=$offlineCard; title origins=$($left.Left),$($right.Left)")
-        foreach ($card in @($general, $offlineCard)) {
-            if ($card.Left -lt $viewport.Left - 2 -or $card.Right -gt $viewport.Right + 2) {
-                Capture 'settings-horizontal-boundary-failure'
-                throw 'Settings card extends outside its horizontal viewport.'
-            }
-        }
-        # UIA may report a clipped rectangle as visible; verify the complete planned column ratio too.
-        if ([Math]::Abs($offlineCard.Width - $general.Width * 540 / 780) -gt 3 * $dpiScale) {
-            Capture 'settings-column-ratio-failure'
-            throw 'Settings card is clipped or no longer follows the planned 780:540 column ratio.'
-        }
+    $rect = [SmokeWindow+Rect]::new()
+    [SmokeWindow]::GetWindowRect($process.MainWindowHandle, [ref]$rect) | Out-Null
+    $wide = ($rect.Right - $rect.Left) / $dpiScale -ge 1016
+    if ($wide -and $nav.Right -ge $title.Left) { throw 'Wide Settings requires a separate left navigation.' }
+    if (-not $wide -and $nav.Bottom -gt $title.Top) { throw 'Compact Settings requires navigation above the active page.' }
+    $window = [Windows.Automation.AutomationElement]::FromHandle($process.MainWindowHandle)
+    foreach ($id in @('SettingsTheme', 'ProtectionUsage', 'SettingsOpenData')) {
+        $condition = [Windows.Automation.PropertyCondition]::new([Windows.Automation.AutomationElement]::AutomationIdProperty, $id)
+        if ($window.FindFirst([Windows.Automation.TreeScope]::Descendants, $condition)) { throw "Inactive Settings page is still exposed: $id" }
     }
-    if ($width -le 992) {
-        # Offscreen peers may not expose usable bounds. Bring the lower card into view before comparing alignment.
-        $right = (Reveal-SettingsControl 'OfflineTitle').Current.BoundingRectangle
-        if ([Math]::Abs($right.Left - $left.Left) -gt 2) { throw 'Narrow Settings must align the stacked cards.' }
-        $scroll = (Find-Control -id 'SettingsScroll').GetCurrentPattern([Windows.Automation.ScrollPattern]::Pattern)
-        if ($scroll.Current.VerticallyScrollable) { $scroll.SetScrollPercent([Windows.Automation.ScrollPattern]::NoScroll, 0) }
-        Start-Sleep -Milliseconds 200
-    }
+    $evidence.Add("Settings section layout: wide=$wide; nav=$nav; title=$title")
 }
 function Check-Pages([string]$prefix) {
+    Select-SettingsSection 'General'
+    Capture "$prefix-general"
+    Select-SettingsSection 'Data'
+    Assert-InWindow (Find-Control -id 'SettingsOpenData')
+    Capture "$prefix-data"
+    Select-SettingsSection 'Protection'
+    $navBefore = (Find-Control -id 'SettingsNavProtection').Current.BoundingRectangle
+    $refreshBefore = (Find-Control -id 'RefreshProtection').Current.BoundingRectangle
+    $list = (Find-Control -id 'ProtectionScroll').GetCurrentPattern([Windows.Automation.ScrollPattern]::Pattern)
+    if (-not $list.Current.VerticallyScrollable) { throw 'Long protection catalogue has no independent scrolling.' }
+    $list.SetScrollPercent(-1, 0)
+    Capture "$prefix-protection-top"
+    $list.SetScrollPercent(-1, 100)
+    Start-Sleep -Milliseconds 300
+    $navAfter = (Find-Control -id 'SettingsNavProtection').Current.BoundingRectangle
+    $refreshAfter = (Find-Control -id 'RefreshProtection').Current.BoundingRectangle
+    if ($navBefore -ne $navAfter -or $refreshBefore -ne $refreshAfter) { throw 'Scrolling protected copies moved navigation or fixed toolbar.' }
+    Capture "$prefix-protection-end"
+    Select-SettingsSection 'General'
+    Select-SettingsSection 'Protection'
+    $list = (Find-Control -id 'ProtectionScroll').GetCurrentPattern([Windows.Automation.ScrollPattern]::Pattern)
+    if ($list.Current.VerticalScrollPercent -lt 99) { throw 'Changing sections lost protection scroll position.' }
+    $list.SetScrollPercent(-1, 0)
     Assert-OfflineLayout
     Capture "$prefix-settings"
     Reveal-SettingsControl 'OfflineChooseFolder' | Out-Null

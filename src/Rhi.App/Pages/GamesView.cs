@@ -145,25 +145,22 @@ public sealed partial class GamesView : UserControl
                 receipt is null ? OperationKind.Deploy : OperationKind.Change)]);
         });
         AutomationProperties.SetAutomationId(deploy, (receipt is null ? "DeployLibrary_" : "ChangeLibrary_") + library.Id.ToString("N"));
-        var statusText = Ui.Text("");
-        var status = Ui.Stack(Ui.Status(receipt is null ? "NotDeployed" : "Installed"), statusText);
+        var status = Ui.Stack(Ui.Status(receipt is null ? "NotDeployed" : "Installed", true));
         status.Spacing = 4;
-        var versionCell = Ui.Stack(box);
+        var versionCell = Ui.Stack(Ui.OneLine(receipt is null ? Strings.Get("PendingVersion") :
+            Strings.Get("CurrentVersion") + ": " + receipt.VersionLabel, true), box);
         versionCell.Spacing = 4;
-        var actions = Ui.Actions(112, deploy);
+        var actions = Ui.CompactActions(deploy);
         if (receipt is not null)
         {
-            versionCell.Children.Insert(0, Ui.Secondary(Strings.Get("CurrentVersion") + ": " + receipt.VersionLabel));
             var clear = c.Button("ClearDeployment", () => Preflight(game, [new(library.Id, null, OperationKind.Clear)]), !c.Session.Busy && !locked);
             AutomationProperties.SetAutomationId(clear, "ClearLibrary_" + library.Id.ToString("N"));
-            Ui.AddToRow(actions, clear);
-            Ui.AddToRow(actions, c.Button("ViewDifferences", () => ViewDifferences(game, library, receipt), !c.Session.Busy));
-            foreach (var column in actions.ColumnDefinitions) column.Width = new GridLength(112);
-            foreach (FrameworkElement button in actions.Children) button.VerticalAlignment = VerticalAlignment.Stretch;
+            actions = Ui.CompactActions(deploy, clear,
+                c.Button("ViewDifferences", () => ViewDifferences(game, library, receipt), !c.Session.Busy));
             var snapshot = c.Session.TargetObservation;
             var health = snapshot?.GameId == game.Id && snapshot.Revision == c.Session.State.Revision
                 ? snapshot.Receipts.FirstOrDefault(r => r.LibraryId == library.Id)?.Health.ToString() : null;
-            status.Children.Insert(1, Ui.Status(health ?? "NotChecked"));
+            status.Children.Add(Ui.Status(health ?? "NotChecked", true));
         }
         void Update()
         {
@@ -175,15 +172,26 @@ public sealed partial class GamesView : UserControl
             if (!check.IsEnabled) check.IsChecked = false;
             var reason = !usable ? "SourceUnavailable" : same
                 ? versions.Any(v => v.Id != receipt!.VersionId && SourceAvailable(v)) ? "ChooseOtherVersion" : "NoOtherVersion" : null;
-            statusText.Text = reason is null ? "" : Strings.Get(reason);
-            statusText.Visibility = reason is null ? Visibility.Collapsed : Visibility.Visible;
+            var help = reason is null ? "" : Strings.Get(reason);
+            var fullVersion = box.SelectedIndex >= 0 ? ResourcePresentation.VersionName(versions[box.SelectedIndex]) : "";
+            ToolTipService.SetToolTip(box, help.Length == 0 ? fullVersion : fullVersion + "\n" + help);
+            AutomationProperties.SetHelpText(box, help);
+            ToolTipService.SetToolTip(actions, help);
+            AutomationProperties.SetHelpText(deploy, help);
+            if (receipt is null)
+            {
+                status.Children.Clear();
+                status.Children.Add(Ui.Status(usable ? "NotDeployed" : "SourceUnavailable", true));
+            }
             if (check.IsChecked == true) selected[library.Id] = box.SelectedIndex >= 0 ? versions[box.SelectedIndex].Id : Guid.Empty;
             else selected.Remove(library.Id);
             UpdateSelection();
         }
         check.Checked += (_, _) => Update(); check.Unchecked += (_, _) => Update();
         box.SelectionChanged += (_, _) => Update(); Update();
-        return TableRow(false, check, Ui.Text(library.Name), versionCell, status, actions);
+        var row = TableRow(false, check, Ui.OneLine(library.Name), versionCell, status, actions);
+        AutomationProperties.SetAutomationId(row, "ResourceRow_" + library.Id.ToString("N"));
+        return row;
     }
 
     private void UpdateSelection()
@@ -229,23 +237,6 @@ public sealed partial class GamesView : UserControl
     private static bool SourceAvailable(ResourceVersion v) => ResourcePresentation.SourceAvailable(v);
     private static Grid TableRow(bool header, params FrameworkElement[] cells)
     {
-        var grid = new Grid { ColumnSpacing = 12, RowSpacing = 8, Padding = new Thickness(12), MinHeight = 62 };
-        grid.RowDefinitions.Add(new() { Height = GridLength.Auto });
-        grid.RowDefinitions.Add(new() { Height = GridLength.Auto });
-        foreach (var width in new[] { 48d, 1.1, 2.2, 1.2, 352d })
-            grid.ColumnDefinitions.Add(new() { Width = width is 48 or 352 ? new GridLength(width) : new GridLength(width, GridUnitType.Star) });
-        for (var i = 0; i < cells.Length; i++)
-        { Grid.SetColumn(cells[i], i); cells[i].VerticalAlignment = VerticalAlignment.Center; grid.Children.Add(cells[i]); }
-        cells[0].HorizontalAlignment = HorizontalAlignment.Center;
-        grid.SizeChanged += (_, e) =>
-        {
-            var narrow = e.NewSize.Width < 940;
-            grid.ColumnDefinitions[4].Width = narrow ? new GridLength(0) : new GridLength(352);
-            cells[4].Visibility = header && narrow ? Visibility.Collapsed : Visibility.Visible;
-            Grid.SetRow(cells[4], narrow ? 1 : 0);
-            Grid.SetColumn(cells[4], narrow ? 1 : 4);
-            Grid.SetColumnSpan(cells[4], narrow ? 4 : 1);
-        };
-        return grid;
+        return Ui.ResourceTableRow(header, true, cells);
     }
 }

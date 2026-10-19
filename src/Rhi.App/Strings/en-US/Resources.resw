@@ -290,4 +290,14 @@ Paths remain relative to the deployment folder. A copy with missing files is inc
 
 State | Relative path | Checksum
 {10}</value></data>
+  <data name="PendingVersion" xml:space="preserve"><value>Version to deploy</value></data>
+  <data name="OfflineSection" xml:space="preserve"><value>Offline ReShade</value></data>
+  <data name="OfflinePageSummary" xml:space="preserve"><value>Create a DLL and basic configuration from a local package without running the installer.</value></data>
+  <data name="ProtectionPageSummary" xml:space="preserve"><value>Browse copies by game, library, and version.</value></data>
+  <data name="OpenProtectionRoot" xml:space="preserve"><value>Open copies folder</value></data>
+  <data name="OpenProtectionItem" xml:space="preserve"><value>Open this copy</value></data>
+  <data name="ProtectionOwner" xml:space="preserve"><value>Game / Library</value></data>
+  <data name="ProtectionVersionTarget" xml:space="preserve"><value>Version / Original folder</value></data>
+  <data name="ProtectionTime" xml:space="preserve"><value>Time</value></data>
+  <data name="ProtectionEmpty" xml:space="preserve"><value>No protected copies yet.</value></data>
 </root>

@@ -30,6 +30,7 @@ if (args.FirstOrDefault() == "--visual")
         throw new InvalidOperationException("Not a CI fixture.");
     using var store = Rhi.Core.Storage.WorkspaceStore.Open(pointer.Root, expectedId: pointer.Id);
     store.Save(store.State with { Preferences = new("Light", "zh-CN") });
+    ProtectionVisualFixture.Prepare(store);
     return;
 }
 if (args.FirstOrDefault() is "--relocation" or "--verify-relocation")

@@ -75,7 +75,7 @@ public sealed partial class LibrariesView : UserControl
             AddReferenceNotice(right, selected.Id);
             right.Children.Add(Ui.Label("Versions", 20));
             var table = new StackPanel();
-            table.Children.Add(Ui.TableLine(Ui.Columns([1, 2, 1, 1.5], Ui.Label("VersionLabel"), Ui.Label("SourcePath"), Ui.Label("Status"), Ui.Label("Actions")), true));
+            table.Children.Add(Ui.TableLine(Ui.ResourceTableRow(true, false, Ui.Label("VersionLabel"), Ui.Label("SourcePath"), Ui.Label("Status"), Ui.Label("Actions")), true));
             foreach (var version in selected.Versions)
             {
                 var references = state.Receipts.Where(r => r.LibraryId == selected.Id && r.VersionId == version.Id)
@@ -86,9 +86,10 @@ public sealed partial class LibrariesView : UserControl
                 var remove = c.Button("RemoveVersion", () => RemoveVersion(selected, version),
                     !c.Session.Busy && !locked && !state.Receipts.Any(r => r.LibraryId == selected.Id && r.VersionId == version.Id));
                 AutomationProperties.SetAutomationId(remove, "VersionRemove_" + version.Id.ToString("N"));
-                table.Children.Add(Ui.TableLine(Ui.Columns([1, 2, 1, 1.5], Ui.Text(ResourcePresentation.VersionName(version)), Ui.Text(version.SourcePath),
-                    Ui.Stack(Ui.Status(available ? "Available" : "SourceUnavailable"), Ui.Secondary(string.Join(", ", references))),
-                    Ui.Stack(Ui.Row(view, remove), c.FolderAction("OpenResourceFolder", version.SourcePath,
+                var status = Ui.Stack(Ui.Status(available ? "Available" : "SourceUnavailable", true), Ui.OneLine(string.Join(", ", references), true));
+                status.Spacing = 4;
+                table.Children.Add(Ui.TableLine(Ui.ResourceTableRow(false, false, Ui.OneLine(ResourcePresentation.VersionName(version)), Ui.OneLine(version.SourcePath),
+                    status, Ui.CompactActions(view, remove, c.FolderAction("OpenResourceFolder", version.SourcePath,
                         "VersionOpenFolder_" + version.Id.ToString("N"), sourceFile: true)))));
             }
             right.Children.Add(table);

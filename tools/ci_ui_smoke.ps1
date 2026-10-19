@@ -82,6 +82,14 @@ function Capture([string]$name) {
         $bitmap.Save((Join-Path $captureRoot "$name.png"), [Drawing.Imaging.ImageFormat]::Png)
     } finally { $graphics.Dispose(); $bitmap.Dispose() }
 }
+function Select-SettingsSection([string]$section) {
+    $item = Find-Control -id ("SettingsNav" + $section)
+    $pattern = $null
+    if ($item.TryGetCurrentPattern([Windows.Automation.SelectionItemPattern]::Pattern, [ref]$pattern)) { $pattern.Select() }
+    elseif ($item.TryGetCurrentPattern([Windows.Automation.InvokePattern]::Pattern, [ref]$pattern)) { $pattern.Invoke() }
+    else { throw "Settings section cannot be selected: $section" }
+    Start-Sleep -Milliseconds 350
+}
 function Assert-ActionOrder([string]$action) {
     $cancel = (Find-Control -name (Label 'Cancel') -Action).Current.BoundingRectangle
     $confirm = (Find-Control -name (Label $action) -Action).Current.BoundingRectangle

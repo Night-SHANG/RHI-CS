@@ -15,7 +15,7 @@ public static partial class Ui
         return label;
     }
 
-    public static Grid Status(string key)
+    public static Grid Status(string key, bool singleLine = false)
     {
         var brush = key switch
         {
@@ -27,6 +27,12 @@ public static partial class Ui
             VerticalAlignment = VerticalAlignment.Top, Margin = new Thickness(0, 5, 0, 0) };
         AutomationProperties.SetAccessibilityView(icon, AccessibilityView.Raw);
         var text = Label(key);
+        if (singleLine)
+        {
+            text.TextWrapping = TextWrapping.NoWrap;
+            text.TextTrimming = TextTrimming.CharacterEllipsis;
+            ToolTipService.SetToolTip(text, text.Text);
+        }
         text.Foreground = ThemeBrush(brush);
         var grid = new Grid { ColumnSpacing = 8 };
         grid.ColumnDefinitions.Add(new() { Width = GridLength.Auto });

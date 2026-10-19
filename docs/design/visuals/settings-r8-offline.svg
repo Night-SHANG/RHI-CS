@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900">
+<title>RHI-CS 设置子页面样板 r8：离线 ReShade，示例数据，尚未实现</title>
+<defs><style>
+text{font-family:'Microsoft YaHei UI','Microsoft YaHei','Segoe UI',sans-serif;font-size:14px;fill:#202d42}.brand{font-size:23px;font-weight:600}.title{font-size:28px;font-weight:600}.section{font-size:21px;font-weight:600}.bold{font-weight:600}.muted{fill:#596579}.small{font-size:12px;fill:#596579}.center{text-anchor:middle}.line{stroke:#dfe5ed}.btn{fill:#fafbfc;stroke:#cbd3dd}.field{fill:#fff;stroke:#cbd3dd}.white{fill:#fff}.blue{fill:#0766b2}
+</style><g id="chev"><path d="m-4-2 4 4 4-4" fill="none" stroke="#596579" stroke-width="1.4"/></g></defs>
+<rect width="1440" height="900" fill="#fafbfc"/><rect width="1440" height="64" fill="#fff"/>
+<g fill="none" stroke="#0871c1" stroke-width="1.6"><rect x="28" y="22" width="9" height="9"/><rect x="41" y="22" width="9" height="9"/><rect x="28" y="35" width="9" height="9"/><rect x="41" y="35" width="9" height="9"/></g>
+<text x="62" y="41" class="brand">RHI-CS</text><text x="570" y="39">游戏</text><text x="690" y="39">资源库</text><rect x="786" y="8" width="110" height="48" rx="5" class="blue"/><text x="841" y="39" class="center white bold">设置</text>
+<rect x="0" y="64" width="240" height="786" fill="#f1f4f8"/><path d="M0 64H1440M240 64V850" class="line"/>
+<text x="28" y="116" class="section">设置</text><text x="44" y="179">常规</text><text x="44" y="231">应用数据</text><text x="44" y="280">修改保护副本</text>
+<rect x="20" y="304" width="200" height="44" rx="5" fill="#e0edf8"/><rect x="20" y="316" width="3" height="20" rx="1.5" class="blue"/><text x="44" y="332" class="bold blue">离线 ReShade</text>
+<path d="M28 378H212" class="line"/><text x="44" y="416" class="small">打开许可文件夹</text>
+<text x="280" y="118" class="title">制作离线 ReShade</text>
+<text x="280" y="153" class="muted">从本地安装包生成 DLL 和基础配置，不运行安装器。</text>
+<rect x="280" y="192" width="920" height="588" rx="8" fill="#fff" stroke="#dce2e9"/>
+<text x="308" y="231">官方安装包（EXE）</text>
+<rect x="308" y="245" width="744" height="38" rx="4" class="field"/><text x="322" y="270">D:\Downloads\ReShade_Setup_6.8.0_Addon.exe</text>
+<rect x="1060" y="245" width="112" height="38" rx="4" class="btn"/><text x="1116" y="270" class="center">选择文件</text>
+<text x="308" y="323">游戏位数</text><text x="752" y="323">图形 API</text>
+<rect x="308" y="337" width="420" height="38" rx="4" class="field"/><text x="322" y="362">64 位（x64）</text><use href="#chev" x="708" y="356"/>
+<rect x="752" y="337" width="420" height="38" rx="4" class="field"/><text x="766" y="362">DirectX 10/11/12</text><use href="#chev" x="1152" y="356"/>
+<text x="308" y="415">输出位置</text>
+<rect x="308" y="429" width="744" height="38" rx="4" class="field"/><text x="322" y="454">F:\资源库\画面增强</text>
+<rect x="1060" y="429" width="112" height="38" rx="4" class="btn"/><text x="1116" y="454" class="center">浏览文件夹</text>
+<text x="308" y="507">新文件夹名称</text>
+<rect x="308" y="521" width="864" height="38" rx="4" class="field"/><text x="322" y="546">ReShade-offline</text>
+<text x="308" y="597" class="muted">制作后可作为普通资源库的版本来源。</text>
+<text x="308" y="623" class="muted">着色器和预设自行补入；此方式不支持 Vulkan。</text>
+<path d="M308 654H1172" class="line"/>
+<text x="308" y="686" class="small">保存到：F:\资源库\画面增强\ReShade-offline</text>
+<rect x="940" y="716" width="112" height="38" rx="4" class="btn"/><text x="996" y="741" class="center">重置</text>
+<rect x="1060" y="716" width="112" height="38" rx="4" class="blue"/><text x="1116" y="741" class="center white">制作</text>
+<rect y="850" width="1440" height="50" fill="#fff"/><path d="M0 850H1440" class="line"/>
+<text x="28" y="880" class="small">视觉样板 r8 · 示例数据 · 子页面切换保留表单草稿，其他页面不挤占此页 · 尚未实现</text>
+</svg>

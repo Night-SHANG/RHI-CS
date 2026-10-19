@@ -50,6 +50,7 @@ function Select-Batch {
     Invoke-Id 'BatchPreflight'
 }
 
+. (Join-Path $PSScriptRoot 'ci_ui_resource_layout.ps1')
 . (Join-Path $PSScriptRoot 'ci_ui_folder_actions.ps1')
 Invoke-Control 'Libraries'
 if ((Find-Control -id 'LibraryRemove').Current.IsEnabled) { throw 'A deployed library can be removed.' }
@@ -62,6 +63,7 @@ if (((Find-Control -id 'LibrariesSearch').GetRuntimeId() -join ',') -ne $listBef
 Capture '20-referenced-library'
 Invoke-Control 'Games'
 Invoke-Control 'CheckTargets'
+Assert-ResourceRows 'initial mixed deployment' | Out-Null
 Find-Control -name (Label 'TargetModified') | Out-Null
 Capture '21-target-changes'
 Invoke-Control 'ViewDifferences'
@@ -83,32 +85,34 @@ Find-Control -name (Label 'OpenProtectedCopies') -Action | Out-Null
 Capture '24-clear-result-with-backup'
 Invoke-Control 'Close'
 Invoke-Control 'Settings'
+Select-SettingsSection 'Protection'
 Find-Control -id 'ProtectionUsage' -IncludeOffscreen | Out-Null
-Reveal-Control 'ProtectionUsage' 'SettingsScroll' | Out-Null
 Capture '25-protection-inventory'
 $protectionRecord = @(Get-ChildItem -LiteralPath (Join-Path $fixture.Root 'protection') -Filter '*.json')
 if ($protectionRecord.Count -ne 1) { throw 'Expected one complete protection copy.' }
 $copy = [IO.File]::ReadAllText($protectionRecord[0].FullName, [Text.Encoding]::UTF8) | ConvertFrom-Json
 $copyId = 'OpenProtection_' + $copy.OperationId.Replace('-', '')
-$inventoryScroll = (Find-Control -id 'SettingsScroll').GetCurrentPattern([Windows.Automation.ScrollPattern]::Pattern)
+$inventoryScroll = (Find-Control -id 'ProtectionScroll').GetCurrentPattern([Windows.Automation.ScrollPattern]::Pattern)
 if ($inventoryScroll.Current.VerticallyScrollable) { $inventoryScroll.SetScrollPercent(-1, 100) }
-Reveal-Control $copyId 'SettingsScroll' | Out-Null
+Reveal-Control $copyId 'ProtectionScroll' | Out-Null
 Capture '25-protection-version-entry'
 $copyFolder = Join-Path (Join-Path (Join-Path $fixture.Root 'protection') $copy.ProtectionDirectory) $copy.VersionLabel
-Check-FolderAction $copyId $copyFolder 'SettingsScroll'
-$settingsIdentity = (Find-Control -id 'SettingsTheme' -IncludeOffscreen).GetRuntimeId() -join ','
+Check-FolderAction $copyId $copyFolder 'ProtectionScroll'
+$settingsIdentity = (Find-Control -id 'SettingsNavProtection').GetRuntimeId() -join ','
+Select-SettingsSection 'Offline'
 $offlineDraft = (Find-Control -id 'OfflineNameInput' -IncludeOffscreen).GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern)
 $offlineDraft.SetValue('Keep draft across statistics')
-$settingsScroll = (Find-Control -id 'SettingsScroll').GetCurrentPattern([Windows.Automation.ScrollPattern]::Pattern)
-$position = $settingsScroll.Current.VerticalScrollPercent
-Reveal-Control 'RefreshProtection' 'SettingsScroll' | Out-Null
+Select-SettingsSection 'Protection'
+$settingsScroll = (Find-Control -id 'ProtectionScroll').GetCurrentPattern([Windows.Automation.ScrollPattern]::Pattern)
 $position = $settingsScroll.Current.VerticalScrollPercent
 Invoke-Id 'RefreshProtection'
 Find-Control -id 'RefreshProtection' -Enabled | Out-Null
-if (((Find-Control -id 'SettingsTheme' -IncludeOffscreen).GetRuntimeId() -join ',') -ne $settingsIdentity -or
-    $offlineDraft.Current.Value -ne 'Keep draft across statistics' -or
+if (((Find-Control -id 'SettingsNavProtection').GetRuntimeId() -join ',') -ne $settingsIdentity -or
     [Math]::Abs($settingsScroll.Current.VerticalScrollPercent - $position) -gt 1) { throw 'Statistics refresh replaced page or changed draft/scroll.' }
 Capture '25-statistics-refresh-retained'
+Select-SettingsSection 'Offline'
+if ((Find-Control -id 'OfflineNameInput').GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).Current.Value -ne 'Keep draft across statistics') { throw 'Section switching lost offline draft.' }
+Select-SettingsSection 'Protection'
 # Results retain their original game/action when opened from another page.
 Invoke-Control 'TaskResults'
 Find-Control -name ($taskPrefix + (Label 'Clear')) | Out-Null
@@ -158,15 +162,18 @@ Find-Control -name (Label 'NoMatches') | Out-Null
 Capture '30-library-removed'
 # The English resources use the same flows and remain visible after live language switching.
 Invoke-Control 'Settings'
+Select-SettingsSection 'General'
 $language = Find-Control -id 'SettingsLanguage' -Enabled
 $language.GetCurrentPattern([Windows.Automation.ExpandCollapsePattern]::Pattern).Expand()
 (Find-Control -name (Label 'en-US')).GetCurrentPattern([Windows.Automation.SelectionItemPattern]::Pattern).Select()
 Invoke-Control 'Save'
 $labels = [xml][IO.File]::ReadAllText((Join-Path $appRoot 'Strings/en-US/Resources.resw'), [Text.Encoding]::UTF8)
-Reveal-Control 'ProtectionUsage' 'SettingsScroll' | Out-Null
+Select-SettingsSection 'Protection'
+Find-Control -id 'ProtectionUsage' | Out-Null
 Capture '31-protection-inventory-en'
 Invoke-Control 'TaskResults'
 Find-Control -name ($taskPrefix + (Label 'Deploy')) | Out-Null
 Capture '32-batch-result-en'
 Invoke-Control 'Close'
 [IO.File]::WriteAllText((Join-Path $captureRoot 'result.txt'), 'PASS: read-only differences, version-details dialog without rebuilding the sidebar, protection statistics without replacing page/draft/scroll, reference guards, mixed deployment/version change, select-all and partial selection, batch clear and cancellation, skipped batches, version/library removal, and bilingual results. Verify persisted files in the following fixture step.', [Text.Encoding]::UTF8)
+[IO.File]::WriteAllLines((Join-Path $captureRoot 'layout-result.txt'), $evidence, [Text.Encoding]::UTF8)

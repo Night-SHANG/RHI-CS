@@ -29,6 +29,7 @@ $alphaLibrary = @($folderState.Libraries | Where-Object { $_.Id.Replace('-', '')
 (Find-Control -id 'LibrariesSearch').GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).SetValue('Alpha')
 Check-FolderAction 'LibraryOpenFolder' $alphaLibrary.SourceRoot 'LibraryScroll'
 Check-FolderAction ('VersionOpenFolder_' + $alphaLibrary.Versions[0].Id.Replace('-', '')) ([IO.Path]::GetDirectoryName($alphaLibrary.Versions[0].SourcePath)) 'LibraryScroll'
+Assert-VersionActions $alphaLibrary.Versions[0].Id.Replace('-', '')
 Capture '20-library-folder-actions'
 (Find-Control -id 'LibrariesSearch').GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).SetValue('ReShade')
 (Find-Control -id 'LibrariesSearch').GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).SetValue('')

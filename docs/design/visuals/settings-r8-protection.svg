@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900">
+<title>RHI-CS 设置子页面样板 r8：修改保护副本，示例数据，尚未实现</title>
+<defs><style>
+text{font-family:'Microsoft YaHei UI','Microsoft YaHei','Segoe UI',sans-serif;font-size:14px;fill:#202d42}.brand{font-size:23px;font-weight:600}.title{font-size:28px;font-weight:600}.section{font-size:21px;font-weight:600}.bold{font-weight:600}.muted{fill:#596579}.small{font-size:12px;fill:#596579}.center{text-anchor:middle}.line{stroke:#dfe5ed}.btn{fill:#fff;stroke:#cbd3dd}.white{fill:#fff}.blue{fill:#0766b2}
+</style></defs>
+<rect width="1440" height="900" fill="#fafbfc"/><rect width="1440" height="64" fill="#fff"/>
+<g fill="none" stroke="#0871c1" stroke-width="1.6"><rect x="28" y="22" width="9" height="9"/><rect x="41" y="22" width="9" height="9"/><rect x="28" y="35" width="9" height="9"/><rect x="41" y="35" width="9" height="9"/></g>
+<text x="62" y="41" class="brand">RHI-CS</text><text x="570" y="39">游戏</text><text x="690" y="39">资源库</text><rect x="786" y="8" width="110" height="48" rx="5" class="blue"/><text x="841" y="39" class="center white bold">设置</text>
+<rect x="0" y="64" width="240" height="786" fill="#f1f4f8"/><path d="M0 64H1440M240 64V850" class="line"/>
+<text x="28" y="116" class="section">设置</text>
+<text x="44" y="179">常规</text><text x="44" y="231">应用数据</text>
+<rect x="20" y="252" width="200" height="44" rx="5" fill="#e0edf8"/><rect x="20" y="264" width="3" height="20" rx="1.5" class="blue"/><text x="44" y="280" class="bold blue">修改保护副本</text>
+<text x="44" y="335">离线 ReShade</text>
+<path d="M28 378H212" class="line"/><text x="44" y="416" class="small">打开许可文件夹</text>
+<text x="280" y="118" class="title">修改保护副本</text>
+<text x="280" y="153" class="muted">按游戏、资源库和版本查看保留的副本。</text>
+<rect x="1140" y="98" width="148" height="38" rx="4" class="btn"/><text x="1214" y="123" class="center">打开副本目录</text>
+<rect x="1296" y="98" width="108" height="38" rx="4" class="btn"/><text x="1350" y="123" class="center">刷新</text>
+<text x="280" y="202" class="bold">128 组 · 382 MB</text><text x="1404" y="202" text-anchor="end" class="small">统计时间：2026/10/19 10:15</text>
+<rect x="280" y="224" width="1124" height="560" rx="6" fill="#fff" stroke="#dce2e9"/>
+<path d="M286 224H1398Q1404 224 1404 230V272H280V230Q280 224 286 224" fill="#f1f4f8"/>
+<text x="304" y="254">游戏 / 资源库</text><text x="548" y="254">版本 / 原部署目录</text><text x="1084" y="254">时间</text><text x="1260" y="254">操作</text>
+<!-- Fixed list viewport; many records scroll here, independently of the navigation and toolbar. -->
+<text x="304" y="313" class="bold">Launcher</text><text x="304" y="340" class="muted">画面增强</text>
+<text x="548" y="313">ReShade_Setup_6.8.0_Addon-DX-64</text><text x="548" y="340" class="small">C:\Users\Night Shang\Desktop\WEEE</text>
+<text x="1084" y="313">2026/10/19</text><text x="1084" y="340" class="small">06:25</text>
+<rect x="1252" y="301" width="128" height="36" rx="4" class="btn"/><text x="1316" y="325" class="center">打开此副本</text>
+<path d="M304 364H1380" class="line"/>
+<text x="304" y="405" class="bold">Launcher</text><text x="304" y="432" class="muted">纹理资源</text>
+<text x="548" y="405">高清纹理 v2.1</text><text x="548" y="432" class="small">C:\Users\Night Shang\Desktop\WEEE\mods</text>
+<text x="1084" y="405">2026/10/18</text><text x="1084" y="432" class="small">19:12</text>
+<rect x="1252" y="393" width="128" height="36" rx="4" class="btn"/><text x="1316" y="417" class="center">打开此副本</text>
+<path d="M304 456H1380" class="line"/>
+<text x="304" y="497" class="bold">游戏 B</text><text x="304" y="524" class="muted">画面增强</text>
+<text x="548" y="497">画面预设 v1.4</text><text x="548" y="524" class="small">D:\Games\Game-B\bin\x64</text>
+<text x="1084" y="497">2026/10/18</text><text x="1084" y="524" class="small">18:40</text>
+<rect x="1252" y="485" width="128" height="36" rx="4" class="btn"/><text x="1316" y="509" class="center">打开此副本</text>
+<path d="M304 548H1380" class="line"/>
+<text x="304" y="589" class="bold">Launcher</text><text x="304" y="616" class="muted">界面资源</text>
+<text x="548" y="589">界面 v1.0</text><text x="548" y="616" class="small">C:\Users\Night Shang\Desktop\WEEE</text>
+<text x="1084" y="589">2026/10/17</text><text x="1084" y="616" class="small">22:06</text>
+<rect x="1252" y="577" width="128" height="36" rx="4" class="btn"/><text x="1316" y="601" class="center">打开此副本</text>
+<path d="M304 640H1380" class="line"/>
+<text x="304" y="681" class="bold">游戏 B</text><text x="304" y="708" class="muted">纹理资源</text>
+<text x="548" y="681">高清纹理 v2.0</text><text x="548" y="708" class="small">D:\Games\Game-B\mods</text>
+<text x="1084" y="681">2026/10/17</text><text x="1084" y="708" class="small">20:38</text>
+<rect x="1252" y="669" width="128" height="36" rx="4" class="btn"/><text x="1316" y="693" class="center">打开此副本</text>
+<path d="M304 732H1380" class="line"/><text x="304" y="763" class="small">向下滚动查看其余副本</text>
+<rect x="1395" y="282" width="4" height="488" rx="2" fill="#edf0f4"/><rect x="1395" y="282" width="4" height="72" rx="2" fill="#9ba8b7"/>
+<text x="280" y="817" class="small">副本长期保留。原件备份和恢复快照另存于数据目录，请勿当作缓存清理。</text>
+<rect y="850" width="1440" height="50" fill="#fff"/><path d="M0 850H1440" class="line"/>
+<text x="28" y="880" class="small">视觉样板 r8 · 示例数据 · 左侧固定切换子页面，右侧列表独立滚动 · 尚未实现</text>
+</svg>
