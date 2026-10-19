@@ -301,4 +301,22 @@ State | Relative path | Checksum
   <data name="ProtectionTime" xml:space="preserve"><value>Time</value></data>
   <data name="ProtectionEmpty" xml:space="preserve"><value>No protected copies yet.</value></data>
   <data name="ProtectionSummary" xml:space="preserve"><value>{0:N0} sets · {1:N0} bytes</value></data>
+  <data name="MigrateData" xml:space="preserve"><value>Move data</value></data>
+  <data name="ContinueMigration" xml:space="preserve"><value>Continue move</value></data>
+  <data name="StartMigration" xml:space="preserve"><value>Move data</value></data>
+  <data name="Next" xml:space="preserve"><value>Next</value></data>
+  <data name="DataContents" xml:space="preserve"><value>Stores configuration, deployment records, original backups, and protection copies.</value></data>
+  <data name="DataMigrationHelp" xml:space="preserve"><value>Moves the entire Data folder. After verification, the app uses the new location and removes the old folder. Games and resource files outside Data stay in place.</value></data>
+  <data name="MigrationParent" xml:space="preserve"><value>New location (a Data folder will be created here)</value></data>
+  <data name="MigrationSource" xml:space="preserve"><value>Current location</value></data>
+  <data name="MigrationDestination" xml:space="preserve"><value>New data folder</value></data>
+  <data name="MigrationComplete" xml:space="preserve"><value>Data moved. The old data folder has been removed.</value></data>
+  <data name="MigrationPending" xml:space="preserve"><value>The data move is incomplete. Continue it before using other operations.</value></data>
+  <data name="MigrationNeedsRecovery" xml:space="preserve"><value>Finish pending deployment recovery before moving data.</value></data>
+  <data name="MigrationTargetExists" xml:space="preserve"><value>The new location already contains Data or a file with that name. Choose another location; nothing will be merged or overwritten.</value></data>
+  <data name="MigrationContentChanged" xml:space="preserve"><value>Migration files changed. The operation stopped and retained the data and migration record. Check both locations before continuing.</value></data>
+  <data name="MigrationCopyFailed" xml:space="preserve"><value>The copy did not complete. Original data remains at the old location. Check free space and access permissions, then continue.</value></data>
+  <data name="MigrationCopying" xml:space="preserve"><value>Copying data…</value></data>
+  <data name="MigrationVerifying" xml:space="preserve"><value>Verifying moved data…</value></data>
+  <data name="MigrationCleaning" xml:space="preserve"><value>Removing the old data folder…</value></data>
 </root>

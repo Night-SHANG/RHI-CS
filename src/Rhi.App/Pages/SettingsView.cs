@@ -28,6 +28,7 @@ public sealed partial class SettingsView : UserControl
         foreach (var (id, key) in sections)
         {
             var item = new NavigationViewItem { Content = Strings.Get(key), Tag = id, Height = 44 };
+            item.IsEnabled = c.Session.PendingMigration is null || id == "Data";
             AutomationProperties.SetAutomationId(item, "SettingsNav" + id);
             navigation.MenuItems.Add(item);
         }

@@ -5,6 +5,13 @@ using Rhi.UiSmoke.Seed;
 
 if (Environment.GetEnvironmentVariable("GITHUB_ACTIONS") != "true")
     throw new InvalidOperationException("This fixture is restricted to disposable GitHub Actions runners.");
+if (args.FirstOrDefault() is "--migration" or "--migration-interrupted" or "--verify-migration")
+{
+    if (args.Length != 2) throw new ArgumentException("Expected migration fixture metadata path.");
+    if (args[0] == "--verify-migration") MigrationFixture.Verify(args[1]);
+    else MigrationFixture.Prepare(args[1], args[0] == "--migration-interrupted");
+    return;
+}
 if (args.FirstOrDefault() == "--startup")
 {
     if (args.Length != 3) throw new ArgumentException("Expected metadata and application directory.");

@@ -55,6 +55,20 @@ jobs:
           powershell.exe -NoProfile -File tools/ci_ui_smoke.ps1 -AppDirectory artifacts/app -OutputDirectory artifacts/ui-visual -Visual -FixtureMetadata artifacts/offline-context.json
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           dotnet run --project tests/Rhi.UiSmoke.Seed/Rhi.UiSmoke.Seed.csproj -c Release -- --verify-offline artifacts/offline-context.json
+      - name: Prepare and verify complete Data migration UI
+        run: |
+          dotnet run --project tests/Rhi.UiSmoke.Seed/Rhi.UiSmoke.Seed.csproj -c Release -- --migration artifacts/migration-context.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          powershell.exe -NoProfile -File tools/ci_ui_smoke.ps1 -AppDirectory artifacts/app -OutputDirectory artifacts/ui-migration -Migration -FixtureMetadata artifacts/migration-context.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          dotnet run --project tests/Rhi.UiSmoke.Seed/Rhi.UiSmoke.Seed.csproj -c Release -- --verify-migration artifacts/migration-context.json
+      - name: Verify migration restart continuation in dark English UI
+        run: |
+          dotnet run --project tests/Rhi.UiSmoke.Seed/Rhi.UiSmoke.Seed.csproj -c Release -- --migration-interrupted artifacts/migration-resume.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          powershell.exe -NoProfile -File tools/ci_ui_smoke.ps1 -AppDirectory artifacts/app -OutputDirectory artifacts/ui-migration-resume -Migration -FixtureMetadata artifacts/migration-resume.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          dotnet run --project tests/Rhi.UiSmoke.Seed/Rhi.UiSmoke.Seed.csproj -c Release -- --verify-migration artifacts/migration-resume.json
       - name: Prepare disconnected startup fixture
         run: dotnet run --project tests/Rhi.UiSmoke.Seed/Rhi.UiSmoke.Seed.csproj -c Release -- --startup artifacts/startup-context.json artifacts/app
       - name: Verify explicit fresh start and cancellation
@@ -73,6 +87,8 @@ jobs:
             artifacts/ui-relocation/
             artifacts/ui-visual/
             artifacts/ui-startup/
+            artifacts/ui-migration/
+            artifacts/ui-migration-resume/
           if-no-files-found: warn
       - name: Upload application
         uses: actions/upload-artifact@v4

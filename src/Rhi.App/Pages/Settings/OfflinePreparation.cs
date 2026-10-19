@@ -32,6 +32,7 @@ public sealed partial class SettingsView
         var feedback = Ui.Text("");
         AutomationProperties.SetAutomationId(feedback, "OfflineValidation");
         OfflineReShadeRequest Read() => new(installer.Text, parent.Text, name.Text, architecture.SelectedIndex == 1 ? "x86" : "x64", apis[Math.Max(0, api.SelectedIndex)]);
+        Action? updateResult = null;
         var create = c.Button("CreateOffline", async () =>
         {
             var request = Read();
@@ -42,11 +43,20 @@ public sealed partial class SettingsView
                 c.Offline = c.Offline with { Output = output, CompletedRequest = request };
             }
             catch (Exception ex) { c.Offline = c.Offline with { Failure = ex }; }
-            c.Refresh();
+            Check(false);
+            updateResult?.Invoke();
         });
         create.Style = (Style)Application.Current.Resources["AccentButtonStyle"];
         AutomationProperties.SetAutomationId(create, "OfflineCreate");
-        var reset = c.Action("ResetOffline", () => { c.Offline = OfflineDraft.Empty; c.Refresh(); }, !c.Session.Busy);
+        var reset = c.Action("ResetOffline", () =>
+        {
+            var empty = OfflineDraft.Empty;
+            installer.Text = empty.Request.Installer; parent.Text = empty.Request.Parent; name.Text = empty.Request.FolderName;
+            architecture.SelectedIndex = empty.Request.Architecture == "x86" ? 1 : 0;
+            api.SelectedIndex = Math.Max(0, Array.IndexOf(apis, empty.Request.Api));
+            c.Offline = empty;
+            Check(false); updateResult?.Invoke();
+        }, !c.Session.Busy);
         AutomationProperties.SetAutomationId(reset, "OfflineReset");
         void Check(bool changed)
         {
@@ -82,14 +92,19 @@ public sealed partial class SettingsView
         var body = Ui.Stack(PickerRow(installer, file), Ui.Row(architecture, api), PickerRow(parent, folder), name,
             Ui.Label("OfflineHelp"), notice, actions);
         body.Spacing = 20;
-        if (c.Offline.Output is { } completed)
+        var result = new ContentControl { HorizontalContentAlignment = HorizontalAlignment.Stretch };
+        body.Children.Add(result);
+        updateResult = () =>
         {
+            if (c.Offline.Output is not { } completed) { result.Content = null; result.Visibility = Visibility.Collapsed; return; }
             var output = Ui.Text(completed);
             AutomationProperties.SetAutomationId(output, "OfflineOutput");
             var open = c.Action("OpenFolder", () => WindowsIntegration.OpenFolder(completed), Directory.Exists(completed));
             AutomationProperties.SetAutomationId(open, "OfflineOpenOutput");
-            body.Children.Add(Ui.Stack(Ui.Status("OfflineReady"), output, Ui.Label("OfflineNextStep"), open));
-        }
+            result.Content = Ui.Stack(Ui.Status("OfflineReady"), output, Ui.Label("OfflineNextStep"), open);
+            result.Visibility = Visibility.Visible;
+        };
+        updateResult();
         Check(false);
         var card = Ui.Card(body);
         AutomationProperties.SetAutomationId(card, "OfflinePreparationCard");

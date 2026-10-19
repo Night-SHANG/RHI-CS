@@ -14,6 +14,9 @@ public sealed partial class MainWindow : Window
     private string page = "Games";
     private bool closingDialog;
     private bool refreshing;
+    private string? presentedPage;
+    private object? presentedStore;
+    private string? presentedStyle;
 
     public MainWindow(AppSession session)
     {
@@ -72,6 +75,7 @@ public sealed partial class MainWindow : Window
         try
         {
         session.InspectConnection();
+        if (session.PendingMigration is not null && session.Store is not null) { page = "Settings"; context.SettingsSection = "Data"; }
         var preferences = session.State?.Preferences ?? new Rhi.Core.Models.Preferences();
         Root.RequestedTheme = preferences.Theme switch { "Dark" => ElementTheme.Dark, "System" => ElementTheme.Default, _ => ElementTheme.Light };
         Ui.CurrentTheme = Root.ActualTheme;
@@ -85,15 +89,29 @@ public sealed partial class MainWindow : Window
          StopButton.IsEnabled = !session.StopRequested && !session.Recovering;
         TaskProgressBar.Visibility = session.Busy ? Visibility.Visible : Visibility.Collapsed;
         ResultButton.Content = Strings.Get("TaskResults"); ResultButton.IsEnabled = session.Results.Count > 0 && !session.Busy;
-         TaskText.Text = session.IsWriting && session.CurrentProgress is { } task
+         TaskText.Text = session.MigrationPhase is { } phase ? Strings.Get(phase) : session.IsWriting && session.CurrentProgress is { } task
              ? ProgressText(task)
              : session.Results.Count > 0 && !session.Busy ? TaskHeading() + " · " + Strings.Get("TaskEnded") : Strings.Get(session.Busy ? "Busy" : "Idle");
-        PageHost.Content = session.Store is null ? new SetupView(context) : page switch
+        var style = Root.ActualTheme + ":" + Strings.Get("Games") + ":" + preferences.Language;
+        // Busy notifications update the shell, never remove the user's current view.
+        GamesNav.IsEnabled = LibrariesNav.IsEnabled = SettingsNav.IsEnabled = !session.Busy;
+        if (session.PendingMigration is not null) GamesNav.IsEnabled = LibrariesNav.IsEnabled = false;
+        PageHost.IsEnabled = !session.Busy;
+        if (!session.Busy)
         {
-            "Libraries" => new LibrariesView(context),
-            "Settings" => new SettingsView(context),
-            _ => new GamesView(context)
-        };
+            if (PageHost.Content is null || presentedPage != page || presentedStore != session.Store || presentedStyle != style)
+            {
+                PageHost.Content = session.Store is null ? new SetupView(context) : page switch
+                {
+                    "Libraries" => new LibrariesView(context),
+                    "Settings" => new SettingsView(context),
+                    _ => new GamesView(context)
+                };
+                presentedPage = page; presentedStore = session.Store; presentedStyle = style;
+            }
+            else if (PageHost.Content is GamesView games) games.RefreshData();
+            else if (PageHost.Content is LibrariesView libraries) libraries.RefreshData();
+        }
         }
         finally { refreshing = false; }
     }

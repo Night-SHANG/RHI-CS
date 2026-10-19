@@ -20,6 +20,7 @@ public sealed partial class GamesView : UserControl
     public GamesView(PageContext context)
     {
         c = context;
+        pendingStamp = AtomicJson.Fingerprint(c.Session.Store!.Pending());
         var state = c.Session.State!;
         var list = new ListView { DisplayMemberPath = "Name" };
         var detail = new ContentControl { HorizontalContentAlignment = HorizontalAlignment.Stretch,
@@ -30,23 +31,29 @@ public sealed partial class GamesView : UserControl
         var filtering = false;
         void ShowGame(GameEntry? game)
         {
-            if (detail.Content is not null && c.GameId == game?.Id) return;
+            var stamp = AtomicJson.Fingerprint(new { Game = game, c.Session.State!.Libraries });
+            if (detail.Content is not null && c.GameId == game?.Id && gameStamp == stamp) return;
+            gameStamp = stamp;
             c.GameId = game?.Id;
             selected.Clear(); selectionBoxes.Clear(); batchButton = null; clearBatchButton = null; selectAll = null;
+            rowRefreshers.Clear(); versionChoices.Clear();
             detail.Content = GameBody(game);
         }
         void Filter()
         {
+            var state = c.Session.State!;
             c.GameQuery = search.Text;
             var filtered = state.Games.Where(g => g.Name.Contains(search.Text, StringComparison.CurrentCultureIgnoreCase)).ToArray();
             var game = filtered.FirstOrDefault(g => g.Id == c.GameId) ?? filtered.FirstOrDefault();
             filtering = true;
-            list.ItemsSource = filtered;
-            list.SelectedItem = game;
+            if (list.ItemsSource is not GameEntry[] shown || !shown.SequenceEqual(filtered)) list.ItemsSource = filtered;
+            if (!Equals(list.SelectedItem, game)) list.SelectedItem = game;
             filtering = false;
+            empty.Text = Strings.Get(state.Games.Length == 0 ? "NoGames" : "NoMatches");
             empty.Visibility = filtered.Length == 0 ? Visibility.Visible : Visibility.Collapsed;
             ShowGame(game);
         }
+        refreshData = () => { Filter(); foreach (var refresh in rowRefreshers.ToArray()) refresh(); UpdateSelection(); };
         list.SelectionChanged += (_, _) => { if (!filtering) ShowGame(list.SelectedItem as GameEntry); };
         search.TextChanged += (_, _) => Filter();
         Filter();
@@ -81,11 +88,37 @@ public sealed partial class GamesView : UserControl
                 headerButtons.Add(relocate);
             }
             headerButtons.Add(c.FolderAction("OpenDeploymentFolder", game.DeploymentRoot, "GameOpenFolder"));
-            body.Children.Add(Ui.HeaderActions("GameHeaderActions", headerButtons.ToArray()));
+            var header = Ui.HeaderActions("GameHeaderActions", headerButtons.ToArray());
+            body.Children.Add(header);
+            var hasRelocate = headerButtons.Any(b => AutomationProperties.GetAutomationId(b) == "GameRelocate");
+            rowRefreshers.Add(() =>
+            {
+                inspect.IsEnabled = c.Session.State!.Receipts.Any(r => r.GameId == game.Id);
+                var needed = inspect.IsEnabled || c.Session.Store!.Pending().Any(j => j.GameId == game.Id);
+                if (needed == hasRelocate) return;
+                hasRelocate = needed;
+                if (needed)
+                {
+                    var button = c.Button("RelocateGame", () => Relocate(game), pending.Length == 0);
+                    AutomationProperties.SetAutomationId(button, "GameRelocate");
+                    headerButtons.Insert(2, button);
+                }
+                else headerButtons.RemoveAll(b => AutomationProperties.GetAutomationId(b) == "GameRelocate");
+                var index = body.Children.IndexOf(header);
+                foreach (var button in headerButtons) header.Children.Remove(button);
+                body.Children[index] = header = Ui.HeaderActions("GameHeaderActions", headerButtons.ToArray());
+            });
             if (pending.Length > 0) body.Children.Add(Ui.Label("PendingConfigurationLocked"));
             if (!locationAvailable) body.Children.Add(Ui.Label("GameLocationMissing"));
-            if (c.Session.TargetObservation is { } observed && observed.GameId == game.Id && observed.Revision == state.Revision)
-                body.Children.Add(Ui.Text(Strings.Format("LastChecked", observed.CheckedAt.ToLocalTime())));
+            var lastChecked = Ui.Text("");
+            void UpdateChecked()
+            {
+                var observed = c.Session.TargetObservation;
+                lastChecked.Text = observed?.GameId == game.Id && observed.Revision == c.Session.State!.Revision
+                    ? Strings.Format("LastChecked", observed.CheckedAt.ToLocalTime()) : "";
+                lastChecked.Visibility = lastChecked.Text.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
+            }
+            UpdateChecked(); rowRefreshers.Add(UpdateChecked); body.Children.Add(lastChecked);
             foreach (var operation in pending)
                 body.Children.Add(Ui.Stack(Ui.Label("NeedsRepair"), Ui.Text(operation.Error ?? ""),
                     c.Button("CheckRecovery", () => Recover(operation), !c.Session.Busy)));
@@ -107,7 +140,7 @@ public sealed partial class GamesView : UserControl
             selectAll.Unchecked += ToggleAll;
             selectAll.Indeterminate += ToggleAll;
             table.Children.Add(Ui.TableLine(TableRow(true, selectAll, Ui.Label("LibraryName"), Ui.Label("VersionLabel"), Ui.Label("Status"), Ui.Label("Actions")), true));
-            foreach (var library in state.Libraries) table.Children.Add(Ui.TableLine(ResourceRow(game, library, pending.Length > 0 || !locationAvailable)));
+            foreach (var library in state.Libraries) table.Children.Add(RetainedResourceRow(game, library, pending.Length > 0 || !locationAvailable));
             body.Children.Add(table);
             if (state.Libraries.Length == 0) body.Children.Add(Ui.Label("NoLibraries"));
         }
@@ -134,8 +167,10 @@ public sealed partial class GamesView : UserControl
         var box = new ComboBox { ItemsSource = versions.Select(ResourcePresentation.VersionName).ToArray(),
             MinWidth = 0, HorizontalAlignment = HorizontalAlignment.Stretch };
         box.SelectedIndex = receipt is null ? Array.FindIndex(versions, SourceAvailable) : Array.FindIndex(versions, v => v.Id == receipt.VersionId);
+        if (versionChoices.TryGetValue(library.Id, out var choice) && Array.FindIndex(versions, v => v.Id == choice) is var chosen && chosen >= 0)
+            box.SelectedIndex = chosen;
         AutomationProperties.SetAutomationId(box, "VersionChoice_" + library.Id.ToString("N"));
-        var check = new CheckBox { MinWidth = 0, Width = 32 };
+        var check = new CheckBox { MinWidth = 0, Width = 32, IsChecked = selected.ContainsKey(library.Id) };
         selectionBoxes.Add(check);
         AutomationProperties.SetAutomationId(check, "SelectLibrary_" + library.Id.ToString("N"));
         AutomationProperties.SetName(check, Strings.Get("Select") + " " + library.Name);
@@ -165,6 +200,7 @@ public sealed partial class GamesView : UserControl
         var actions = Ui.CompactActions(actionButtons.ToArray());
         void Update()
         {
+            if (box.SelectedIndex >= 0) versionChoices[library.Id] = versions[box.SelectedIndex].Id;
             ToolTipService.SetToolTip(box, box.SelectedIndex >= 0 ? ResourcePresentation.VersionName(versions[box.SelectedIndex]) : null);
             var sourceAvailable = box.SelectedIndex >= 0 && SourceAvailable(versions[box.SelectedIndex]);
             var usable = !c.Session.Busy && !locked && sourceAvailable;

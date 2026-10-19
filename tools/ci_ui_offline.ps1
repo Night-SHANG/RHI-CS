@@ -59,8 +59,12 @@ $createBounds = (Find-Control -id 'OfflineCreate').Current.BoundingRectangle
 if ($resetBounds.Right -ge $createBounds.Left -or [Math]::Abs($resetBounds.Top - $createBounds.Top) -gt 2) { throw 'Offline actions are not aligned.' }
 if (-not (Find-Control -id 'OfflineCreate').Current.IsEnabled) { throw 'Valid offline form is disabled.' }
 Capture 'offline-ready-to-create'
+$offlineIdentity = (Find-Control -id 'OfflineInstallerInput' -IncludeOffscreen).GetRuntimeId() -join ','
+$offlineNavigation = (Find-Control -id 'SettingsNavOffline' -IncludeOffscreen).GetRuntimeId() -join ','
 Invoke-VisualId 'OfflineCreate'
 Find-Control -id 'OfflineOutput' -IncludeOffscreen | Out-Null
+if (((Find-Control -id 'OfflineInstallerInput' -IncludeOffscreen).GetRuntimeId() -join ',') -ne $offlineIdentity -or
+    ((Find-Control -id 'SettingsNavOffline' -IncludeOffscreen).GetRuntimeId() -join ',') -ne $offlineNavigation) { throw 'Offline creation rebuilt the form or Settings navigation.' }
 Reveal-SettingsControl 'OfflineOpenOutput' | Out-Null
 if ((Find-Control -id 'OfflineValidation' -IncludeOffscreen).Current.Name -ne (Label 'OfflineReady')) { throw 'Successful export shows an error instead of success.' }
 Capture 'offline-created'

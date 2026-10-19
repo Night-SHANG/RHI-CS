@@ -38,13 +38,6 @@ public sealed partial class SettingsView
         return Ui.Stack(title, card);
     }
 
-    private FrameworkElement DataPage()
-    {
-        var root = c.Session.Store!.Root;
-        return Ui.Stack(Ui.Label("ApplicationData", 28), Ui.Card(Ui.Stack(Ui.Label("DataLocationHelp"),
-            Ui.Text(root), Ui.Label("NoMigration"), c.FolderAction("OpenFolder", root, "SettingsOpenData"))));
-    }
-
     private FrameworkElement OfflinePage()
     {
         var title = Ui.Label("MakeOfflineReShade", 28);

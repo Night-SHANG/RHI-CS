@@ -301,4 +301,22 @@
   <data name="ProtectionTime" xml:space="preserve"><value>时间</value></data>
   <data name="ProtectionEmpty" xml:space="preserve"><value>暂无修改保护副本。</value></data>
   <data name="ProtectionSummary" xml:space="preserve"><value>{0:N0} 组 · {1:N0} 字节</value></data>
+  <data name="MigrateData" xml:space="preserve"><value>迁移数据</value></data>
+  <data name="ContinueMigration" xml:space="preserve"><value>继续迁移</value></data>
+  <data name="StartMigration" xml:space="preserve"><value>开始迁移</value></data>
+  <data name="Next" xml:space="preserve"><value>下一步</value></data>
+  <data name="DataContents" xml:space="preserve"><value>保存资源配置、部署记录、原件备份和修改保护副本。</value></data>
+  <data name="DataMigrationHelp" xml:space="preserve"><value>迁移整个 Data，完成后使用新位置并移除旧目录。Data 外的游戏和资源文件保持原位。</value></data>
+  <data name="MigrationParent" xml:space="preserve"><value>新位置（将在此创建 Data）</value></data>
+  <data name="MigrationSource" xml:space="preserve"><value>当前位置</value></data>
+  <data name="MigrationDestination" xml:space="preserve"><value>迁移后的位置</value></data>
+  <data name="MigrationComplete" xml:space="preserve"><value>数据已迁移，旧数据目录已移除。</value></data>
+  <data name="MigrationPending" xml:space="preserve"><value>数据迁移尚未完成，请继续迁移后再进行其他操作。</value></data>
+  <data name="MigrationNeedsRecovery" xml:space="preserve"><value>请先完成待恢复的部署任务，再迁移数据。</value></data>
+  <data name="MigrationTargetExists" xml:space="preserve"><value>新位置已有 Data 或同名文件。请选择其他位置，不会合并或覆盖。</value></data>
+  <data name="MigrationContentChanged" xml:space="preserve"><value>迁移文件发生变化，已停止。数据和迁移记录已保留，请检查新旧目录后继续。</value></data>
+  <data name="MigrationCopyFailed" xml:space="preserve"><value>数据复制未完成，原数据保留在旧位置。请检查空间和访问权限后继续迁移。</value></data>
+  <data name="MigrationCopying" xml:space="preserve"><value>正在迁移数据…</value></data>
+  <data name="MigrationVerifying" xml:space="preserve"><value>正在校验迁移数据…</value></data>
+  <data name="MigrationCleaning" xml:space="preserve"><value>正在清理旧数据目录…</value></data>
 </root>

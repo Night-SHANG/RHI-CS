@@ -45,7 +45,9 @@ function Invoke-Id([string]$id) {
 function Select-Batch {
     foreach ($id in @($alpha, $beta)) {
         Reveal-Control "SelectLibrary_$id" 'GamesScroll' | Out-Null
-        Invoke-Id "SelectLibrary_$id"
+        if ((Find-Control -id "SelectLibrary_$id").GetCurrentPattern([Windows.Automation.TogglePattern]::Pattern).Current.ToggleState -ne [Windows.Automation.ToggleState]::On) {
+            Invoke-Id "SelectLibrary_$id"
+        }
     }
     Invoke-Id 'BatchPreflight'
 }
@@ -62,7 +64,11 @@ Invoke-Control 'Close'
 if (((Find-Control -id 'LibrariesSearch').GetRuntimeId() -join ',') -ne $listBefore) { throw 'Viewing a version rebuilt the library list.' }
 Capture '20-referenced-library'
 Invoke-Control 'Games'
+$searchIdentity = (Find-Control -id 'GamesSearch').GetRuntimeId() -join ','
+$scrollIdentity = (Find-Control -id 'GamesScroll').GetRuntimeId() -join ','
 Invoke-Control 'CheckTargets'
+if (((Find-Control -id 'GamesSearch').GetRuntimeId() -join ',') -ne $searchIdentity -or
+    ((Find-Control -id 'GamesScroll').GetRuntimeId() -join ',') -ne $scrollIdentity) { throw 'Inspection rebuilt the game page.' }
 Assert-ResourceRows 'initial mixed deployment' | Out-Null
 Find-Control -name (Label 'TargetModified') | Out-Null
 Capture '21-target-changes'

@@ -7,6 +7,7 @@ namespace Rhi.App.Services;
 public sealed record DataPointer(string Root, Guid Id);
 public static class Bootstrap
 {
+    public static Rhi.Core.Storage.Migration.MigrationLog Migration => new(Path.Combine(Folder, "data-migration.json"));
     // Only the locator lives here. Catalogs, logs, snapshots and protection stay in the user-selected root.
     private static string Folder => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "RHI-CS");
     public static DataPointer? Read()

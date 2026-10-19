@@ -6,12 +6,15 @@ using Rhi.App.Presentation;
 using Rhi.Core.Deployment;
 using Rhi.Core.Models;
 using Rhi.Core.Configuration;
+using Rhi.Core.Storage;
 
 namespace Rhi.App.Pages;
 
 public sealed partial class LibrariesView : UserControl
 {
     private readonly PageContext c;
+    private Action? refreshData;
+    public void RefreshData() => refreshData?.Invoke();
     public LibrariesView(PageContext context)
     {
         c = context;
@@ -23,23 +26,32 @@ public sealed partial class LibrariesView : UserControl
         AutomationProperties.SetAutomationId(search, "LibrariesSearch");
         var empty = Ui.Label(state.Libraries.Length == 0 ? "NoLibraries" : "NoMatches");
         var filtering = false;
+        string? detailStamp = null;
         void ShowLibrary(ResourceLibrary? library)
         {
-            if (detail.Content is not null && c.LibraryId == library?.Id) return;
+            var stamp = AtomicJson.Fingerprint(new { Library = library, c.Session.State!.Receipts,
+                c.Session.State.Games, Pending = c.Session.Store!.Pending(),
+                Sources = library?.Versions.Select(ResourcePresentation.SourceAvailable).ToArray() });
+            if (detail.Content is not null && c.LibraryId == library?.Id && detailStamp == stamp) return;
+            detailStamp = stamp;
             c.LibraryId = library?.Id;
             detail.Content = LibraryBody(library);
         }
         void Filter()
         {
+            var state = c.Session.State!;
             c.LibraryQuery = search.Text;
             var filtered = state.Libraries.Where(l => l.Name.Contains(search.Text, StringComparison.CurrentCultureIgnoreCase)).ToArray();
             var library = filtered.FirstOrDefault(l => l.Id == c.LibraryId) ?? filtered.FirstOrDefault();
             filtering = true;
-            list.ItemsSource = filtered; list.SelectedItem = library;
+            if (list.ItemsSource is not ResourceLibrary[] shown || !shown.SequenceEqual(filtered)) list.ItemsSource = filtered;
+            if (!Equals(list.SelectedItem, library)) list.SelectedItem = library;
             filtering = false;
+            empty.Text = Strings.Get(state.Libraries.Length == 0 ? "NoLibraries" : "NoMatches");
             empty.Visibility = filtered.Length == 0 ? Visibility.Visible : Visibility.Collapsed;
             ShowLibrary(library);
         }
+        refreshData = Filter;
         list.SelectionChanged += (_, _) => { if (!filtering) ShowLibrary(list.SelectedItem as ResourceLibrary); };
         search.TextChanged += (_, _) => Filter();
         Filter();

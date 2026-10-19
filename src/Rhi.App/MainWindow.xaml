@@ -24,7 +24,7 @@
     <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
     <StackPanel>
      <TextBlock x:Name="TaskText" TextWrapping="Wrap" Foreground="{ThemeResource TextBrush}" />
-     <ProgressBar x:Name="TaskProgressBar" IsIndeterminate="True" Visibility="Collapsed" Height="3" Margin="0,8,0,0" />
+     <Grid Height="11"><ProgressBar x:Name="TaskProgressBar" IsIndeterminate="True" Visibility="Collapsed" Height="3" VerticalAlignment="Bottom" /></Grid>
     </StackPanel>
     <Button x:Name="StopButton" Grid.Column="1" Click="Stop_Click" Visibility="Collapsed" />
     <Button x:Name="ResultButton" Grid.Column="2" Click="Result_Click" />

@@ -27,7 +27,14 @@ public sealed partial class AppSession : ObservableObject, IDisposable
 
     public AppSession()
     {
-        try { Pointer = Bootstrap.Read(); }
+        try
+        {
+            Pointer = Bootstrap.Read();
+            PendingMigration = Bootstrap.Migration.Pending();
+            if (PendingMigration is { } migration && (Pointer is null || Pointer.Id != migration.WorkspaceId ||
+                (!PathPolicy.Comparer.Equals(Pointer.Root, migration.Source) && !PathPolicy.Comparer.Equals(Pointer.Root, migration.Destination))))
+                throw new DeploymentException("DataLocationChanged");
+        }
         catch (Exception ex) { StartupError = ex.Message; InitializationBlocked = true; return; }
         try
         {
@@ -138,6 +145,10 @@ public sealed partial class AppSession : ObservableObject, IDisposable
     public void Stop() { if (Recovering) return; StopRequested = true; cancellation?.Cancel(); }
     private static void CheckGame(string exe)
     { if (WindowsIntegration.IsGameRunning(exe)) throw new DeploymentException("GameRunning"); }
-    private void RequireIdle() { if (Busy) throw new DeploymentException("Busy"); }
+    private void RequireIdle()
+    {
+        if (Busy) throw new DeploymentException("Busy");
+        if (PendingMigration is not null) throw new DeploymentException("MigrationPending");
+    }
     public void Dispose() { cancellation?.Dispose(); Store?.Dispose(); }
 }

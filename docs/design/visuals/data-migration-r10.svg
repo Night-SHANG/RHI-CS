@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1320" height="820" viewBox="0 0 1320 820">
+<title>应用数据迁移入口 r10：结构样板，示例路径</title>
+<style>text{font-family:'Microsoft YaHei UI','Segoe UI',sans-serif;font-size:14px;fill:#202d42}.title{font-size:28px;font-weight:600}.brand{font-size:23px;font-weight:600}.muted{fill:#596579}.btn{fill:#fafbfc;stroke:#cbd3dd}.center{text-anchor:middle}</style>
+<rect width="1320" height="820" fill="#fafbfc"/><rect width="1320" height="56" fill="#fff"/><path d="M0 56H1320" stroke="#dfe5ed"/>
+<text x="24" y="37" class="brand">▦ RHI-CS</text><text x="530" y="35">游戏</text><text x="650" y="35">资源库</text><rect x="750" y="6" width="110" height="44" rx="4" fill="#0067b0"/><text x="805" y="35" class="center" style="fill:white">设置</text>
+<rect y="57" width="240" height="701" fill="#f1f4f8"/><text x="24" y="108" class="brand">设置</text><text x="40" y="165">常规</text><rect x="16" y="184" width="208" height="44" rx="5" fill="#e0edf8"/><rect x="16" y="196" width="3" height="20" fill="#0067b0"/><text x="40" y="212">应用数据</text><text x="40" y="264">修改保护副本</text><text x="40" y="316">离线 ReShade</text>
+<text x="280" y="116" class="title">应用数据</text>
+<rect x="280" y="148" width="920" height="198" rx="8" fill="white" stroke="#dce2e9"/>
+<text x="304" y="183" class="muted">保存资源配置、部署记录、原件备份和修改保护副本。</text>
+<text x="304" y="220">C:\Tools\RHI-CS\Data</text>
+<text x="304" y="255" class="muted">迁移完成后使用新位置，并移除旧数据目录。游戏和资源来源保持原位。</text>
+<rect x="304" y="286" width="180" height="36" rx="4" class="btn"/><text x="394" y="310" class="center">打开文件夹</text>
+<rect x="492" y="286" width="180" height="36" rx="4" class="btn"/><text x="582" y="310" class="center">迁移数据</text>
+<path d="M0 758H1320" stroke="#dfe5ed"/><text x="24" y="786">就绪</text><rect x="24" y="798" width="970" height="3" fill="#fafbfc"/>
+</svg>
