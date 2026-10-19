@@ -32,7 +32,7 @@
   <data name="NotChecked" xml:space="preserve"><value>Not checked yet</value></data>
   <data name="NoOtherVersion" xml:space="preserve"><value>No other available version</value></data>
   <data name="ChangeVersion" xml:space="preserve"><value>Change version</value></data>
-  <data name="ClearDeployment" xml:space="preserve"><value>Clear deployment</value></data>
+  <data name="ClearDeployment" xml:space="preserve"><value>Clear</value></data>
   <data name="Deploy" xml:space="preserve"><value>Deploy</value></data>
   <data name="Change" xml:space="preserve"><value>Change version</value></data>
   <data name="Clear" xml:space="preserve"><value>Clear deployment</value></data>
@@ -189,7 +189,7 @@
   <data name="PendingConfigurationLocked" xml:space="preserve"><value>Changes are locked by an unfinished operation. Check and recover on the Games page.</value></data>
   <data name="ConfigurationReferenced" xml:space="preserve"><value>This configuration is referenced by a deployment. Clear that deployment before removing it.</value></data>
   <data name="CheckTargets" xml:space="preserve"><value>Check targets</value></data>
-  <data name="ViewDifferences" xml:space="preserve"><value>View differences</value></data>
+  <data name="ViewDifferences" xml:space="preserve"><value>View changes</value></data>
   <data name="TargetDifferences" xml:space="preserve"><value>File differences</value></data>
   <data name="TargetMatched" xml:space="preserve"><value>Targets match</value></data>
   <data name="TargetModified" xml:space="preserve"><value>Targets changed</value></data>
@@ -265,7 +265,7 @@
   <data name="BatchChangeCount" xml:space="preserve"><value>Change version ({0})</value></data>
   <data name="OpenDeploymentFolder" xml:space="preserve"><value>Open deployment folder</value></data>
   <data name="OpenLibraryFolder" xml:space="preserve"><value>Open library folder</value></data>
-  <data name="OpenResourceFolder" xml:space="preserve"><value>Open resource folder</value></data>
+  <data name="OpenResourceFolder" xml:space="preserve"><value>Open folder</value></data>
   <data name="FolderUnavailable" xml:space="preserve"><value>The folder is unset or unavailable. Check its path.</value></data>
   <data name="ProtectAndClear" xml:space="preserve"><value>Back up and clear</value></data>
   <data name="DirectClear" xml:space="preserve"><value>Clear without copy</value></data>

@@ -151,6 +151,12 @@ function Check-Pages([string]$prefix) {
         throw 'Library action is not aligned with the search field.'
     }
     Capture "$prefix-library"
+    $libraryScroll = (Find-Control -id 'LibraryScroll').GetCurrentPattern([Windows.Automation.ScrollPattern]::Pattern)
+    if ($libraryScroll.Current.VerticallyScrollable) { $libraryScroll.SetScrollPercent(-1, 100) }
+    Start-Sleep -Milliseconds 500
+    Capture "$prefix-library-actions"
+    if ($libraryScroll.Current.VerticallyScrollable) { $libraryScroll.SetScrollPercent(-1, 0) }
+    Start-Sleep -Milliseconds 300
     Invoke-Control 'AddLibrary'
     $before = Assert-ActionOrder 'Save'
     Assert-FormReady
