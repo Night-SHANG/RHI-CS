@@ -69,7 +69,7 @@ if (-not (Find-Control -id 'OfflineCreate').Current.IsEnabled) { throw 'Valid of
 Capture 'offline-ready-to-create'
 $offlineIdentity = (Find-Control -id 'OfflineInstallerInput' -IncludeOffscreen).GetRuntimeId() -join ','
 $offlineNavigation = (Find-Control -id 'SettingsNavOffline' -IncludeOffscreen).GetRuntimeId() -join ','
-$offlineActionOffset = $createBounds.Top - (Find-Control -id 'OfflinePreparationCard' -IncludeOffscreen).Current.BoundingRectangle.Top
+$offlineActionOffset = $createBounds.Top - (Find-Control -id 'OfflineNameInput' -IncludeOffscreen).Current.BoundingRectangle.Top
 Invoke-VisualId 'OfflineCreate'
 Find-Control -id 'OfflineOutput' -IncludeOffscreen | Out-Null
 if (((Find-Control -id 'OfflineInstallerInput' -IncludeOffscreen).GetRuntimeId() -join ',') -ne $offlineIdentity -or
@@ -77,7 +77,7 @@ if (((Find-Control -id 'OfflineInstallerInput' -IncludeOffscreen).GetRuntimeId()
 Reveal-SettingsControl 'OfflineOpenOutput' | Out-Null
 Assert-OfflineTextCount 'OfflineReady' 1
 Assert-OfflineTextCount 'OfflineOutputExists' 0
-$completedActionOffset = (Find-Control -id 'OfflineCreate' -IncludeOffscreen).Current.BoundingRectangle.Top - (Find-Control -id 'OfflinePreparationCard' -IncludeOffscreen).Current.BoundingRectangle.Top
+$completedActionOffset = (Find-Control -id 'OfflineCreate' -IncludeOffscreen).Current.BoundingRectangle.Top - (Find-Control -id 'OfflineNameInput' -IncludeOffscreen).Current.BoundingRectangle.Top
 if ([Math]::Abs($offlineActionOffset - $completedActionOffset) -gt 2) { throw 'Success feedback moved the offline actions within the card.' }
 Capture 'offline-created'
 Set-Appearance 'Dark' 'en-US'
