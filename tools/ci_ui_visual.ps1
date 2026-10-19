@@ -1,6 +1,7 @@
 # Shared native UI harness; no application test hooks or simulated DPI scaling.
 if ($env:GITHUB_ACTIONS -ne 'true' -or -not $Visual) { throw 'CI visual harness required.' }
 $evidence = [Collections.Generic.List[string]]::new()
+. (Join-Path $PSScriptRoot 'ci_ui_resource_layout.ps1')
 function Select-Option([string]$id, [string]$key) {
     (Find-Control -id $id -Enabled).GetCurrentPattern([Windows.Automation.ExpandCollapsePattern]::Pattern).Expand()
     (Find-Control -name (Label $key)).GetCurrentPattern([Windows.Automation.SelectionItemPattern]::Pattern).Select()
@@ -118,6 +119,7 @@ function Check-Pages([string]$prefix) {
     Capture "$prefix-offline-form"
     Invoke-Control 'Games'
     Assert-InWindow (Find-Control -id 'GameEdit')
+    Assert-HeaderActions 'Game'
     Assert-InWindow (Find-Control -id 'BatchPreflight')
     Capture "$prefix-games"
     Invoke-Control 'AddGame'
@@ -142,6 +144,7 @@ function Check-Pages([string]$prefix) {
     Capture "$prefix-game-form"
     Invoke-Control 'Cancel'
     Invoke-Control 'Libraries'
+    Assert-HeaderActions 'Library'
     $window = [Windows.Automation.AutomationElement]::FromHandle($process.MainWindowHandle)
     $offlineId = [Windows.Automation.PropertyCondition]::new([Windows.Automation.AutomationElement]::AutomationIdProperty, 'OfflineInstallerInput')
     if ($window.FindFirst([Windows.Automation.TreeScope]::Descendants, $offlineId)) { throw 'Offline creation belongs in Settings only.' }
@@ -248,7 +251,12 @@ Capture 'compact-dark-settings-offline'
 Reveal-SettingsControl 'OfflineCreate' | Out-Null
 Assert-InWindow (Find-Control -id 'OfflineReset')
 Capture 'compact-dark-settings-actions'
+Invoke-Control 'Games'
+Assert-HeaderActions 'Game'
+Capture 'compact-dark-game-header'
 Invoke-Control 'Libraries'
+Assert-HeaderActions 'Library'
+Capture 'compact-dark-library-header'
 Invoke-Control 'AddLibrary'
 Assert-InWindow (Find-Control -name (Label 'Save') -Action)
 Assert-InWindow (Find-Control -name (Label 'Cancel') -Action)

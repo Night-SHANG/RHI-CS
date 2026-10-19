@@ -70,20 +70,20 @@ public sealed partial class GamesView : UserControl
             var locationAvailable = Directory.Exists(game.InstallRoot) && Directory.Exists(game.DeploymentRoot) && File.Exists(game.ExePath);
             var edit = c.Button("Edit", () => EditGame(game), !c.Session.Busy && pending.Length == 0);
             AutomationProperties.SetAutomationId(edit, "GameEdit");
-            var headerActions = Ui.Actions(132, edit, c.Button("CheckTargets", async () => { await c.Session.InspectTargets(game.Id); },
-                !c.Session.Busy && state.Receipts.Any(r => r.GameId == game.Id)));
-            body.Children.Add(headerActions);
+            var inspect = c.Button("CheckTargets", async () => { await c.Session.InspectTargets(game.Id); },
+                !c.Session.Busy && state.Receipts.Any(r => r.GameId == game.Id));
+            AutomationProperties.SetAutomationId(inspect, "GameInspectTargets");
+            var headerButtons = new List<Button> { edit, inspect };
             if (state.Receipts.Any(r => r.GameId == game.Id) || pending.Length > 0)
             {
                 var relocate = c.Button("RelocateGame", () => Relocate(game), !c.Session.Busy && pending.Length == 0);
                 AutomationProperties.SetAutomationId(relocate, "GameRelocate");
-                Ui.AddToRow(headerActions, relocate);
-                if (pending.Length > 0) body.Children.Add(Ui.Label("PendingConfigurationLocked"));
+                headerButtons.Add(relocate);
             }
+            headerButtons.Add(c.FolderAction("OpenDeploymentFolder", game.DeploymentRoot, "GameOpenFolder"));
+            body.Children.Add(Ui.HeaderActions("GameHeaderActions", headerButtons.ToArray()));
+            if (pending.Length > 0) body.Children.Add(Ui.Label("PendingConfigurationLocked"));
             if (!locationAvailable) body.Children.Add(Ui.Label("GameLocationMissing"));
-            Ui.AddToRow(headerActions, c.FolderAction("OpenDeploymentFolder", game.DeploymentRoot, "GameOpenFolder"));
-            foreach (var column in headerActions.ColumnDefinitions) column.Width = new GridLength(132);
-            foreach (FrameworkElement button in headerActions.Children) button.VerticalAlignment = VerticalAlignment.Stretch;
             if (c.Session.TargetObservation is { } observed && observed.GameId == game.Id && observed.Revision == state.Revision)
                 body.Children.Add(Ui.Text(Strings.Format("LastChecked", observed.CheckedAt.ToLocalTime())));
             foreach (var operation in pending)

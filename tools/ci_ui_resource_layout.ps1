@@ -1,5 +1,5 @@
 # Native geometry checks on the disposable runner, not simulated layout assertions.
-if ($env:GITHUB_ACTIONS -ne 'true' -or -not $Features) { throw 'CI feature harness required.' }
+if ($env:GITHUB_ACTIONS -ne 'true' -or -not ($Features -or $Visual)) { throw 'CI feature or visual harness required.' }
 function Assert-ResourceRows([string]$phase) {
     $centers = @()
     foreach ($id in @($alpha, $beta, $reshade)) {
@@ -28,4 +28,36 @@ function Assert-VersionActions([string]$versionId) {
     for ($i = 1; $i -lt 3; $i++) {
         if ([Math]::Abs($bounds[$i].Top - $bounds[0].Top) -gt 2 -or $bounds[$i].Left -le $bounds[$i-1].Right) { throw 'Version actions are not on one horizontal row.' }
     }
+}
+
+function Assert-HeaderActions([string]$page) {
+    $ids = if ($page -eq 'Game') { @('GameEdit', 'GameInspectTargets', 'GameRelocate', 'GameOpenFolder') }
+        else { @('LibraryEdit', 'LibraryAddVersion', 'LibraryRemove', 'LibraryOpenFolder') }
+    $window = [Windows.Automation.AutomationElement]::FromHandle($process.MainWindowHandle)
+    $bounds = @()
+    foreach ($id in $ids) {
+        $condition = [Windows.Automation.PropertyCondition]::new([Windows.Automation.AutomationElement]::AutomationIdProperty, $id)
+        $node = $window.FindFirst([Windows.Automation.TreeScope]::Descendants, $condition)
+        if (-not $node -and $id -eq 'GameRelocate') { continue }
+        if (-not $node) { throw "Missing header action: $id" }
+        Assert-InWindow $node
+        $bounds += $node.Current.BoundingRectangle
+    }
+    $scale = [SmokeWindow]::GetDpiForWindow($process.MainWindowHandle) / 96.0
+    $first = $bounds[0]
+    $rows = @($bounds | Group-Object { [Math]::Round($_.Top / $scale) })
+    $columns = $rows[0].Count
+    if ($columns -notin @(1, 2, $bounds.Count)) { throw "Unexpected header wrapping: $page; columns=$columns" }
+    for ($i = 0; $i -lt $bounds.Count; $i++) {
+        $box = $bounds[$i]
+        if ([Math]::Abs($box.Width / $scale - 180) -gt 2 -or [Math]::Abs($box.Height / $scale - 36) -gt 2) {
+            throw "Unequal or clipped header action: $page; $box"
+        }
+        $left = $first.Left + ($i % $columns) * 188 * $scale
+        $top = $first.Top + [Math]::Floor($i / $columns) * 44 * $scale
+        if ([Math]::Abs($box.Left - $left) -gt 2 * $scale -or [Math]::Abs($box.Top - $top) -gt 2 * $scale) {
+            throw "Header actions are not consistently aligned: $page; $box"
+        }
+    }
+    $evidence.Add("PASS: $page header; buttons=$($bounds.Count); columns=$columns; size=180x36; gap=8; DPI=$scale")
 }

@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="760" viewBox="0 0 1240 760">
+  <style>
+    text{font-family:'Segoe UI','Microsoft YaHei',sans-serif;fill:#1d2940;font-size:14px}
+    .title{font-size:24px;font-weight:600}.name{font-size:22px;font-weight:600}.muted{fill:#566680;font-size:13px}
+    .panel{fill:white;stroke:#dae2ec}.button{fill:#fafbfc;stroke:#d2dae4;rx:4}.disabled{fill:#f4f6f8;stroke:#e7ebef}
+    .off{fill:#929ba8}.label{text-anchor:middle;dominant-baseline:middle}
+  </style>
+  <rect width="1240" height="760" fill="#f3f6fa"/>
+  <text x="32" y="40" class="title">页面顶部操作 · 两页使用同一套紧凑布局</text>
+  <text x="32" y="66" class="muted">等宽 180 × 36 · 间距 8 · 整体靠左 · 窗口变宽不拉伸</text>
+  <rect x="32" y="88" width="1176" height="174" rx="6" class="panel"/>
+  <text x="56" y="124" class="name">Launcher</text>
+  <text x="56" y="152" class="muted">部署目录：C:\Games\Launcher</text>
+  <g transform="translate(56 172)">
+    <rect width="180" height="36" class="button"/><text x="90" y="18" class="label">修改</text>
+    <rect x="188" width="180" height="36" class="button"/><text x="278" y="18" class="label">核对目标</text>
+    <rect x="376" width="180" height="36" class="button"/><text x="466" y="18" class="label">重新定位游戏</text>
+    <rect x="564" width="180" height="36" class="button"/><text x="654" y="18" class="label">打开部署目录</text>
+  </g>
+  <text x="56" y="242" class="muted">游戏页：保留原有操作和显示条件</text>
+  <rect x="32" y="278" width="1176" height="174" rx="6" class="panel"/>
+  <text x="56" y="314" class="name">画面资源</text>
+  <text x="56" y="342" class="muted">资源库目录：F:\Resources\画面资源</text>
+  <g transform="translate(56 362)">
+    <rect width="180" height="36" class="button"/><text x="90" y="18" class="label">修改</text>
+    <rect x="188" width="180" height="36" class="button"/><text x="278" y="18" class="label">添加版本</text>
+    <rect x="376" width="180" height="36" class="disabled"/><text x="466" y="18" class="label off">移除资源库</text>
+    <rect x="564" width="180" height="36" class="button"/><text x="654" y="18" class="label">打开资源库目录</text>
+  </g>
+  <text x="56" y="432" class="muted">资源库页：不再把四个按钮拉伸铺满整行；禁用不改变尺寸</text>
+  <text x="32" y="490" class="title">窄窗口：两页都采用两列，按钮尺寸保持</text>
+  <rect x="32" y="512" width="576" height="188" rx="6" class="panel"/>
+  <text x="56" y="544" class="muted">游戏页 · 英文示例</text>
+  <g transform="translate(56 560)">
+    <rect width="180" height="36" class="button"/><text x="90" y="18" class="label">Edit</text>
+    <rect x="188" width="180" height="36" class="button"/><text x="278" y="18" class="label">Inspect targets</text>
+    <rect y="44" width="180" height="36" class="button"/><text x="90" y="62" class="label">Relocate game</text>
+    <rect x="188" y="44" width="180" height="36" class="button"/><text x="278" y="62" class="label">Open deployment folder</text>
+  </g>
+  <text x="56" y="676" class="muted">按原顺序从左到右、从上到下排列</text>
+  <rect x="632" y="512" width="576" height="188" rx="6" class="panel"/>
+  <text x="656" y="544" class="muted">资源库页 · 英文示例</text>
+  <g transform="translate(656 560)">
+    <rect width="180" height="36" class="button"/><text x="90" y="18" class="label">Edit</text>
+    <rect x="188" width="180" height="36" class="button"/><text x="278" y="18" class="label">Add version</text>
+    <rect y="44" width="180" height="36" class="disabled"/><text x="90" y="62" class="label off">Remove library</text>
+    <rect x="188" y="44" width="180" height="36" class="button"/><text x="278" y="62" class="label">Open library folder</text>
+  </g>
+  <text x="656" y="676" class="muted">相同尺寸、间距、换行规则</text>
+  <text x="32" y="734" class="muted">视觉样板 r9 · 只统一顶部工具栏 · 示例数据，不是应用运行截图</text>
+</svg>

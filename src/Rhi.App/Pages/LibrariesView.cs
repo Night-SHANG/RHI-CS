@@ -70,7 +70,7 @@ public sealed partial class LibrariesView : UserControl
             var removeLibrary = c.Button("RemoveLibrary", () => RemoveLibrary(selected),
                 !c.Session.Busy && !locked && !state.Receipts.Any(r => r.LibraryId == selected.Id));
             AutomationProperties.SetAutomationId(removeLibrary, "LibraryRemove");
-            right.Children.Add(Ui.Row(editLibrary, addVersion, removeLibrary,
+            right.Children.Add(Ui.HeaderActions("LibraryHeaderActions", editLibrary, addVersion, removeLibrary,
                 c.FolderAction("OpenLibraryFolder", selected.SourceRoot, "LibraryOpenFolder")));
             AddReferenceNotice(right, selected.Id);
             right.Children.Add(Ui.Label("Versions", 20));
