@@ -9,6 +9,7 @@ public static partial class Ui
     public static TextBlock OneLine(string text, bool secondary = false)
     {
         var label = secondary ? Secondary(text) : Text(text);
+        if (secondary) label.FontSize = 12;
         label.TextWrapping = TextWrapping.NoWrap;
         label.TextTrimming = TextTrimming.CharacterEllipsis;
         ToolTipService.SetToolTip(label, text);

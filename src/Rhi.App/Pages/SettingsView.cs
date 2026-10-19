@@ -15,16 +15,19 @@ public sealed partial class SettingsView : UserControl
         this.c = c;
         var host = new ContentControl { HorizontalContentAlignment = HorizontalAlignment.Stretch,
             VerticalContentAlignment = VerticalAlignment.Stretch, Margin = new Thickness(40, 28, 36, 28) };
+        var sidebarTitle = new Border { Padding = new Thickness(20, 24, 20, 20), Child = Ui.Label("Settings", 23) };
         var navigation = new NavigationView { IsSettingsVisible = false, IsBackButtonVisible = NavigationViewBackButtonVisible.Collapsed,
             IsPaneToggleButtonVisible = false, OpenPaneLength = 240, PaneDisplayMode = NavigationViewPaneDisplayMode.Left,
-            IsPaneOpen = true, PaneTitle = Strings.Get("Settings"), Content = host };
+            IsPaneOpen = true, PaneHeader = sidebarTitle, Content = host };
+        navigation.Resources["NavigationViewExpandedPaneBackground"] = Ui.ThemeBrush("PanelBrush");
+        navigation.Resources["NavigationViewTopPaneBackground"] = Ui.ThemeBrush("PanelBrush");
         AutomationProperties.SetAutomationId(navigation, "SettingsNavigation");
         var pages = new Dictionary<string, UIElement>();
         var sections = new[] { ("General", "General"), ("Data", "ApplicationData"),
             ("Protection", "ProtectedCopies"), ("Offline", "OfflineSection") };
         foreach (var (id, key) in sections)
         {
-            var item = new NavigationViewItem { Content = Strings.Get(key), Tag = id };
+            var item = new NavigationViewItem { Content = Strings.Get(key), Tag = id, Height = 44 };
             AutomationProperties.SetAutomationId(item, "SettingsNav" + id);
             navigation.MenuItems.Add(item);
         }
@@ -63,6 +66,7 @@ public sealed partial class SettingsView : UserControl
             var narrow = e.NewSize.Width < 1000;
             navigation.PaneDisplayMode = narrow ? NavigationViewPaneDisplayMode.Top : NavigationViewPaneDisplayMode.Left;
             navigation.IsPaneOpen = !narrow;
+            sidebarTitle.Visibility = narrow ? Visibility.Collapsed : Visibility.Visible;
             host.Margin = narrow ? new Thickness(24, 20, 24, 20) : new Thickness(40, 28, 36, 28);
         };
         Content = navigation;

@@ -300,4 +300,5 @@
   <data name="ProtectionVersionTarget" xml:space="preserve"><value>版本 / 原部署目录</value></data>
   <data name="ProtectionTime" xml:space="preserve"><value>时间</value></data>
   <data name="ProtectionEmpty" xml:space="preserve"><value>暂无修改保护副本。</value></data>
+  <data name="ProtectionSummary" xml:space="preserve"><value>{0:N0} 组 · {1:N0} 字节</value></data>
 </root>

@@ -30,7 +30,8 @@ public sealed partial class SettingsView
             var offset = scroll.VerticalOffset;
             records.Children.Clear();
             var inventory = c.Session.ProtectionObservation;
-            usage.Text = inventory is null ? "" : Strings.Format("ProtectionUsage", inventory.Operations.Length, inventory.Bytes);
+            usage.Text = inventory is null ? "" : Strings.Format("ProtectionSummary", inventory.Operations.Length, inventory.Bytes);
+            ToolTipService.SetToolTip(usage, inventory is null ? "" : Strings.Format("ProtectionUsage", inventory.Operations.Length, inventory.Bytes));
             measured.Text = inventory is null ? "" : Strings.Format("ProtectionMeasuredAt", inventory.CheckedAt.ToLocalTime());
             if (inventory is null || inventory.Operations.Length == 0)
             {
@@ -43,7 +44,9 @@ public sealed partial class SettingsView
                 var state = c.Session.State!;
                 var game = copy.Entry.GameName ?? state.Games.FirstOrDefault(g => g.Id == copy.Entry.GameId)?.Name ?? copy.Entry.GameId.ToString();
                 var library = copy.Entry.LibraryName ?? state.Libraries.FirstOrDefault(l => l.Id == copy.Entry.LibraryId)?.Name ?? copy.Entry.LibraryId.ToString();
-                var owner = Ui.Stack(Ui.OneLine(game), Ui.OneLine(library, true));
+                var gameName = Ui.OneLine(game);
+                gameName.FontWeight = Microsoft.UI.Text.FontWeights.SemiBold;
+                var owner = Ui.Stack(gameName, Ui.OneLine(library, true));
                 var version = Ui.Stack(Ui.OneLine(copy.Entry.VersionLabel ?? Strings.Get("LegacyProtection")), Ui.OneLine(copy.Entry.TargetRoot, true));
                 var date = copy.Entry.CreatedAt.ToLocalTime();
                 var time = Ui.Stack(Ui.OneLine(date.ToString("d")), Ui.OneLine(date.ToString("t"), true));

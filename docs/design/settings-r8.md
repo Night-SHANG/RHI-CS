@@ -13,3 +13,5 @@
 - 沿用 WinUI 导航、现有页面内容和统一样式。应用 Session 仍是数据权威所有者，导航只管理选中子页和页面视图，不复制备份状态或重写制作流程。
 
 预览：visuals/settings-r8-protection.svg 与 settings-r8-offline.svg，PNG 为渲染结果，示例数据，不是应用运行截图。实现复用 WinUI NavigationView 与现有 Session/制作流程；普通侧栏及窄窗口顶部导航均使用原生控件，验收需查看 GitHub 实际截图。
+
+原生导航主题入口按 [Microsoft NavigationView 文档](https://learn.microsoft.com/windows/apps/develop/ui/controls/navigationview) 的 Pane Backgrounds 核对：Left 使用 NavigationViewExpandedPaneBackground，Top 使用 NavigationViewTopPaneBackground。两者接入现有 PanelBrush，不复制导航控件模板。

@@ -300,4 +300,5 @@ State | Relative path | Checksum
   <data name="ProtectionVersionTarget" xml:space="preserve"><value>Version / Original folder</value></data>
   <data name="ProtectionTime" xml:space="preserve"><value>Time</value></data>
   <data name="ProtectionEmpty" xml:space="preserve"><value>No protected copies yet.</value></data>
+  <data name="ProtectionSummary" xml:space="preserve"><value>{0:N0} sets · {1:N0} bytes</value></data>
 </root>

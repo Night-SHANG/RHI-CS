@@ -166,12 +166,13 @@ public sealed partial class GamesView : UserControl
         void Update()
         {
             ToolTipService.SetToolTip(box, box.SelectedIndex >= 0 ? ResourcePresentation.VersionName(versions[box.SelectedIndex]) : null);
-            var usable = !c.Session.Busy && !locked && box.SelectedIndex >= 0 && SourceAvailable(versions[box.SelectedIndex]);
+            var sourceAvailable = box.SelectedIndex >= 0 && SourceAvailable(versions[box.SelectedIndex]);
+            var usable = !c.Session.Busy && !locked && sourceAvailable;
             var same = receipt is not null && box.SelectedIndex >= 0 && versions[box.SelectedIndex].Id == receipt.VersionId;
             check.IsEnabled = !c.Session.Busy && !locked && (receipt is not null || usable);
             deploy.IsEnabled = usable && !same; box.IsEnabled = !c.Session.Busy && !locked;
             if (!check.IsEnabled) check.IsChecked = false;
-            var reason = !usable ? "SourceUnavailable" : same
+            var reason = !sourceAvailable ? "SourceUnavailable" : same
                 ? versions.Any(v => v.Id != receipt!.VersionId && SourceAvailable(v)) ? "ChooseOtherVersion" : "NoOtherVersion" : null;
             var help = reason is null ? "" : Strings.Get(reason);
             var fullVersion = box.SelectedIndex >= 0 ? ResourcePresentation.VersionName(versions[box.SelectedIndex]) : "";
@@ -182,7 +183,7 @@ public sealed partial class GamesView : UserControl
             if (receipt is null)
             {
                 status.Children.Clear();
-                status.Children.Add(Ui.Status(usable ? "NotDeployed" : "SourceUnavailable", true));
+                status.Children.Add(Ui.Status(sourceAvailable ? "NotDeployed" : "SourceUnavailable", true));
             }
             if (check.IsChecked == true) selected[library.Id] = box.SelectedIndex >= 0 ? versions[box.SelectedIndex].Id : Guid.Empty;
             else selected.Remove(library.Id);
