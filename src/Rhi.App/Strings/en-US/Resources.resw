@@ -108,7 +108,7 @@
   <data name="OpenLicenseFolder" xml:space="preserve"><value>Open license folder</value></data>
   <data name="Welcome" xml:space="preserve"><value>Choose application data location</value></data>
   <data name="DataExplanation" xml:space="preserve"><value>Choose an empty folder for configuration, deployment records and backups, outside game and source folders. Deployment is unavailable if cancelled.</value></data>
-  <data name="BootstrapExplanation" xml:space="preserve"><value>The user profile stores only the data location. Configuration and backups stay in the data folder.</value></data>
+  <data name="BootstrapExplanation" xml:space="preserve"><value>The user profile stores the data location and migration progress. Configuration and backups stay in the data folder.</value></data>
   <data name="ChooseData" xml:space="preserve"><value>Choose data folder</value></data>
   <data name="ReconnectData" xml:space="preserve"><value>Reconnect original data</value></data>
   <data name="Retry" xml:space="preserve"><value>Retry</value></data>

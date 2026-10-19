@@ -108,7 +108,7 @@
   <data name="OpenLicenseFolder" xml:space="preserve"><value>打开许可文件夹</value></data>
   <data name="Welcome" xml:space="preserve"><value>选择应用数据位置</value></data>
   <data name="DataExplanation" xml:space="preserve"><value>选择空文件夹保存配置、部署记录和备份，不要选择游戏或资源来源目录。取消后无法部署。</value></data>
-  <data name="BootstrapExplanation" xml:space="preserve"><value>系统用户目录只保存数据位置；配置和备份保存在数据目录。</value></data>
+  <data name="BootstrapExplanation" xml:space="preserve"><value>系统用户目录保存数据位置和迁移进度；配置和备份保存在数据目录。</value></data>
   <data name="ChooseData" xml:space="preserve"><value>选择数据文件夹</value></data>
   <data name="ReconnectData" xml:space="preserve"><value>重新定位原数据</value></data>
   <data name="Retry" xml:space="preserve"><value>重试</value></data>
