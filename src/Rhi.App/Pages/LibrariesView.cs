@@ -97,7 +97,10 @@ public sealed partial class LibrariesView : UserControl
                 var available = ResourcePresentation.SourceAvailable(version);
                 var edit = c.Button("Edit", () => EditVersion(selected, version), !c.Session.Busy && !locked);
                 AutomationProperties.SetAutomationId(edit, "VersionEdit_" + version.Id.ToString("N"));
-                var name = new HyperlinkButton { Content = Ui.OneLine(ResourcePresentation.VersionName(version)), Padding = new Thickness(0), IsEnabled = !c.Session.Busy,
+                var nameLabel = Ui.OneLine(ResourcePresentation.VersionName(version));
+                nameLabel.ClearValue(TextBlock.ForegroundProperty);
+                nameLabel.IsTextSelectionEnabled = false;
+                var name = new HyperlinkButton { Content = nameLabel, Padding = new Thickness(0), IsEnabled = !c.Session.Busy,
                     HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Stretch };
                 ToolTipService.SetToolTip(name, ResourcePresentation.VersionName(version));
                 AutomationProperties.SetName(name, Strings.Get("View"));

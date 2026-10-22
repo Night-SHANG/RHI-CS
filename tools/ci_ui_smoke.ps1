@@ -187,7 +187,7 @@ try {
         if ((Find-Control -id 'GameRelocate' -IncludeOffscreen).Current.IsEnabled) { throw 'Pending game can be relocated.' }
         Invoke-Control 'Libraries'
         Find-Control -name (Label 'PendingConfigurationLocked') | Out-Null
-        foreach ($id in @('LibraryEdit', 'LibraryAddVersion')) {
+        foreach ($id in @('LibraryEdit', 'LibraryAddVersion', 'LibraryRelocate')) {
             if ((Find-Control -id $id -IncludeOffscreen).Current.IsEnabled) { throw "Pending library control is enabled: $id" }
         }
         Invoke-Control 'View'
@@ -222,7 +222,7 @@ try {
         }
         if (-not (Find-Control -id 'GameEdit').Current.IsEnabled) { throw 'Recovered game is still locked.' }
         Invoke-Control 'Libraries'
-        foreach ($id in @('LibraryEdit', 'LibraryAddVersion')) {
+        foreach ($id in @('LibraryEdit', 'LibraryAddVersion', 'LibraryRelocate')) {
             if (-not (Find-Control -id $id -IncludeOffscreen).Current.IsEnabled) { throw "Recovered library is still locked: $id" }
         }
         Invoke-Control 'View'

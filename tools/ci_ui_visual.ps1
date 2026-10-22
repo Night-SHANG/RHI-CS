@@ -12,7 +12,8 @@ function Set-Appearance([string]$theme, [string]$language) {
     Select-SettingsSection 'General'
     Select-Option 'SettingsTheme' $theme
     Select-Option 'SettingsLanguage' $language
-    Invoke-Control 'Save'
+    Reveal-SettingsControl 'SettingsSave' | Out-Null
+    Invoke-VisualId 'SettingsSave'
     $script:labels = [xml][IO.File]::ReadAllText((Join-Path $appRoot "Strings/$language/Resources.resw"), [Text.Encoding]::UTF8)
     Find-Control -id 'SettingsTheme' -Enabled | Out-Null
 }
@@ -88,6 +89,8 @@ function Assert-OfflineLayout {
 function Check-Pages([string]$prefix) {
     Select-SettingsSection 'General'
     Capture "$prefix-general"
+    Assert-InWindow (Reveal-SettingsControl 'SettingsSave')
+    Capture "$prefix-general-save"
     Select-SettingsSection 'Data'
     Assert-InWindow (Find-Control -id 'SettingsOpenData')
     Capture "$prefix-data"
