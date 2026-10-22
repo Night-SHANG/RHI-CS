@@ -4,6 +4,7 @@ using Microsoft.UI.Xaml.Automation;
 using Rhi.App.Localization;
 using Rhi.App.Presentation;
 using Rhi.App.Services;
+using Rhi.Core.Configuration;
 
 namespace Rhi.App.Pages;
 
@@ -21,10 +22,28 @@ public sealed partial class SettingsView
         theme.IsEnabled = language.IsEnabled = !c.Session.Busy;
         theme.SelectionChanged += (_, _) => c.ThemeDraft = themes[theme.SelectedIndex];
         language.SelectionChanged += (_, _) => c.LanguageDraft = languages[language.SelectedIndex];
+        var libraryRoot = Ui.Input("LibraryRoot", c.LibraryRootDraft ?? state.Preferences.LibraryRoot ?? "");
+        AutomationProperties.SetAutomationId(libraryRoot, "SettingsLibraryRoot");
+        libraryRoot.IsEnabled = !c.Session.Busy;
+        libraryRoot.TextChanged += (_, _) => c.LibraryRootDraft = libraryRoot.Text;
+        var browse = c.Button("BrowseFolder", async () =>
+        {
+            var path = await c.Windows.PickFolder(Directory.Exists(libraryRoot.Text) ? libraryRoot.Text : null);
+            if (path is not null) libraryRoot.Text = path;
+        }, !c.Session.Busy);
+        AutomationProperties.SetAutomationId(browse, "SettingsLibraryRootBrowse");
+        var open = c.Action("OpenFolder", () => WindowsIntegration.OpenFolder(libraryRoot.Text), !c.Session.Busy);
+        AutomationProperties.SetAutomationId(open, "SettingsLibraryRootOpen");
         var save = c.Button("Save", async () =>
         {
-            c.Session.Save(c.Session.State! with { Preferences = new(themes[theme.SelectedIndex], languages[language.SelectedIndex]) });
+            var root = libraryRoot.Text == c.Session.State!.Preferences.LibraryRoot
+                ? c.Session.State.Preferences.LibraryRoot
+                : string.IsNullOrWhiteSpace(libraryRoot.Text) ? null :
+                    ConfigurationRules.LibraryDirectory(c.Session.State!, c.Session.Store!.Root, libraryRoot.Text);
+            c.Session.Save(c.Session.State! with { Preferences = c.Session.State!.Preferences with
+                { Theme = themes[theme.SelectedIndex], Language = languages[language.SelectedIndex], LibraryRoot = root } });
             c.ThemeDraft = c.LanguageDraft = null;
+            c.LibraryRootDraft = null;
             await Strings.UseAsync(c.Session.State!.Preferences.Language);
             c.Refresh();
         }, !c.Session.Busy);
@@ -33,7 +52,7 @@ public sealed partial class SettingsView
         actions.HorizontalAlignment = HorizontalAlignment.Right;
         var title = Ui.Label("General", 28);
         AutomationProperties.SetAutomationId(title, "SettingsGeneralTitle");
-        var card = Ui.Card(Ui.Stack(Ui.Row(theme, language), actions));
+        var card = Ui.Card(Ui.Stack(Ui.Row(theme, language), Ui.DirectoryField(libraryRoot, browse, open), Ui.Label("LibraryRootHelp"), actions));
         AutomationProperties.SetAutomationId(card, "SettingsGeneralCard");
         return Ui.Stack(title, card);
     }

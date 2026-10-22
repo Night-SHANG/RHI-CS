@@ -23,7 +23,7 @@ internal static class RelocationFixture
         var source = library.Versions.Single(v => v.Id == receipt.VersionId).SourcePath;
         var moved = Path.Combine(Directory.GetParent(store.Root)!.FullName, "moved-game");
         if (Directory.Exists(moved)) throw new InvalidOperationException("Fixture target already exists.");
-        store.Save(store.State with { Preferences = new("Light", "zh-CN") });
+        store.Save(store.State with { Preferences = store.State.Preferences with { Theme = "Light", Language = "zh-CN" } });
         Directory.Move(game.DeploymentRoot, moved);
         var data = new RelocationMetadata(store.Root, game.DeploymentRoot, moved, Path.Combine(moved, Path.GetFileName(game.ExePath)),
             source, BlobStore.Hash(source)!, receipt.LibraryId, receipt.Files.Single().InstalledHash);

@@ -73,13 +73,14 @@ public sealed partial class DeploymentEngine(WorkspaceStore store, Action<string
         try
         {
             using var targetLease = DirectoryLease.Acquire(batch.TargetRoot);
+            using var executable = new ExecutableLease(batch.ExePath, batch.ExeHash);
             if (batch.TargetIdentity is null || targetLease.Identity != batch.TargetIdentity)
                 throw new DeploymentException("GameIdentityChanged", batch.TargetRoot);
             cancellation.ThrowIfCancellationRequested();
             store.WriteJournal(journal);
             started = true;
             progress?.Report(new("Preparing", library.LibraryName, 0, library.Changes.Length));
-            EnsureIdentity(journal);
+            EnsureIdentity(journal, executable);
             foreach (var input in library.Inputs ?? [])
                 if (BlobStore.Hash(input.Path) != input.Hash)
                     throw new DeploymentException("ChangedSincePreflight", input.Path);
@@ -121,7 +122,7 @@ public sealed partial class DeploymentEngine(WorkspaceStore store, Action<string
             for (var i = 0; i < library.Changes.Length; i++)
             {
                 cancellation.ThrowIfCancellationRequested();
-                EnsureIdentity(journal);
+                EnsureIdentity(journal, executable);
                 var change = library.Changes[i];
                 journal = journal with { IntentIndex = i };
                 store.WriteJournal(journal);
@@ -134,7 +135,7 @@ public sealed partial class DeploymentEngine(WorkspaceStore store, Action<string
             foreach (var change in library.Changes)
                 if (BlobStore.Hash(PathPolicy.Target(batch.TargetRoot, change.RelativePath)) != change.DesiredHash)
                     throw new DeploymentException("VerificationFailed", change.RelativePath);
-            EnsureIdentity(journal);
+            EnsureIdentity(journal, executable);
             Commit(batch, library, journal);
             for (var i = 0; i <= journal.IntentIndex; i++) FileReplacement.Cleanup(journal, i);
             FileWriter.CleanEmptyDirectories(targetLease.Identity.Path,
@@ -172,12 +173,12 @@ public sealed partial class DeploymentEngine(WorkspaceStore store, Action<string
             CommittedOperations = [.. store.State.CommittedOperations, journal.Id] });
     }
 
-    private void EnsureIdentity(OperationJournal journal)
+    private void EnsureIdentity(OperationJournal journal, ExecutableLease? executable = null)
     {
         gameSafetyCheck?.Invoke(journal.ExePath);
         if (!Directory.Exists(journal.TargetRoot) || journal.TargetIdentity is null ||
             DirectoryLease.Inspect(journal.TargetRoot) != journal.TargetIdentity ||
-            BlobStore.Hash(journal.ExePath) != journal.ExeHash)
+            !(executable?.Matches(journal.ExePath, journal.ExeHash) ?? BlobStore.Hash(journal.ExePath) == journal.ExeHash))
             throw new DeploymentException("GameIdentityChanged", journal.TargetRoot);
         PathPolicy.Disjoint(journal.TargetRoot, store.Root);
         foreach (var source in store.State.Libraries.SelectMany(l => l.Versions).Select(v => v.SourcePath))

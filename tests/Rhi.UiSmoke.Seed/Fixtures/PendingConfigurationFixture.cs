@@ -21,7 +21,7 @@ internal static class PendingConfigurationFixture
         store.Save(store.State with
         {
             Libraries = [library, new(Guid.NewGuid(), "Other library", "", [])],
-            Preferences = new("Dark", "zh-CN")
+            Preferences = store.State.Preferences with { Theme = "Dark", Language = "zh-CN" }
         });
         // Model a persisted preparation interrupted before any target write, not a real crash test.
         store.WriteJournal(new(Guid.NewGuid(), store.State.Id, game.Id, library.Id, OperationKind.Deploy,

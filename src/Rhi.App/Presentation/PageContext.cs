@@ -52,18 +52,18 @@ public sealed partial class PageContext(AppSession session, WindowsIntegration w
         return scroll;
     }
     public Task Message(string title, string text) => Show(title, Ui.Text(text));
-    public async Task Show(string title, UIElement content, Action<ContentDialog>? configure = null)
+    public async Task Show(string title, UIElement content, Action<ContentDialog>? configure = null, bool stableContent = false)
     {
         var scroll = DialogContent(content);
         var dialog = new ContentDialog { XamlRoot = Root.XamlRoot, Title = Strings.Get(title),
             Content = scroll, CloseButtonText = Strings.Get("Close"),
             RequestedTheme = Root.RequestedTheme };
-        TrackDialogSize(dialog, scroll);
+        TrackDialogSize(dialog, scroll, stableContent: stableContent);
         configure?.Invoke(dialog);
         await dialog.ShowAsync();
     }
     public async Task<bool> Confirm(string title, UIElement content, string primary = "Save", bool enabled = true,
-        Action<ContentDialog>? configure = null)
+        Action<ContentDialog>? configure = null, bool stableContent = false)
     {
         var scroll = DialogContent(content);
         var dialog = new ContentDialog { XamlRoot = Root.XamlRoot, Title = Strings.Get(title),
@@ -71,7 +71,7 @@ public sealed partial class PageContext(AppSession session, WindowsIntegration w
             PrimaryButtonText = Strings.Get("Cancel"), SecondaryButtonText = Strings.Get(primary),
             IsSecondaryButtonEnabled = enabled, DefaultButton = ContentDialogButton.Secondary,
             RequestedTheme = Root.RequestedTheme };
-        TrackDialogSize(dialog, scroll);
+        TrackDialogSize(dialog, scroll, stableContent: stableContent);
         configure?.Invoke(dialog);
         return await dialog.ShowAsync() == ContentDialogResult.Secondary;
     }

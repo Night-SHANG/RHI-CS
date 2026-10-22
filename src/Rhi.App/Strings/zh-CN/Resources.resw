@@ -319,4 +319,18 @@
   <data name="MigrationCopying" xml:space="preserve"><value>正在迁移数据…</value></data>
   <data name="MigrationVerifying" xml:space="preserve"><value>正在校验迁移数据…</value></data>
   <data name="MigrationCleaning" xml:space="preserve"><value>正在清理旧数据目录…</value></data>
+  <data name="LibraryRoot" xml:space="preserve"><value>资源库总目录</value></data>
+  <data name="SetLibraryRoot" xml:space="preserve"><value>设置资源库总目录</value></data>
+  <data name="LibraryRootFirstHelp" xml:space="preserve"><value>选择存放各资源库的上级文件夹。</value></data>
+  <data name="LibraryRootHelp" xml:space="preserve"><value>添加资源库时从这里选择目录；修改此处不改变已有资源库路径。</value></data>
+  <data name="SaveAndContinue" xml:space="preserve"><value>保存并继续</value></data>
+  <data name="FileDetailsCount" xml:space="preserve"><value>文件明细（{0}）</value></data>
+  <data name="RelocateLibrary" xml:space="preserve"><value>重新定位资源库</value></data>
+  <data name="LibraryRelocationNoRoot" xml:space="preserve"><value>此库未记录原资源库目录，无法自动匹配。请直接修改各版本的资源文件目录。</value></data>
+  <data name="LibraryRelocationHelp" xml:space="preserve"><value>选择搬迁后的资源库目录，再核对各版本的新路径。不会搬动文件。</value></data>
+  <data name="ReviewMatches" xml:space="preserve"><value>核对匹配</value></data>
+  <data name="LibraryRelocationReview" xml:space="preserve"><value>确认后只更新匹配的来源路径；未匹配版本保留原路径。已部署文件和备份不变。</value></data>
+  <data name="RelocationMatched" xml:space="preserve"><value>已找到，请核对新路径</value></data>
+  <data name="RelocationMissing" xml:space="preserve"><value>未找到可用来源，保留原路径</value></data>
+  <data name="RelocationOutsideRoot" xml:space="preserve"><value>不在原资源库目录内，保持原位</value></data>
 </root>

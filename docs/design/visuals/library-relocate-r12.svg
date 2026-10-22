@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="770" viewBox="0 0 1440 770">
+<style>text{font-family:'Microsoft YaHei UI','Segoe UI',sans-serif;fill:#19243e;font-size:14px}.h{font-size:24px;font-weight:600}.small{fill:#526583;font-size:13px}.line{fill:#fff;stroke:#dce1e9}.button{fill:#fff;stroke:#dce1e9}.blue{fill:#0067a8}.white{fill:white}</style>
+<rect width="1440" height="770" fill="#f7f8fa"/>
+<text x="40" y="50" class="h">资源库重新定位 · r12</text>
+<text x="40" y="80" class="small">已确认流程：修改路径记录，不搬动文件；已部署记录与原件备份保持不变。</text>
+<rect x="40" y="112" width="610" height="560" rx="8" class="line"/>
+<text x="64" y="151" class="h">重新定位资源库</text>
+<text x="64" y="202">资源库目录</text>
+<rect x="64" y="218" width="410" height="36" rx="4" class="line"/>
+<text x="76" y="242">G:\资源库\着色器库</text>
+<rect x="482" y="218" width="144" height="36" rx="4" class="button"/>
+<text x="512" y="242">浏览文件夹</text>
+<text x="64" y="286" class="small">选择搬动后的目录，预览各版本的路径匹配结果。</text>
+<path d="M40 588H650" stroke="#dce1e9"/>
+<rect x="64" y="612" width="277" height="36" rx="4" class="button"/>
+<text x="189" y="636">取消</text>
+<rect x="349" y="612" width="277" height="36" rx="4" class="blue"/>
+<text x="449" y="636" class="white">预览匹配结果</text>
+<rect x="690" y="112" width="710" height="560" rx="8" class="line"/>
+<text x="714" y="151" class="h">重新定位资源库</text>
+<text x="714" y="190" style="font-size:20px;font-weight:600">着色器库</text>
+<text x="714" y="222" class="small">仅更新匹配到的版本；未匹配版本保留原路径。</text>
+<rect x="714" y="244" width="662" height="120" rx="6" class="line"/>
+<text x="730" y="274">6.8.0</text><text x="730" y="303">F:\资源库\着色器库\6.8.0</text>
+<text x="730" y="326">→ G:\资源库\着色器库\6.8.0</text><text x="1210" y="348" fill="#087a39">路径匹配</text>
+<rect x="714" y="376" width="662" height="120" rx="6" class="line"/>
+<text x="730" y="406">旧版本</text><text x="730" y="435">F:\资源库\着色器库\旧版本</text>
+<text x="730" y="458">→ G:\资源库\着色器库\旧版本</text><text x="1150" y="480">未找到，保留原路径</text>
+<path d="M690 588H1400" stroke="#dce1e9"/>
+<rect x="714" y="612" width="327" height="36" rx="4" class="button"/><text x="863" y="636">取消</text>
+<rect x="1049" y="612" width="327" height="36" rx="4" class="blue"/><text x="1198" y="636" class="white">保存</text>
+<text x="40" y="718" class="small">公共工具栏：180×36，间距 8；宽窗口每排 4 项，窄窗口 2 / 1 项。新增重新定位保持同一组件规则。</text>
+</svg>

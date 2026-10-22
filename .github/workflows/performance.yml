@@ -1,0 +1,32 @@
+name: Deployment performance comparison
+on:
+  push:
+    branches: ['development/**']
+    paths: ['src/Rhi.Core/**', 'tests/Rhi.Performance/**', '.github/workflows/performance.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  compare:
+    runs-on: windows-2025
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - uses: actions/checkout@v4
+        with:
+          ref: 5784dd5309be3db654acd312465d32983dd1c229
+          path: baseline
+      - name: Prepare identical driver for previous revision
+        run: Copy-Item -LiteralPath tests/Rhi.Performance -Destination baseline/tests/Rhi.Performance -Recurse
+      - name: Measure previous revision
+        run: dotnet run --project baseline/tests/Rhi.Performance -c Release -- artifacts/performance/baseline.json 5784dd5
+      - name: Measure current revision
+        run: dotnet run --project tests/Rhi.Performance -c Release -- artifacts/performance/current.json ${{ github.sha }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: RHI-CS-performance
+          path: artifacts/performance/

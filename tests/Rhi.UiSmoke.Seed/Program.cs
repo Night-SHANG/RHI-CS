@@ -5,6 +5,12 @@ using Rhi.UiSmoke.Seed;
 
 if (Environment.GetEnvironmentVariable("GITHUB_ACTIONS") != "true")
     throw new InvalidOperationException("This fixture is restricted to disposable GitHub Actions runners.");
+if (args.FirstOrDefault() is "--usability" or "--verify-usability")
+{
+    if (args.Length != 2) throw new ArgumentException("Expected usability metadata path.");
+    if (args[0] == "--usability") UsabilityFixture.Prepare(args[1]); else UsabilityFixture.Verify(args[1]);
+    return;
+}
 if (args.FirstOrDefault() is "--migration" or "--migration-interrupted" or "--verify-migration")
 {
     if (args.Length != 2) throw new ArgumentException("Expected migration fixture metadata path.");
@@ -36,7 +42,7 @@ if (args.FirstOrDefault() == "--visual")
     if (!Rhi.Core.Deployment.PathPolicy.Within(pointer.Root, Path.Combine(Path.GetTempPath(), "RhiTests")))
         throw new InvalidOperationException("Not a CI fixture.");
     using var store = Rhi.Core.Storage.WorkspaceStore.Open(pointer.Root, expectedId: pointer.Id);
-    store.Save(store.State with { Preferences = new("Light", "zh-CN") });
+    store.Save(store.State with { Preferences = store.State.Preferences with { Theme = "Light", Language = "zh-CN" } });
     ProtectionVisualFixture.Prepare(store);
     return;
 }
@@ -64,7 +70,7 @@ fixture.Box.Store.Save(fixture.Box.Store.State with
 {
     Games = [fixture.Box.Store.State.Games[0] with { Name = "CI Game" }],
     Libraries = [fixture.Box.Store.State.Libraries[0] with { Name = "ReShade" }],
-    Preferences = new("Light", args.FirstOrDefault() ?? "zh-CN")
+    Preferences = new("Light", args.FirstOrDefault() ?? "zh-CN", Path.GetDirectoryName(fixture.Box.Source))
 });
 Bootstrap.Save(new(fixture.Box.Store.Root, fixture.Box.Store.State.Id));
 Console.WriteLine(fixture.Box.Store.Root);

@@ -92,10 +92,12 @@ public sealed class DeploymentPlanner(WorkspaceStore store)
         }
         // Parent-child collisions must also be detected across libraries before any write.
         var allTargets = targets.Keys.Order(PathPolicy.Comparer).ToArray();
-        for (var i = 0; i < allTargets.Length; i++)
-            for (var j = i + 1; j < allTargets.Length; j++)
-                if (PathPolicy.Within(allTargets[j], allTargets[i]) || PathPolicy.Within(allTargets[i], allTargets[j]))
-                    issues.Add(new("FileDirectoryConflict", allTargets[i]));
+        var targetSet = new HashSet<string>(allTargets, PathPolicy.Comparer);
+        var parentConflicts = new HashSet<string>(PathPolicy.Comparer);
+        foreach (var target in allTargets)
+            for (var parent = Path.GetDirectoryName(target); parent is not null; parent = Path.GetDirectoryName(parent))
+                if (targetSet.Contains(parent)) parentConflicts.Add(parent);
+        issues.AddRange(parentConflicts.Order(PathPolicy.Comparer).Select(path => new PlanIssue("FileDirectoryConflict", path)));
         CheckSpace(plans, game.DeploymentRoot, issues);
         return new(state.Id, state.Revision, gameId, game.DeploymentRoot, game.ExePath, exeHash,
             plans.ToArray(), issues.ToArray(), targetIdentity);

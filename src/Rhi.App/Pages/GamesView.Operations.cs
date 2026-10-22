@@ -23,18 +23,11 @@ public sealed partial class GamesView
             panel.Children.Add(Ui.Text(Strings.Format("PlanCounts", library.Changes.Count(f => f.BeforeHash is null && f.DesiredHash is not null),
                 library.Changes.Count(f => f.BeforeHash is not null && f.DesiredHash is not null && f.BeforeHash != f.DesiredHash),
                 library.Changes.Count(f => f.DesiredHash is null && f.BeforeHash is not null), library.Changes.Count(f => f.ExternalChange))));
-            foreach (var file in library.Changes)
-            {
-                var detail = Ui.Stack(Ui.Text(file.RelativePath + " · " + Strings.Get(file.ExternalChange ? "ExternalChange" :
-                    file.BeforeHash == file.DesiredHash ? "NoFileChange" : file.DesiredHash is null ? "Remove" : "Write")));
-                if (file.ConfigurationEdits is { Length: > 0 } edits)
-                {
-                    detail.Children.Add(Ui.Label("ConfigurationChanges"));
-                    foreach (var edit in edits)
-                        detail.Children.Add(Ui.Text($"[{edit.Section}] {edit.Key}\n{edit.Before ?? Strings.Get("NotSet")} → {edit.After}"));
-                }
-                panel.Children.Add(Ui.Card(detail));
-            }
+            panel.Children.Add(Ui.FileDetails(library.Request.LibraryId.ToString("N"), library.Changes.Length,
+                () => library.Changes.Select(file => file.RelativePath + " · " + Strings.Get(file.ExternalChange ? "ExternalChange" :
+                    file.BeforeHash == file.DesiredHash ? "NoFileChange" : file.DesiredHash is null ? "Remove" : "Write") +
+                    string.Concat((file.ConfigurationEdits ?? []).Select(edit =>
+                        $"\n[{edit.Section}] {edit.Key}\n{edit.Before ?? Strings.Get("NotSet")} → {edit.After}")))));
         }
         foreach (var issue in plan?.Issues ?? []) panel.Children.Add(Ui.Text(Strings.Get(issue.Code) + "\n" + issue.Detail));
         var overwrite = plan?.Libraries.Any(l => l.RequiresOverwrite) == true;
@@ -72,7 +65,7 @@ public sealed partial class GamesView
                     dialog.IsSecondaryButtonEnabled = !changed && plan?.CanExecute == true;
                 };
                 updateAction();
-            });
+            }, stableContent: true);
             if (choice == ContentDialogResult.None) return;
             discard = choice == ContentDialogResult.Secondary;
         }
@@ -85,7 +78,7 @@ public sealed partial class GamesView
                 dialog.IsSecondaryButtonEnabled = changed || active.Length == 0 || plan?.CanExecute == true;
             };
             updateAction();
-        })) return;
+        }, stableContent: true)) return;
         if (!skipped.SetEquals(reviewedSkip)) { skipped = reviewedSkip; continue; }
         var omitted = requests.Where(r => skipped.Contains(r.LibraryId)).ToArray();
         if (active.Length == 0) { c.Session.RecordSkipped(game.Id, omitted); return; }
@@ -102,10 +95,9 @@ public sealed partial class GamesView
         var panel = Ui.Stack(Ui.Label("RecoveryHelp"), Ui.Text(journal.TargetRoot),
             Ui.Label("NotWrittenYet"));
         if (preview.AlreadyCommitted) panel.Children.Add(Ui.Label("CommittedJournalPending"));
-        foreach (var file in preview.Files)
-            panel.Children.Add(Ui.Text(file.RelativePath + " · " + Strings.Get(!file.RequiresRestore ? "NoFileChange" :
-                file.BeforeHash is null ? "Remove" : "Recover")));
+        panel.Children.Add(Ui.FileDetails("Recovery", preview.Files.Length, () => preview.Files.Select(file =>
+            file.RelativePath + " · " + Strings.Get(!file.RequiresRestore ? "NoFileChange" : file.BeforeHash is null ? "Remove" : "Recover"))));
         foreach (var issue in preview.Issues) panel.Children.Add(Ui.Text(Strings.Get(issue.Code) + "\n" + issue.Detail));
-        if (await c.Confirm("CheckRecovery", panel, "Recover", preview.CanRecover)) await c.Session.Recover(journal.Id);
+        if (await c.Confirm("CheckRecovery", panel, "Recover", preview.CanRecover, stableContent: true)) await c.Session.Recover(journal.Id);
     }
 }

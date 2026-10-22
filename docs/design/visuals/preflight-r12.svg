@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="920" viewBox="0 0 1440 920">
+<title>RHI-CS r12 预检折叠与展开视觉样板，示例状态，尚未实现</title>
+<defs><style>text{font-family:'Microsoft YaHei UI','Microsoft YaHei','Segoe UI',sans-serif;font-size:14px;fill:#202d42}.title{font-size:25px;font-weight:600}.section{font-size:19px;font-weight:600}.muted{fill:#596579}.small{font-size:12px;fill:#596579}.panel{fill:#fff;stroke:#dce2e9}.btn{fill:#fafbfc;stroke:#cbd3dd}.center{text-anchor:middle}.white{fill:#fff}.warn{fill:#865400}.line{stroke:#e4e8ef}</style></defs>
+<rect width="1440" height="920" fill="#f5f7fa"/>
+<text x="36" y="46" class="title">预检与确认 · 文件明细默认收起</text>
+<text x="36" y="76" class="muted">示例数据，不是对你游戏的实际预检结果。每个资源库单独展开；重要风险始终显示，确认按钮固定在底部。</text>
+<text x="70" y="125" class="section">默认状态</text><text x="770" y="125" class="section">点击箭头后</text>
+<rect x="60" y="148" width="620" height="654" rx="8" class="panel"/>
+<rect x="760" y="148" width="620" height="654" rx="8" class="panel"/>
+<g transform="translate(84,182)">
+<text y="18" class="section">预检与确认</text><text y="58" class="section">Launcher</text><text y="88" class="muted">C:\Users\Night Shang\Desktop\WEEE</text><text y="120">尚未修改游戏文件，请确认以下改动。</text>
+<text y="166" class="section">离线着色器库 · reshade-shaders6.8</text><text y="195">新增 988 · 写入/恢复 1 · 移除 0 · 目标变化 1</text>
+<rect y="212" width="572" height="48" rx="4" fill="#f5f7fa" stroke="#dce2e9"/><text x="14" y="242">文件明细（989）</text><path d="m542 230 5 5 5-5" fill="none" stroke="#596579" stroke-width="1.5"/>
+<text y="306" class="section">离线RESHADE · ReShade-DX-64</text><text y="335">新增 2 · 写入/恢复 0 · 移除 0 · 目标变化 0</text>
+<rect y="352" width="572" height="48" rx="4" fill="#f5f7fa" stroke="#dce2e9"/><text x="14" y="382">文件明细（2）</text><path d="m542 370 5 5 5-5" fill="none" stroke="#596579" stroke-width="1.5"/>
+<text y="446" class="warn">检测到已修改的文件。执行前会保存修改保护副本。</text>
+</g>
+<g transform="translate(784,182)">
+<text y="18" class="section">预检与确认</text><text y="58" class="section">Launcher</text><text y="88" class="muted">C:\Users\Night Shang\Desktop\WEEE</text><text y="120">尚未修改游戏文件，请确认以下改动。</text>
+<text y="166" class="section">离线着色器库 · reshade-shaders6.8</text><text y="195">新增 988 · 写入/恢复 1 · 移除 0 · 目标变化 1</text>
+<rect y="212" width="572" height="48" rx="4" fill="#f5f7fa" stroke="#dce2e9"/><text x="14" y="242">文件明细（989）</text><path d="m542 237 5-5 5 5" fill="none" stroke="#596579" stroke-width="1.5"/>
+<rect y="260" width="572" height="174" fill="#fff" stroke="#dce2e9"/>
+<text x="14" y="291">Shaders\Example.fx</text><text x="440" y="291" class="warn">目标已变化</text><path d="M14 309H548" class="line"/>
+<text x="14" y="339">Shaders\Common.fxh</text><text x="440" y="339">写入</text><path d="M14 357H548" class="line"/>
+<text x="14" y="387">Textures\Example.png</text><text x="440" y="387">写入</text>
+<rect x="561" y="270" width="4" height="40" rx="2" fill="#9aa5b5"/>
+<text y="466" class="warn">检测到已修改的文件。执行前会保存修改保护副本。</text>
+</g>
+<path d="M60 714H680 M760 714H1380" class="line"/>
+<rect x="84" y="742" width="282" height="36" rx="4" class="btn"/><text x="225" y="766" class="center">取消</text>
+<rect x="374" y="742" width="282" height="36" rx="4" fill="#0067b0"/><text x="515" y="766" class="center white">备份修改并执行</text>
+<rect x="784" y="742" width="282" height="36" rx="4" class="btn"/><text x="925" y="766" class="center">取消</text>
+<rect x="1074" y="742" width="282" height="36" rx="4" fill="#0067b0"/><text x="1215" y="766" class="center white">备份修改并执行</text>
+<text x="36" y="854" class="small">展开图只展示一个资源库的局部列表；其他资源库仍在弹窗正文内。收起时不创建文件行，展开后使用原生虚拟化列表。</text>
+<text x="36" y="882" class="small">这是结构样板。最终沿用公共弹窗、按钮和主题样式；取消、确认、覆盖及保护副本规则均不改变。</text>
+</svg>

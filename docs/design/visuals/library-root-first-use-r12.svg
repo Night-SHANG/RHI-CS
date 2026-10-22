@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="620" viewBox="0 0 1000 620">
+<title>首次添加资源库时设置总目录，候选样板，尚未实现</title>
+<defs><style>text{font-family:'Microsoft YaHei UI','Microsoft YaHei','Segoe UI',sans-serif;font-size:14px;fill:#202d42}.title{font-size:24px;font-weight:600}.muted{fill:#596579}.center{text-anchor:middle}.small{font-size:12px;fill:#596579}</style></defs>
+<rect width="1000" height="620" fill="#f5f7fa"/>
+<text x="32" y="46" class="title">首次添加资源库 · 先选择总目录</text>
+<rect x="32" y="76" width="936" height="480" rx="8" fill="#e9edf2"/>
+<rect x="200" y="112" width="600" height="406" rx="8" fill="#fff" stroke="#dce2e9"/>
+<text x="224" y="156" class="title">设置资源库总目录</text>
+<text x="224" y="194" class="muted">选择存放各资源库的上级文件夹。</text>
+<text x="224" y="241">资源库总目录</text>
+<rect x="224" y="257" width="432" height="64" rx="4" fill="#fff" stroke="#cbd3dd"/>
+<text x="236" y="283">F:\01A桌面文件夹整合——最新版本-2025-5.15\</text>
+<text x="236" y="307">RESHADE相关的全部文件\资源库</text>
+<rect x="664" y="271" width="112" height="36" rx="4" fill="#fafbfc" stroke="#cbd3dd"/><text x="720" y="295" class="center">浏览文件夹</text>
+<path d="M200 430H800" stroke="#e4e8ef"/>
+<rect x="224" y="458" width="272" height="36" rx="4" fill="#fafbfc" stroke="#cbd3dd"/><text x="360" y="482" class="center">取消</text>
+<rect x="504" y="458" width="272" height="36" rx="4" fill="#0067b0"/><text x="640" y="482" class="center" style="fill:#fff">保存并继续</text>
+<text x="32" y="590" class="small">候选样板：仅在未设置总目录时出现；保存后直接进入添加资源库。设置页仍可修改总目录。</text>
+</svg>

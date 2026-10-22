@@ -319,4 +319,18 @@ State | Relative path | Checksum
   <data name="MigrationCopying" xml:space="preserve"><value>Copying data…</value></data>
   <data name="MigrationVerifying" xml:space="preserve"><value>Verifying moved data…</value></data>
   <data name="MigrationCleaning" xml:space="preserve"><value>Removing the old data folder…</value></data>
+  <data name="LibraryRoot" xml:space="preserve"><value>Library base folder</value></data>
+  <data name="SetLibraryRoot" xml:space="preserve"><value>Set library base folder</value></data>
+  <data name="LibraryRootFirstHelp" xml:space="preserve"><value>Select the parent folder containing your libraries.</value></data>
+  <data name="LibraryRootHelp" xml:space="preserve"><value>Start here when adding a library. Changing this folder leaves existing library paths unchanged.</value></data>
+  <data name="SaveAndContinue" xml:space="preserve"><value>Save and continue</value></data>
+  <data name="FileDetailsCount" xml:space="preserve"><value>File details ({0})</value></data>
+  <data name="RelocateLibrary" xml:space="preserve"><value>Relocate library</value></data>
+  <data name="LibraryRelocationNoRoot" xml:space="preserve"><value>This library has no recorded original folder. Edit each version's resource path to reconnect it.</value></data>
+  <data name="LibraryRelocationHelp" xml:space="preserve"><value>Select the relocated library folder, then review the matched version paths. No files will be moved.</value></data>
+  <data name="ReviewMatches" xml:space="preserve"><value>Review matches</value></data>
+  <data name="LibraryRelocationReview" xml:space="preserve"><value>Only matched source paths will be updated. Unmatched paths, deployed files, and backups remain unchanged.</value></data>
+  <data name="RelocationMatched" xml:space="preserve"><value>Found; review the new path</value></data>
+  <data name="RelocationMissing" xml:space="preserve"><value>No usable source found; keep original path</value></data>
+  <data name="RelocationOutsideRoot" xml:space="preserve"><value>Outside the original library folder; keep in place</value></data>
 </root>

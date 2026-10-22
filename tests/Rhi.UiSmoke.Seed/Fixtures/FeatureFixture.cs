@@ -39,7 +39,7 @@ internal static class FeatureFixture
         alpha = alpha with { SourceRoot = Path.GetDirectoryName(alpha.Versions[0].SourcePath),
             Versions = [alpha.Versions[0], new(Guid.NewGuid(), "v2", secondSource, null, ResourceKind.Files)] };
         var beta = Library("Beta");
-        store.Save(store.State with { Libraries = [reshade, alpha, beta], Preferences = new("Dark", "zh-CN") });
+        store.Save(store.State with { Libraries = [reshade, alpha, beta], Preferences = store.State.Preferences with { Theme = "Dark", Language = "zh-CN" } });
         var plan = new DeploymentPlanner(store).Build(store.State, game.Id,
             [new(reshade.Id, reshade.Versions.Single(v => v.Kind == ResourceKind.ReShadeStandard).Id, OperationKind.Deploy)]);
         if (new DeploymentEngine(store).Execute(plan, new(true, true)).Single().Status != OperationStatus.Succeeded)

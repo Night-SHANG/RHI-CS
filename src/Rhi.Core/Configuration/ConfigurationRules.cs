@@ -17,7 +17,12 @@ public static class ConfigurationRules
     {
         var library = Library(value);
         if (string.IsNullOrWhiteSpace(value.SourceRoot)) return library with { SourceRoot = null };
-        var root = SourcePath(value.SourceRoot);
+        return library with { SourceRoot = LibraryDirectory(state, dataRoot, value.SourceRoot) };
+    }
+
+    public static string LibraryDirectory(WorkspaceState state, string dataRoot, string value)
+    {
+        var root = SourcePath(value);
         if (!Directory.Exists(root)) throw new DeploymentException("LibraryFolderMissing", root);
         try { PathPolicy.Disjoint(root, dataRoot); }
         catch (DeploymentException ex) when (ex.Code == "OverlappingPaths")
@@ -29,7 +34,7 @@ public static class ConfigurationRules
         }
         catch (DeploymentException ex) when (ex.Code == "OverlappingPaths")
         { throw new DeploymentException("SourceOverlapsGame", root); }
-        return library with { SourceRoot = root };
+        return root;
     }
 
     private static string TargetFolder(string value)

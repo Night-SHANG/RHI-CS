@@ -22,7 +22,7 @@ function Assert-ResourceRows([string]$phase) {
     return $first
 }
 function Assert-VersionActions([string]$versionId) {
-    $bounds = @('VersionView_', 'VersionRemove_', 'VersionOpenFolder_') | ForEach-Object {
+    $bounds = @('VersionEdit_', 'VersionRemove_', 'VersionOpenFolder_') | ForEach-Object {
         (Find-Control -id ($_ + $versionId) -IncludeOffscreen).Current.BoundingRectangle
     }
     for ($i = 1; $i -lt 3; $i++) {
@@ -32,7 +32,7 @@ function Assert-VersionActions([string]$versionId) {
 
 function Assert-HeaderActions([string]$page) {
     $ids = if ($page -eq 'Game') { @('GameEdit', 'GameInspectTargets', 'GameRelocate', 'GameOpenFolder') }
-        else { @('LibraryEdit', 'LibraryAddVersion', 'LibraryRemove', 'LibraryOpenFolder') }
+        else { @('LibraryEdit', 'LibraryAddVersion', 'LibraryRemove', 'LibraryOpenFolder', 'LibraryRelocate') }
     $window = [Windows.Automation.AutomationElement]::FromHandle($process.MainWindowHandle)
     $bounds = @()
     foreach ($id in $ids) {
@@ -47,7 +47,7 @@ function Assert-HeaderActions([string]$page) {
     $first = $bounds[0]
     $rows = @($bounds | Group-Object { [Math]::Round($_.Top / $scale) })
     $columns = $rows[0].Count
-    if ($columns -notin @(1, 2, $bounds.Count)) { throw "Unexpected header wrapping: $page; columns=$columns" }
+    if ($columns -notin @(1, 2, 4)) { throw "Unexpected header wrapping: $page; columns=$columns" }
     for ($i = 0; $i -lt $bounds.Count; $i++) {
         $box = $bounds[$i]
         if ([Math]::Abs($box.Width / $scale - 180) -gt 2 -or [Math]::Abs($box.Height / $scale - 36) -gt 2) {

@@ -14,12 +14,12 @@ public sealed partial class GamesView
         var current = observation.Receipts.Single(r => r.LibraryId == library.Id);
         var panel = Ui.Stack(Ui.Text(game.Name + " · " + library.Name, 20), Ui.Text(receipt.TargetRoot),
             Ui.Label("InspectionOnly"));
-        foreach (var file in current.Files)
-            panel.Children.Add(Ui.Text(file.RelativePath + " · " + Strings.Get(file.Health.ToString())));
+        panel.Children.Add(Ui.FileDetails("Inspection", current.Files.Length, () => current.Files.Select(file =>
+            file.RelativePath + " · " + Strings.Get(file.Health.ToString()))));
         foreach (var issue in current.Issues)
             panel.Children.Add(Ui.Text(Strings.Get(issue.Code) + "\n" + issue.Detail));
         var locked = c.Session.Store!.Pending().Any(j => j.GameId == game.Id);
         if (locked) panel.Children.Add(Ui.Label("NeedsRepair"));
-        await c.Show("TargetDifferences", panel);
+        await c.Show("TargetDifferences", panel, stableContent: true);
     }
 }

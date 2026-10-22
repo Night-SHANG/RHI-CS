@@ -5,7 +5,7 @@ namespace Rhi.App.Presentation;
 
 public sealed partial class PageContext
 {
-    private void TrackDialogSize(ContentDialog dialog, ScrollViewer scroll, FrameworkElement? feedback = null)
+    private void TrackDialogSize(ContentDialog dialog, ScrollViewer scroll, FrameworkElement? feedback = null, bool stableContent = false)
     {
         var preferredHeight = 360d;
         void Resize()
@@ -17,6 +17,7 @@ public sealed partial class PageContext
                 scroll.Height = Math.Min(scroll.MaxHeight, preferredHeight);
                 feedback.Width = scroll.Width;
             }
+            else if (stableContent) scroll.Height = Math.Min(scroll.MaxHeight, 480);
         }
         void Changed(object sender, SizeChangedEventArgs args) => Resize();
         dialog.Opened += (_, _) =>

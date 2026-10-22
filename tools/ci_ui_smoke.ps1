@@ -1,5 +1,5 @@
 param([Parameter(Mandatory)][string]$AppDirectory, [Parameter(Mandatory)][string]$OutputDirectory,
-    [switch]$PendingConfiguration, [switch]$Features, [switch]$Relocation, [switch]$Visual, [switch]$Startup, [switch]$Migration, [string]$FixtureMetadata)
+    [switch]$PendingConfiguration, [switch]$Features, [switch]$Relocation, [switch]$Visual, [switch]$Startup, [switch]$Migration, [switch]$Usability, [string]$FixtureMetadata)
 $ErrorActionPreference = 'Stop'
 if ($env:GITHUB_ACTIONS -ne 'true') { throw 'UI smoke runs only on disposable GitHub Actions runners.' }
 Add-Type -AssemblyName UIAutomationClient, UIAutomationTypes, System.Windows.Forms, System.Drawing
@@ -169,6 +169,7 @@ function Scroll-DialogToEnd([string]$action, [switch]$IfNeeded) {
     Write-Host "Dialog scroll after: $($pattern.Current.VerticalScrollPercent), view size: $($pattern.Current.VerticalViewSize)"
     if ($pattern.Current.VerticalScrollPercent -lt 99) { throw 'Dialog content did not scroll to its end.' }
 }
+. (Join-Path $PSScriptRoot 'ci_ui_file_details.ps1')
 try {
     Find-Control -name (Label 'Libraries') | Out-Null
     $process.Refresh()
@@ -180,6 +181,7 @@ try {
     if ($Visual) { . (Join-Path $PSScriptRoot 'ci_ui_visual.ps1'); return }
     if ($Startup) { . (Join-Path $PSScriptRoot 'ci_ui_startup.ps1'); return }
     if ($Migration) { . (Join-Path $PSScriptRoot 'ci_ui_migration.ps1'); return }
+    if ($Usability) { . (Join-Path $PSScriptRoot 'ci_ui_usability.ps1'); return }
     if ($PendingConfiguration) {
         if ((Find-Control -id 'GameEdit').Current.IsEnabled) { throw 'Pending game configuration is editable.' }
         if ((Find-Control -id 'GameRelocate' -IncludeOffscreen).Current.IsEnabled) { throw 'Pending game can be relocated.' }
@@ -302,7 +304,7 @@ try {
     Invoke-Control 'Save'
     Invoke-Control 'Games'
     Invoke-Control 'Deploy'
-    Find-Control -name (Label 'ConfigurationChanges') | Out-Null
+    Assert-IniPreview
     Assert-ActionOrder 'ConfirmExecute' | Out-Null
     Capture '05-reshade-preflight'
     Invoke-Control 'Cancel'
@@ -345,7 +347,7 @@ try {
         throw 'Search query was lost during language switching.'
     }
     Invoke-Control 'Deploy'
-    $configurationChanges = Find-Control -name (Label 'ConfigurationChanges')
+    Assert-IniPreview
     $englishConfirm = Assert-ActionOrder 'ConfirmExecute'
     Capture '12-reshade-preflight-en'
     Scroll-DialogToEnd 'ConfirmExecute' -IfNeeded
