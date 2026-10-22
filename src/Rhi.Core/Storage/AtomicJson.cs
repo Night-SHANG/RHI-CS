@@ -17,11 +17,15 @@ public static class AtomicJson
     public static void Write<T>(string path, T value)
     {
         Deployment.PathPolicy.CheckNoLinks(path);
+        // Serialize before opening the durable stream: the stream serializer emits many
+        // small writes, each of which becomes a synchronous disk write with WriteThrough.
+        // Keep the same pending-file replacement and explicit durable flush protocol.
+        var bytes = JsonSerializer.SerializeToUtf8Bytes(value, Options);
         var pending = path + "." + Guid.NewGuid().ToString("N") + ".pending";
         using (var stream = new FileStream(pending, FileMode.CreateNew, FileAccess.Write, FileShare.None,
             4096, FileOptions.WriteThrough))
         {
-            JsonSerializer.Serialize(stream, value, Options);
+            stream.Write(bytes);
             stream.Flush(flushToDisk: true);
         }
         File.Move(pending, path, overwrite: true);

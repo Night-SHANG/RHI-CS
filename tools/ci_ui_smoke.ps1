@@ -149,6 +149,9 @@ function Assert-FixedAction($before, [string]$action = 'Save') {
 }
 function Scroll-DialogToEnd([string]$action, [switch]$IfNeeded) {
     (Find-Control -name (Label 'Cancel') -Action).SetFocus()
+    # UIA focus and validation layout can post a later BringIntoView request.
+    # Wait for focus to settle, then require the end position to remain stable.
+    Start-Sleep -Milliseconds 200
     $node = Find-Control -id 'DialogContentScroll'
     $pattern = $node.GetCurrentPattern([Windows.Automation.ScrollPattern]::Pattern)
     if (-not $pattern.Current.VerticallyScrollable) {
@@ -156,18 +159,14 @@ function Scroll-DialogToEnd([string]$action, [switch]$IfNeeded) {
         throw 'Long dialog content is not scrollable.'
     }
     Write-Host "Dialog scroll before: $($pattern.Current.VerticalScrollPercent), view size: $($pattern.Current.VerticalViewSize)"
-    $pattern.SetScrollPercent([Windows.Automation.ScrollPattern]::NoScroll, 100)
-    $scrollWait = [Diagnostics.Stopwatch]::StartNew()
-    while ($pattern.Current.VerticalScrollPercent -lt 99 -and $scrollWait.Elapsed.TotalSeconds -lt 1) {
-        Start-Sleep -Milliseconds 100
-    }
-    for ($step = 0; $step -lt 5 -and $pattern.Current.VerticalScrollPercent -lt 99; $step++) {
-        Write-Host "Dialog page scroll from: $($pattern.Current.VerticalScrollPercent)"
-        $pattern.Scroll([Windows.Automation.ScrollAmount]::NoAmount, [Windows.Automation.ScrollAmount]::LargeIncrement)
-        Start-Sleep -Milliseconds 500
+    $stable = 0
+    for ($step = 0; $step -lt 10 -and $stable -lt 2; $step++) {
+        $pattern.SetScrollPercent([Windows.Automation.ScrollPattern]::NoScroll, 100)
+        Start-Sleep -Milliseconds 200
+        if ($pattern.Current.VerticalScrollPercent -ge 99) { $stable++ } else { $stable = 0 }
     }
     Write-Host "Dialog scroll after: $($pattern.Current.VerticalScrollPercent), view size: $($pattern.Current.VerticalViewSize)"
-    if ($pattern.Current.VerticalScrollPercent -lt 99) { throw 'Dialog content did not scroll to its end.' }
+    if ($stable -lt 2 -or $pattern.Current.VerticalScrollPercent -lt 99) { throw 'Dialog content did not scroll to its end.' }
 }
 . (Join-Path $PSScriptRoot 'ci_ui_file_details.ps1')
 try {
