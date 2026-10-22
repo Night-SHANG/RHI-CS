@@ -8,6 +8,15 @@ namespace Rhi.Core.Tests.Configuration;
 
 public sealed class LibraryRelocationTests
 {
+    [Fact]
+    public void Existing_preferences_without_root_remain_readable()
+    {
+        var preferences = System.Text.Json.JsonSerializer.Deserialize<Preferences>("{\"Theme\":\"Dark\",\"Language\":\"en-US\"}", AtomicJson.Options)!;
+        Assert.Equal("Dark", preferences.Theme);
+        Assert.Equal("en-US", preferences.Language);
+        Assert.Null(preferences.LibraryRoot);
+    }
+
     private static ResourceLibrary Prepare(Sandbox box)
     {
         var library = box.Library with { SourceRoot = Path.GetDirectoryName(box.Source) };

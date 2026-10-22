@@ -32,7 +32,8 @@ public sealed partial class SettingsView
             if (path is not null) libraryRoot.Text = path;
         }, !c.Session.Busy);
         AutomationProperties.SetAutomationId(browse, "SettingsLibraryRootBrowse");
-        var open = c.Action("OpenFolder", () => WindowsIntegration.OpenFolder(libraryRoot.Text), !c.Session.Busy);
+        var open = c.Action("OpenFolder", () => WindowsIntegration.OpenFolder(libraryRoot.Text), !c.Session.Busy && Directory.Exists(libraryRoot.Text));
+        libraryRoot.TextChanged += (_, _) => open.IsEnabled = !c.Session.Busy && Directory.Exists(libraryRoot.Text);
         AutomationProperties.SetAutomationId(open, "SettingsLibraryRootOpen");
         var save = c.Button("Save", async () =>
         {
