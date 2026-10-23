@@ -107,7 +107,17 @@ function Assert-NoResourceType {
 function Assert-FormError([string]$key) {
     if ((Find-Control -name (Label 'Save') -Action).Current.IsEnabled) { Invoke-Control 'Save' }
     Start-Sleep -Milliseconds 250
-    if ((Find-Control -id 'FormValidation' -IncludeOffscreen).Current.Name -ne (Label $key)) { throw "Wrong form guidance: $key" }
+    $feedback = Find-Control -id 'FormValidation'
+    if ($feedback.Current.Name -ne (Label $key)) { throw "Wrong form guidance: $key" }
+    $bounds = $feedback.Current.BoundingRectangle
+    $viewport = (Find-Control -id 'DialogContentScroll').Current.BoundingRectangle
+    $save = (Find-Control -name (Label 'Save') -Action).Current.BoundingRectangle
+    $window = [SmokeWindow+Rect]::new()
+    [SmokeWindow]::GetWindowRect($process.MainWindowHandle, [ref]$window) | Out-Null
+    if ($bounds.Width -le 0 -or $bounds.Height -le 0 -or $bounds.Top -lt $viewport.Bottom - 2 -or
+        $bounds.Bottom -gt $save.Top -or $bounds.Left -lt $window.Left -or $bounds.Right -gt $window.Right) {
+        throw "Validation must be visible between fields and footer: $key; feedback=$bounds; viewport=$viewport; save=$save"
+    }
     if ((Find-Control -name (Label 'Save') -Action).Current.IsEnabled) { throw 'Invalid form can be saved.' }
 }
 function Assert-FormReady {
@@ -154,8 +164,15 @@ function Assert-FixedAction($before, [string]$action = 'Save') {
         $window = [SmokeWindow+Rect]::new()
         [SmokeWindow]::GetWindowRect($process.MainWindowHandle, [ref]$window) | Out-Null
         $scale = [SmokeWindow]::GetDpiForWindow($process.MainWindowHandle) / 96.0
-        if ($after.Top -lt $viewport.Bottom - 2 -or $after.Bottom -gt $window.Bottom -or
-            ($after.Top - $viewport.Bottom) / $scale -gt 80) {
+        $contentBottom = $viewport.Bottom
+        $feedback = Find-OptionalId 'FormValidation'
+        if ($feedback -and -not $feedback.Current.IsOffscreen -and $feedback.Current.Name) {
+            $feedbackBounds = $feedback.Current.BoundingRectangle
+            if (($feedbackBounds.Top - $viewport.Bottom) / $scale -gt 12) { throw 'Validation has excessive leading blank space.' }
+            $contentBottom = [Math]::Max($contentBottom, $feedbackBounds.Bottom)
+        }
+        if ($after.Top -lt $contentBottom - 2 -or $after.Bottom -gt $window.Bottom -or
+            ($after.Top - $contentBottom) / $scale -gt 80) {
             throw 'Compact form footer overlaps content, is clipped, or has excessive blank space.'
         }
     }

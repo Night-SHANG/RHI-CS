@@ -1,5 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1160" height="430" viewBox="0 0 1160 430">
 <title>资源库总目录：紧凑表单候选，正常与提交错误状态</title>
+<desc>沿用已确认布局。窗口高度不足时仅字段区域滚动；错误提示位于字段滚动区域外、底部按钮上方。正常状态不预留错误高度。</desc>
 <defs><style>text{font-family:'Microsoft YaHei UI','Microsoft YaHei','Segoe UI',sans-serif;font-size:14px;fill:#202d42}.title{font-size:22px;font-weight:600}.muted{fill:#596579}.center{text-anchor:middle}.caption{font-size:15px;font-weight:600}</style></defs>
 <rect width="1160" height="430" fill="#eef1f5"/>
 <text x="32" y="35" class="caption">正常状态 · 内容完整显示</text>

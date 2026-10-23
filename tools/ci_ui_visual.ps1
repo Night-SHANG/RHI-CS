@@ -169,7 +169,7 @@ function Check-Pages([string]$prefix) {
     Assert-FormReady
     Capture "$prefix-library-initial"
     Invoke-Control 'Save'
-    Find-Control -name (Label 'NameRequired') | Out-Null
+    Assert-FormError 'NameRequired'
     Assert-FixedAction $before
     Capture "$prefix-invalid"
     (Find-Control -id 'LibraryNameInput').GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).SetValue('Visual validation')

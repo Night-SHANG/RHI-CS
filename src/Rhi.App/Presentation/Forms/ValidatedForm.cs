@@ -14,13 +14,19 @@ public sealed partial class PageContext
         var error = Ui.Text("");
         AutomationProperties.SetAutomationId(error, "FormValidation");
         error.Visibility = Visibility.Collapsed;
-        var scroll = DialogContent(Ui.Stack(fields, error));
+        error.Margin = new Thickness(0, 8, 0, 0);
+        var scroll = DialogContent(fields);
+        // Validation stays above the footer when the fields need scrolling.
+        // Collapsed feedback contributes no space to a fresh or valid form.
+        var content = new StackPanel();
+        content.Children.Add(scroll);
+        content.Children.Add(error);
         var dialog = new ContentDialog { XamlRoot = Root.XamlRoot, Title = Strings.Get(title),
-            Content = scroll, PrimaryButtonText = Strings.Get("Cancel"),
+            Content = content, PrimaryButtonText = Strings.Get("Cancel"),
             SecondaryButtonText = Strings.Get(action), DefaultButton = ContentDialogButton.Secondary,
             RequestedTheme = Root.RequestedTheme };
         AutomationProperties.SetAutomationId(dialog, "ValidatedForm");
-        TrackDialogSize(dialog, scroll);
+        TrackDialogSize(dialog, scroll, feedback: error);
         void Feedback(string text)
         {
             error.Text = text;
