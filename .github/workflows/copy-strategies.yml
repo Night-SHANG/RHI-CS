@@ -1,0 +1,27 @@
+name: Bounded copy and flush diagnostics
+on:
+  push:
+    branches: ['maintenance/copy-strategies/**']
+    paths: ['tests/Rhi.CopyStrategies/**', '.github/workflows/copy-strategies.yml']
+permissions:
+  contents: read
+concurrency:
+  group: copy-strategies-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  diagnose:
+    runs-on: windows-2025
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Build only the standalone microbenchmark
+        shell: pwsh
+        run: dotnet build tests/Rhi.CopyStrategies/Rhi.CopyStrategies.csproj -c Release
+      - name: Measure fixed 330-file paired trials and print JSON
+        shell: pwsh
+        run: dotnet run --project tests/Rhi.CopyStrategies/Rhi.CopyStrategies.csproj -c Release --no-build
