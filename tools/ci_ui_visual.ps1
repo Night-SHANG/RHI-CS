@@ -13,7 +13,7 @@ function Set-Appearance([string]$theme, [string]$language) {
     Select-Option 'SettingsTheme' $theme
     Select-Option 'SettingsLanguage' $language
     Reveal-SettingsControl 'SettingsSave' | Out-Null
-    Invoke-VisualId 'SettingsSave'
+    if ((Find-Control -id 'SettingsSave').Current.IsEnabled) { Invoke-VisualId 'SettingsSave' }
     $script:labels = [xml][IO.File]::ReadAllText((Join-Path $appRoot "Strings/$language/Resources.resw"), [Text.Encoding]::UTF8)
     Find-Control -id 'SettingsTheme' -Enabled | Out-Null
 }

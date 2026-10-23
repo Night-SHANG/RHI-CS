@@ -13,6 +13,7 @@ public sealed partial class SettingsView
     private FrameworkElement GeneralPage()
     {
         var state = c.Session.State!;
+        Action? updateSave = null;
         var themes = new[] { "Light", "Dark", "System" };
         var languages = new[] { "System" }.Concat(Strings.AvailableLanguages).ToArray();
         var theme = Ui.Choice("Appearance", themes.Select(Strings.Get), Math.Max(0, Array.IndexOf(themes, c.ThemeDraft ?? state.Preferences.Theme)));
@@ -20,12 +21,12 @@ public sealed partial class SettingsView
         AutomationProperties.SetAutomationId(theme, "SettingsTheme");
         AutomationProperties.SetAutomationId(language, "SettingsLanguage");
         theme.IsEnabled = language.IsEnabled = !c.Session.Busy;
-        theme.SelectionChanged += (_, _) => c.ThemeDraft = themes[theme.SelectedIndex];
-        language.SelectionChanged += (_, _) => c.LanguageDraft = languages[language.SelectedIndex];
+        theme.SelectionChanged += (_, _) => { c.ThemeDraft = themes[theme.SelectedIndex]; updateSave?.Invoke(); };
+        language.SelectionChanged += (_, _) => { c.LanguageDraft = languages[language.SelectedIndex]; updateSave?.Invoke(); };
         var libraryRoot = Ui.Input("LibraryRoot", c.LibraryRootDraft ?? state.Preferences.LibraryRoot ?? "");
         AutomationProperties.SetAutomationId(libraryRoot, "SettingsLibraryRoot");
         libraryRoot.IsEnabled = !c.Session.Busy;
-        libraryRoot.TextChanged += (_, _) => c.LibraryRootDraft = libraryRoot.Text;
+        libraryRoot.TextChanged += (_, _) => { c.LibraryRootDraft = libraryRoot.Text; updateSave?.Invoke(); };
         var browse = c.Button("BrowseFolder", async () =>
         {
             var path = await c.Windows.PickFolder(Directory.Exists(libraryRoot.Text) ? libraryRoot.Text : null);
@@ -43,11 +44,20 @@ public sealed partial class SettingsView
                     ConfigurationRules.LibraryDirectory(c.Session.State!, c.Session.Store!.Root, libraryRoot.Text);
             c.Session.Save(c.Session.State! with { Preferences = c.Session.State!.Preferences with
                 { Theme = themes[theme.SelectedIndex], Language = languages[language.SelectedIndex], LibraryRoot = root } });
+            libraryRoot.Text = root ?? "";
             c.ThemeDraft = c.LanguageDraft = null;
             c.LibraryRootDraft = null;
             await Strings.UseAsync(c.Session.State!.Preferences.Language);
             c.Refresh();
+            updateSave?.Invoke();
         }, !c.Session.Busy);
+        updateSave = () =>
+        {
+            var saved = c.Session.State!.Preferences;
+            save.IsEnabled = !c.Session.Busy && (themes[theme.SelectedIndex] != saved.Theme ||
+                languages[language.SelectedIndex] != saved.Language || libraryRoot.Text != (saved.LibraryRoot ?? ""));
+        };
+        updateSave();
         AutomationProperties.SetAutomationId(save, "SettingsSave");
         var actions = Ui.CompactActions(save);
         actions.HorizontalAlignment = HorizontalAlignment.Right;

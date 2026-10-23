@@ -141,9 +141,22 @@ function Invoke-LibraryControl([string]$id) {
 }
 function Assert-FixedAction($before, [string]$action = 'Save') {
     $after = Assert-ActionOrder $action
-    foreach ($property in @('X', 'Y', 'Width', 'Height')) {
+    $compactForm = Find-OptionalId 'ValidatedForm'
+    # Approved compact editors grow for validation; preflight/confirmation footers stay fixed.
+    $properties = if ($compactForm) { @('X', 'Width', 'Height') } else { @('X', 'Y', 'Width', 'Height') }
+    foreach ($property in $properties) {
         if ([Math]::Abs($before.$property - $after.$property) -gt 1) {
             throw "Form state change moved action bounds: $property ($($before.$property) -> $($after.$property))"
+        }
+    }
+    if ($compactForm) {
+        $viewport = (Find-Control -id 'DialogContentScroll').Current.BoundingRectangle
+        $window = [SmokeWindow+Rect]::new()
+        [SmokeWindow]::GetWindowRect($process.MainWindowHandle, [ref]$window) | Out-Null
+        $scale = [SmokeWindow]::GetDpiForWindow($process.MainWindowHandle) / 96.0
+        if ($after.Top -lt $viewport.Bottom - 2 -or $after.Bottom -gt $window.Bottom -or
+            ($after.Top - $viewport.Bottom) / $scale -gt 80) {
+            throw 'Compact form footer overlaps content, is clipped, or has excessive blank space.'
         }
     }
 }

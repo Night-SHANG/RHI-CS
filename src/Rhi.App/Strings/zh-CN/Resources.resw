@@ -115,7 +115,7 @@
   <data name="TaskResults" xml:space="preserve"><value>查看任务结果</value></data>
   <data name="TaskProgress" xml:space="preserve"><value>{0} · {1} · {2}/{3}</value></data>
   <data name="Idle" xml:space="preserve"><value>就绪</value></data>
-  <data name="Busy" xml:space="preserve"><value>正在处理，可查看其他页面或请求停止。</value></data>
+  <data name="Busy" xml:space="preserve"><value>正在处理…</value></data>
   <data name="TaskEnded" xml:space="preserve"><value>任务已结束。</value></data>
   <data name="TaskRunning" xml:space="preserve"><value>任务正在执行</value></data>
   <data name="CloseDuringTask" xml:space="preserve"><value>请等待任务结束，或请求停止并恢复当前库。已经完成的库会保留，后续库不会继续执行。恢复完成后再关闭窗口。</value></data>
@@ -333,4 +333,8 @@
   <data name="RelocationMatched" xml:space="preserve"><value>已找到，请核对新路径</value></data>
   <data name="RelocationMissing" xml:space="preserve"><value>未找到可用来源，保留原路径</value></data>
   <data name="RelocationOutsideRoot" xml:space="preserve"><value>不在原资源库目录内，保持原位</value></data>
+  <data name="HideProtection" xml:space="preserve"><value>删除记录</value></data>
+  <data name="HideProtectionHelp" xml:space="preserve"><value>仅从列表删除记录；副本文件仍保留在原位置。</value></data>
+  <data name="ProtectionVisibleSummary" xml:space="preserve"><value>显示 {0} 条记录 · 副本共 {1} 组 · {2:N0} 字节</value></data>
+  <data name="ProtectionAllHidden" xml:space="preserve"><value>暂无记录。副本文件仍可从“打开副本目录”查看。</value></data>
 </root>

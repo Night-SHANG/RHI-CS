@@ -31,16 +31,21 @@ public sealed partial class SettingsView
             var offset = scroll.VerticalOffset;
             records.Children.Clear();
             var inventory = c.Session.ProtectionObservation;
-            usage.Text = inventory is null ? "" : Strings.Format("ProtectionSummary", inventory.Operations.Length, inventory.Bytes);
+            var hidden = c.Session.State!.Preferences.HiddenProtectionIds ?? [];
+            var visible = inventory?.Operations.Where(copy => !hidden.Contains(copy.Entry.OperationId)).ToArray() ?? [];
+            usage.Text = inventory is null ? "" : hidden.Length == 0
+                ? Strings.Format("ProtectionSummary", inventory.Operations.Length, inventory.Bytes)
+                : Strings.Format("ProtectionVisibleSummary", visible.Length, inventory.Operations.Length, inventory.Bytes);
             ToolTipService.SetToolTip(usage, inventory is null ? "" : Strings.Format("ProtectionUsage", inventory.Operations.Length, inventory.Bytes));
             measured.Text = inventory is null ? "" : Strings.Format("ProtectionMeasuredAt", inventory.CheckedAt.ToLocalTime());
-            if (inventory is null || inventory.Operations.Length == 0)
+            if (inventory is null || visible.Length == 0)
             {
-                records.Children.Add(new Border { Padding = new Thickness(24), Child = Ui.Label(inventory is not null ? "ProtectionEmpty" :
+                records.Children.Add(new Border { Padding = new Thickness(24), Child = Ui.Label(inventory is not null ?
+                    inventory.Operations.Length == 0 ? "ProtectionEmpty" : "ProtectionAllHidden" :
                     c.Session.ProtectionReadAttempted ? "ProtectionReadFailed" : "ProtectionNotCounted") });
                 return;
             }
-            foreach (var copy in inventory.Operations)
+            foreach (var copy in visible)
             {
                 var state = c.Session.State!;
                 var game = copy.Entry.GameName ?? state.Games.FirstOrDefault(g => g.Id == copy.Entry.GameId)?.Name ?? copy.Entry.GameId.ToString();
@@ -53,8 +58,16 @@ public sealed partial class SettingsView
                 var time = Ui.Stack(Ui.OneLine(date.ToString("d")), Ui.OneLine(date.ToString("t"), true));
                 owner.Spacing = version.Spacing = time.Spacing = 6;
                 var open = c.FolderAction("OpenProtectionItem", copy.Directory, "OpenProtection_" + copy.Entry.OperationId.ToString("N"));
-                open.Width = 128;
-                records.Children.Add(Ui.TableLine(ProtectionRow(owner, version, time, open)));
+                var hide = c.Action("HideProtection", () =>
+                {
+                    var latest = c.Session.State!;
+                    c.Session.Save(latest with { Preferences = latest.Preferences with
+                        { HiddenProtectionIds = (latest.Preferences.HiddenProtectionIds ?? []).Append(copy.Entry.OperationId).Distinct().ToArray() } });
+                    RenderInventory();
+                }, !c.Session.Busy);
+                AutomationProperties.SetAutomationId(hide, "HideProtection_" + copy.Entry.OperationId.ToString("N"));
+                ToolTipService.SetToolTip(hide, Strings.Get("HideProtectionHelp"));
+                records.Children.Add(Ui.TableLine(ProtectionRow(owner, version, time, Ui.Actions(112, open, hide))));
             }
             scroll.DispatcherQueue.TryEnqueue(() => scroll.ChangeView(null, offset, null, true));
         }
@@ -99,7 +112,7 @@ public sealed partial class SettingsView
         row.MinHeight = 0;
         row.Padding = new Thickness(20, 12, 20, 12);
         row.Height = header ? 48 : 92;
-        row.ColumnDefinitions[3].Width = new GridLength(128);
+        row.ColumnDefinitions[3].Width = new GridLength(232);
         foreach (FrameworkElement cell in row.Children) cell.VerticalAlignment = VerticalAlignment.Center;
         return row;
     }

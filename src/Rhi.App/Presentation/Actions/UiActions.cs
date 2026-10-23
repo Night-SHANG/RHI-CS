@@ -12,7 +12,7 @@ public static partial class Ui
         var panel = new VariableSizedWrapGrid
         {
             Orientation = Orientation.Horizontal, ItemWidth = 188, ItemHeight = 44,
-            MaximumRowsOrColumns = 4, HorizontalAlignment = HorizontalAlignment.Stretch
+            MaximumRowsOrColumns = Math.Max(1, buttons.Length), HorizontalAlignment = HorizontalAlignment.Stretch
         };
         AutomationProperties.SetAutomationId(panel, id);
         foreach (var button in buttons)
@@ -27,7 +27,7 @@ public static partial class Ui
         }
         panel.SizeChanged += (_, e) =>
         {
-            var columns = e.NewSize.Width >= 752 ? 4 : e.NewSize.Width >= 376 ? 2 : 1;
+            var columns = Math.Max(1, Math.Min(buttons.Length, (int)Math.Floor(e.NewSize.Width / 188)));
             if (panel.MaximumRowsOrColumns != columns) panel.MaximumRowsOrColumns = columns;
         };
         return panel;

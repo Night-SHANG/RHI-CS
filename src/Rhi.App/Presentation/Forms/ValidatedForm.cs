@@ -13,17 +13,19 @@ public sealed partial class PageContext
     {
         var error = Ui.Text("");
         AutomationProperties.SetAutomationId(error, "FormValidation");
-        error.MinHeight = 58;
-        var scroll = DialogContent(fields);
-        scroll.Height = Math.Clamp(Root.ActualHeight - 324, 64, 360);
-        var feedback = new ScrollViewer { Content = error, Height = 66,
-            HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled, VerticalScrollBarVisibility = ScrollBarVisibility.Auto };
+        error.Visibility = Visibility.Collapsed;
+        var scroll = DialogContent(Ui.Stack(fields, error));
         var dialog = new ContentDialog { XamlRoot = Root.XamlRoot, Title = Strings.Get(title),
-            Content = Ui.Stack(scroll, feedback), PrimaryButtonText = Strings.Get("Cancel"),
+            Content = scroll, PrimaryButtonText = Strings.Get("Cancel"),
             SecondaryButtonText = Strings.Get(action), DefaultButton = ContentDialogButton.Secondary,
             RequestedTheme = Root.RequestedTheme };
         AutomationProperties.SetAutomationId(dialog, "ValidatedForm");
-        TrackDialogSize(dialog, scroll, feedback);
+        TrackDialogSize(dialog, scroll);
+        void Feedback(string text)
+        {
+            error.Text = text;
+            error.Visibility = text.Length == 0 ? Visibility.Collapsed : Visibility.Visible;
+        }
         var submitting = false;
         var saved = false;
         var attempted = false;
@@ -32,11 +34,11 @@ public sealed partial class PageContext
         {
             if (submitting) return;
             // All editors share the same submission boundary; opening a blank form is not an error.
-            if (!attempted) { error.Text = ""; dialog.IsSecondaryButtonEnabled = true; return; }
-            try { validate(); error.Text = ""; error.Foreground = Ui.ThemeBrush("SecondaryTextBrush"); dialog.IsSecondaryButtonEnabled = true; }
+            if (!attempted) { Feedback(""); dialog.IsSecondaryButtonEnabled = true; return; }
+            try { validate(); Feedback(""); error.Foreground = Ui.ThemeBrush("SecondaryTextBrush"); dialog.IsSecondaryButtonEnabled = true; }
             catch (Exception ex) when (ex is DeploymentException or IOException or UnauthorizedAccessException or ArgumentException)
             {
-                error.Text = ErrorText(ex);
+                Feedback(ErrorText(ex));
                 error.Foreground = Ui.ThemeBrush("ErrorBrush");
                 dialog.IsSecondaryButtonEnabled = false;
             }
@@ -55,11 +57,11 @@ public sealed partial class PageContext
             dialog.IsPrimaryButtonEnabled = false; dialog.IsSecondaryButtonEnabled = false;
             var enabled = inputs.ToDictionary(input => input, input => input.IsEnabled);
             foreach (var input in inputs) input.IsEnabled = false;
-            error.Text = Strings.Get("FormChecking");
+            Feedback(Strings.Get("FormChecking"));
             error.Foreground = Ui.ThemeBrush("SecondaryTextBrush");
             var valid = false;
             try { validate(); valid = true; await submit(); saved = true; args.Cancel = false; }
-            catch (Exception ex) { error.Text = ErrorText(ex); error.Foreground = Ui.ThemeBrush("ErrorBrush"); }
+            catch (Exception ex) { Feedback(ErrorText(ex)); error.Foreground = Ui.ThemeBrush("ErrorBrush"); }
             finally
             {
                 foreach (var input in inputs) input.IsEnabled = enabled[input];

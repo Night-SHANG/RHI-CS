@@ -112,6 +112,7 @@ public sealed partial class GamesView : UserControl
             if (pending.Length > 0) body.Children.Add(Ui.Label("PendingConfigurationLocked"));
             if (!locationAvailable) body.Children.Add(Ui.Label("GameLocationMissing"));
             var lastChecked = Ui.Text("");
+            AutomationProperties.SetAutomationId(lastChecked, "GameLastChecked");
             void UpdateChecked()
             {
                 var observed = c.Session.TargetObservation;

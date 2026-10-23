@@ -47,7 +47,12 @@ function Assert-HeaderActions([string]$page) {
     $first = $bounds[0]
     $rows = @($bounds | Group-Object { [Math]::Round($_.Top / $scale) })
     $columns = $rows[0].Count
-    if ($columns -notin @(1, 2, [Math]::Min(4, $bounds.Count))) { throw "Unexpected header wrapping: $page; columns=$columns" }
+    $scrollId = if ($page -eq 'Game') { 'GamesScroll' } else { 'LibraryScroll' }
+    $available = (Find-Control -id $scrollId).Current.BoundingRectangle.Width / $scale
+    # The native vertical scrollbar can consume up to 16 DIP of the content viewport.
+    $minimum = [Math]::Max(1, [Math]::Min($bounds.Count, [Math]::Floor(($available - 16) / 188)))
+    $maximum = [Math]::Max(1, [Math]::Min($bounds.Count, [Math]::Floor($available / 188)))
+    if ($columns -lt $minimum -or $columns -gt $maximum) { throw "Unnecessary header wrapping: $page; expected=$minimum..$maximum; columns=$columns" }
     for ($i = 0; $i -lt $bounds.Count; $i++) {
         $box = $bounds[$i]
         if ([Math]::Abs($box.Width / $scale - 180) -gt 2 -or [Math]::Abs($box.Height / $scale - 36) -gt 2) {

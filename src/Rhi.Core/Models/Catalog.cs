@@ -14,7 +14,8 @@ public sealed record ManagedFile(string RelativePath, string InstalledHash, stri
 public sealed record DeploymentReceipt(Guid GameId, Guid LibraryId, Guid VersionId,
     string VersionLabel, string TargetRoot, string ExeHash, ManagedFile[] Files, string[] CreatedDirectories,
     DirectoryIdentity? TargetIdentity = null);
-public sealed record Preferences(string Theme = "Light", string Language = "System", string? LibraryRoot = null);
+public sealed record Preferences(string Theme = "Light", string Language = "System", string? LibraryRoot = null,
+    Guid[]? HiddenProtectionIds = null);
 public sealed record WorkspaceState(Guid Id, long Revision, GameEntry[] Games,
     ResourceLibrary[] Libraries, DeploymentReceipt[] Receipts, Guid[] CommittedOperations,
     Preferences Preferences)

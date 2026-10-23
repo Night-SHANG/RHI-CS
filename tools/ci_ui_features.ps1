@@ -72,10 +72,22 @@ if (((Find-Control -id 'GamesSearch').GetRuntimeId() -join ',') -ne $searchIdent
 Assert-ResourceRows 'initial mixed deployment' | Out-Null
 Find-Control -name (Label 'TargetModified') | Out-Null
 Capture '21-target-changes'
-Invoke-Control 'ViewDifferences'
+$checkedAt = (Find-Control -id 'GameLastChecked').Current.Name
+$differencesAction = (Find-Control -name (Label 'ViewDifferences') -Action).GetCurrentPattern([Windows.Automation.InvokePattern]::Pattern)
+$differencesAction.Invoke()
+try { $differencesAction.Invoke() }
+catch {
+    if ($_.Exception -isnot [Windows.Automation.ElementNotEnabledException] -and
+        $_.Exception.InnerException -isnot [Windows.Automation.ElementNotEnabledException]) { throw }
+}
 Find-Control -name (Label 'Close') -Action | Out-Null
+if ((Find-Control -id 'DifferencesCheckedAt').Current.Name -ne $checkedAt) { throw 'Differences did not show the checked snapshot.' }
 Capture '22-target-differences'
 Invoke-Control 'Close'
+Invoke-Control 'ViewDifferences'
+Find-Control -id 'DifferencesCheckedAt' | Out-Null
+Invoke-Control 'Close'
+if (((Find-Control -id 'GamesSearch').GetRuntimeId() -join ',') -ne $searchIdentity) { throw 'Viewing differences rebuilt the game page.' }
 Reveal-Control 'SelectAllLibraries' 'GamesScroll' | Out-Null
 Invoke-Id 'SelectAllLibraries'
 if ((Find-Control -id "SelectLibrary_$reshade" -IncludeOffscreen).GetCurrentPattern([Windows.Automation.TogglePattern]::Pattern).Current.ToggleState -ne [Windows.Automation.ToggleState]::On) { throw 'Select all omitted deployed library.' }
@@ -177,6 +189,26 @@ $labels = [xml][IO.File]::ReadAllText((Join-Path $appRoot 'Strings/en-US/Resourc
 Select-SettingsSection 'Protection'
 Find-Control -id 'ProtectionUsage' | Out-Null
 Capture '31-protection-inventory-en'
+$protectionFolder = Join-Path $fixture.Root 'protection'
+$protectionFilesBefore = @(Get-ChildItem -LiteralPath $protectionFolder -File -Recurse | ForEach-Object {
+    $_.FullName + ':' + (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash
+}) | Sort-Object
+$record = Get-ChildItem -LiteralPath $protectionFolder -Filter '*.json' -File | Select-Object -First 1
+$operationId = ([guid](Get-Content -LiteralPath $record.FullName -Raw -Encoding UTF8 | ConvertFrom-Json).OperationId).ToString('N')
+Reveal-Control ("HideProtection_" + $operationId) 'ProtectionScroll' | Out-Null
+Invoke-Id ("HideProtection_" + $operationId)
+if (Find-OptionalId ("HideProtection_" + $operationId)) { throw 'Hidden copy remains in the list.' }
+Invoke-Id 'RefreshProtection'
+if (Find-OptionalId ("HideProtection_" + $operationId)) { throw 'Refreshing restored a hidden record.' }
+$protectionFilesAfter = @(Get-ChildItem -LiteralPath $protectionFolder -File -Recurse | ForEach-Object {
+    $_.FullName + ':' + (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash
+}) | Sort-Object
+if (Compare-Object @($protectionFilesBefore) @($protectionFilesAfter)) { throw 'Hiding a record changed copy files or metadata.' }
+$hiddenState = Get-Content -LiteralPath (Join-Path $fixture.Root 'workspace.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+if (-not @($hiddenState.Preferences.HiddenProtectionIds | ForEach-Object { ([guid]$_).ToString('N') }).Contains($operationId)) {
+    throw 'Hidden record preference was not persisted.'
+}
+Capture 'r13-protection-hidden-en'
 Invoke-Control 'TaskResults'
 Find-Control -name ($taskPrefix + (Label 'Deploy')) | Out-Null
 Capture '32-batch-result-en'

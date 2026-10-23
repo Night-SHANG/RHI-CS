@@ -31,15 +31,40 @@ function Check-Picker([string]$id, [string]$expected) {
     $cancel.GetCurrentPattern([Windows.Automation.InvokePattern]::Pattern).Invoke()
     Start-Sleep -Milliseconds 300
 }
+function Assert-CompactRootForm {
+    $viewer = Find-Control -id 'DialogContentScroll'
+    $bounds = $viewer.Current.BoundingRectangle
+    $scale = [SmokeWindow]::GetDpiForWindow($process.MainWindowHandle) / 96.0
+    if ($viewer.GetCurrentPattern([Windows.Automation.ScrollPattern]::Pattern).Current.VerticallyScrollable) {
+        throw 'Short root form requires scrolling at normal window size.'
+    }
+    foreach ($id in @('FirstLibraryRootInput', 'FirstLibraryRootBrowse')) {
+        $node = Find-Control -id $id
+        $box = $node.Current.BoundingRectangle
+        if ($node.Current.IsOffscreen -or $box.Top -lt $bounds.Top - 2 -or $box.Bottom -gt $bounds.Bottom + 2 -or
+            $box.Left -lt $bounds.Left - 2 -or $box.Right -gt $bounds.Right + 2) { throw "Root form control clipped: $id" }
+    }
+    $bottom = (Find-Control -id 'FirstLibraryRootBrowse').Current.BoundingRectangle.Bottom
+    $footer = Assert-ActionOrder 'SaveAndContinue'
+    if (($footer.Top - $bottom) / $scale -gt 80) { throw 'Root form retains a large unused validation gap.' }
+}
 Invoke-Control 'Libraries'
 Click-Id 'AddLibrary'
 Find-Control -id 'FirstLibraryRootInput' | Out-Null
+Assert-CompactRootForm
 Capture 'r12-first-root-empty'
+$rootAction = Assert-ActionOrder 'SaveAndContinue'
+Invoke-Control 'SaveAndContinue'
+$rootError = Find-Control -id 'FormValidation'
+if (-not $rootError.Current.Name -or $rootError.Current.Name -eq (Label 'FormChecking')) { throw 'Empty root form did not display a submission error.' }
+Assert-FixedAction $rootAction 'SaveAndContinue'
+Capture 'r13-first-root-error'
 Invoke-Control 'Cancel'
 if ((Read-State).Preferences.LibraryRoot) { throw 'Cancel saved a default directory.' }
 Click-Id 'AddLibrary'
 Set-Text 'FirstLibraryRootInput' $fixture.BaseRoot
 Check-Picker 'FirstLibraryRootBrowse' $fixture.BaseRoot
+Assert-CompactRootForm
 Assert-ActionOrder 'SaveAndContinue' | Out-Null
 Capture 'r12-first-root-ready'
 Invoke-Control 'SaveAndContinue'
@@ -60,8 +85,10 @@ Invoke-Control 'Cancel'
 $before = (Read-State).Libraries | ConvertTo-Json -Depth 20 -Compress
 Invoke-Control 'Settings'
 Select-SettingsSection 'General'
+if ((Find-Control -id 'SettingsSave').Current.IsEnabled) { throw 'Unchanged settings allow a redundant save.' }
 Set-Text 'SettingsLibraryRoot' $fixture.OtherRoot
 Click-Id 'SettingsSave'
+if ((Find-Control -id 'SettingsSave').Current.IsEnabled) { throw 'Saved settings remain dirty.' }
 if (((Read-State).Libraries | ConvertTo-Json -Depth 20 -Compress) -ne $before) { throw 'Changing the default rewrote existing libraries.' }
 Capture 'r12-settings-root'
 Invoke-Control 'Libraries'

@@ -115,7 +115,7 @@
   <data name="TaskResults" xml:space="preserve"><value>Task results</value></data>
   <data name="TaskProgress" xml:space="preserve"><value>{0} · {1} · {2}/{3}</value></data>
   <data name="Idle" xml:space="preserve"><value>Ready</value></data>
-  <data name="Busy" xml:space="preserve"><value>Working. You can view other pages or request a stop.</value></data>
+  <data name="Busy" xml:space="preserve"><value>Working…</value></data>
   <data name="TaskEnded" xml:space="preserve"><value>Task finished.</value></data>
   <data name="TaskRunning" xml:space="preserve"><value>Task in progress</value></data>
   <data name="CloseDuringTask" xml:space="preserve"><value>Wait for completion, or request a stop and restore the current library. Completed libraries stay deployed; remaining libraries will not run. Close the window after recovery finishes.</value></data>
@@ -333,4 +333,8 @@ State | Relative path | Checksum
   <data name="RelocationMatched" xml:space="preserve"><value>Found; review the new path</value></data>
   <data name="RelocationMissing" xml:space="preserve"><value>No usable source found; keep original path</value></data>
   <data name="RelocationOutsideRoot" xml:space="preserve"><value>Outside the original library folder; keep in place</value></data>
+  <data name="HideProtection" xml:space="preserve"><value>Remove record</value></data>
+  <data name="HideProtectionHelp" xml:space="preserve"><value>Remove this list record only; copy files remain in their original location.</value></data>
+  <data name="ProtectionVisibleSummary" xml:space="preserve"><value>Showing {0} records · {1} copy groups · {2:N0} bytes</value></data>
+  <data name="ProtectionAllHidden" xml:space="preserve"><value>No records to show. Files are still available through Open copies folder.</value></data>
 </root>

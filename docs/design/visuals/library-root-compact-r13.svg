@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1160" height="430" viewBox="0 0 1160 430">
+<title>资源库总目录：紧凑表单候选，正常与提交错误状态</title>
+<defs><style>text{font-family:'Microsoft YaHei UI','Microsoft YaHei','Segoe UI',sans-serif;font-size:14px;fill:#202d42}.title{font-size:22px;font-weight:600}.muted{fill:#596579}.center{text-anchor:middle}.caption{font-size:15px;font-weight:600}</style></defs>
+<rect width="1160" height="430" fill="#eef1f5"/>
+<text x="32" y="35" class="caption">正常状态 · 内容完整显示</text>
+<text x="606" y="35" class="caption">提交错误 · 就地显示提示</text>
+<g transform="translate(32 58)">
+<rect width="522" height="284" rx="8" fill="#fff" stroke="#dce2e9"/>
+<text x="24" y="44" class="title">设置资源库总目录</text>
+<text x="24" y="74" class="muted">选择存放各资源库的上级文件夹。</text>
+<text x="24" y="109">资源库总目录</text>
+<rect x="24" y="121" width="354" height="60" rx="4" fill="#fff" stroke="#cbd3dd"/>
+<text x="36" y="146">F:\01A桌面文件夹整合——最新版本-2025-5.15\</text>
+<text x="36" y="168">RESHADE相关的全部文件\资源库</text>
+<rect x="386" y="145" width="112" height="36" rx="4" fill="#fafbfc" stroke="#cbd3dd"/>
+<text x="442" y="168" class="center">浏览文件夹</text>
+<path d="M0 205H522" stroke="#e4e8ef"/>
+<rect x="24" y="225" width="233" height="36" rx="4" fill="#fafbfc" stroke="#cbd3dd"/>
+<text x="140" y="248" class="center">取消</text>
+<rect x="265" y="225" width="233" height="36" rx="4" fill="#0067b0"/>
+<text x="381" y="248" class="center" style="fill:#fff">保存并继续</text>
+</g>
+<g transform="translate(606 58)">
+<rect width="522" height="312" rx="8" fill="#fff" stroke="#dce2e9"/>
+<text x="24" y="44" class="title">设置资源库总目录</text>
+<text x="24" y="74" class="muted">选择存放各资源库的上级文件夹。</text>
+<text x="24" y="109">资源库总目录</text>
+<rect x="24" y="121" width="354" height="60" rx="4" fill="#fff" stroke="#c42b1c"/>
+<text x="36" y="154">F:\已移动的资源库</text>
+<rect x="386" y="145" width="112" height="36" rx="4" fill="#fafbfc" stroke="#cbd3dd"/>
+<text x="442" y="168" class="center">浏览文件夹</text>
+<text x="24" y="209" style="fill:#c42b1c">找不到该目录，请重新选择。</text>
+<path d="M0 233H522" stroke="#e4e8ef"/>
+<rect x="24" y="253" width="233" height="36" rx="4" fill="#fafbfc" stroke="#cbd3dd"/>
+<text x="140" y="276" class="center">取消</text>
+<rect x="265" y="253" width="233" height="36" rx="4" fill="#e8e8e8"/>
+<text x="381" y="276" class="center" style="fill:#666">保存并继续</text>
+</g>
+<text x="32" y="405" class="muted">候选样板：取消固定空白区；错误时只增加提示所需高度。小窗口放不下时，正文滚动、操作保留在底部。</text>
+</svg>

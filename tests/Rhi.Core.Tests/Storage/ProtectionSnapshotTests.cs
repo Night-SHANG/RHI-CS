@@ -9,6 +9,26 @@ namespace Rhi.Core.Tests.Storage;
 public sealed class ProtectionSnapshotTests
 {
     [Fact]
+    public void Hiding_a_copy_is_a_persisted_display_preference_and_preserves_backup_files()
+    {
+        using var f = new Sandbox();
+        DeployPair(f);
+        File.WriteAllText(f.Target, "user edit", Encoding.UTF8);
+        Assert.Equal(OperationStatus.Succeeded, Assert.Single(f.Run(new(f.Library.Id, null, OperationKind.Clear))).Status);
+        var copy = Assert.Single(ProtectionCatalog.Read(f.Store).Operations);
+        var root = Path.Combine(f.Store.Root, "protection");
+        var before = Directory.GetFiles(root, "*", SearchOption.AllDirectories).ToDictionary(path => path, BlobStore.Hash);
+        var receipts = AtomicJson.Fingerprint(f.Store.State.Receipts);
+        f.Store.Save(f.Store.State with { Preferences = f.Store.State.Preferences with { HiddenProtectionIds = [copy.Entry.OperationId] } });
+        var persisted = AtomicJson.Read<WorkspaceState>(Path.Combine(f.Store.Root, "workspace.json"));
+        Assert.Contains(copy.Entry.OperationId, persisted.Preferences.HiddenProtectionIds!);
+        Assert.Equal(receipts, AtomicJson.Fingerprint(persisted.Receipts));
+        Assert.Equal(copy.Entry.OperationId, Assert.Single(ProtectionCatalog.Read(f.Store).Operations).Entry.OperationId);
+        Assert.Equal(before.Count, Directory.GetFiles(root, "*", SearchOption.AllDirectories).Length);
+        foreach (var pair in before) Assert.Equal(pair.Value, BlobStore.Hash(pair.Key));
+    }
+
+    [Fact]
     public void Version_name_cannot_collide_with_the_description_file()
     {
         using var f = new Sandbox();

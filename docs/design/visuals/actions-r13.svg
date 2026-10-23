@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="390" viewBox="0 0 1100 390">
+<title>r13 同排工具栏与删除记录入口；既有布局的局部修正</title>
+<defs><style>text{font:14px 'Microsoft YaHei UI','Microsoft YaHei',sans-serif;fill:#202d42}.title{font-size:22px;font-weight:600}.center{text-anchor:middle}.muted{fill:#596579}</style></defs>
+<rect width="1100" height="390" fill="#fafafa"/>
+<text x="32" y="42" class="title">资源库</text><text x="32" y="74">五项操作在空间足够时同排；窄窗口按实际宽度自然换行。</text>
+<g fill="#fff" stroke="#dce2e9"><rect x="32" y="94" width="180" height="36" rx="4"/><rect x="220" y="94" width="180" height="36" rx="4"/><rect x="408" y="94" width="180" height="36" rx="4"/><rect x="596" y="94" width="180" height="36" rx="4"/><rect x="784" y="94" width="180" height="36" rx="4"/></g>
+<text x="122" y="117" class="center">修改</text><text x="310" y="117" class="center">添加版本</text><text x="498" y="117" class="center">移除资源库</text><text x="686" y="117" class="center">打开资源库目录</text><text x="874" y="117" class="center">重新定位资源库</text>
+<text x="32" y="197" class="title">修改保护副本</text>
+<rect x="32" y="220" width="1036" height="48" fill="#f1f4f8" stroke="#dce2e9"/>
+<text x="52" y="250">游戏 / 资源库</text><text x="252" y="250">版本 / 原部署目录</text><text x="652" y="250">时间</text><text x="812" y="250">操作</text>
+<rect x="32" y="268" width="1036" height="92" fill="#fff" stroke="#dce2e9"/>
+<text x="52" y="306">Launcher</text><text x="52" y="332" class="muted">资源库</text>
+<text x="252" y="306">版本 1.0</text><text x="252" y="332" class="muted">C:\Games\Example</text>
+<text x="652" y="306">2026/10/23</text><text x="652" y="332" class="muted">09:30</text>
+<rect x="812" y="296" width="112" height="36" rx="4" fill="#fff" stroke="#dce2e9"/><text x="868" y="319" class="center">打开此副本</text>
+<rect x="932" y="296" width="112" height="36" rx="4" fill="#fff" stroke="#dce2e9"/><text x="988" y="319" class="center">删除记录</text>
+</svg>
