@@ -15,6 +15,8 @@
 
 ## 视觉与验证
 
+本地查看用户下载的 b75596c 截图包后确认：SHA-256 为 f7daff49bc5caedab8c9ffcf44e0f01ae4fd33ea7f4356c93b4b977523bbf720，与 Release 一致。150% 的 game-required 截图及 failure.png 中错误/按钮没有可见遮挡，但 failure.png 已是恢复到 100% 的画面；ci_ui_display.ps1 的 finally 恢复缩放后，外层才捕获异常截图，故没有保存 175% 的实际失败现场。175% 只有 game-initial 提交前图，不能据此认定错误状态已通过或存在实际重叠。本轮只修复取证顺序，在恢复前和断言现场保存截图并记录原生点命中及附近控件；保留断言，不再猜测修改应用布局。参考 UIA BoundingRectangle 的可见性边界：https://learn.microsoft.com/en-us/dotnet/api/system.windows.automation.automationelement.boundingrectangleproperty 。
+
 后续 ac2023a 的 Windows run 39889549756：224 项核心测试及编译通过；175% 英文深色添加游戏的错误提示已出现，但 UIA 坐标显示字段滚动区底部 774、提示顶部 757，重叠 17 物理像素，未通过。撤掉 SizeChanged 中手动测量反馈并回写兄弟控件高度的逻辑，改为 WinUI Grid 的星号字段行和 Auto 提示行，由受限父容器同轮测量排列。样板外观、错误时动态高度和正常无占位要求不变。参考微软 Scroll viewer controls：https://learn.microsoft.com/en-us/windows/apps/develop/ui/controls/scroll-controls 。检查在坐标稳定后执行原有无重叠断言，不能将新提交当作运行验证。
 
 2026-10-23 远程补充：672f7c0 的 224 项核心测试及编译通过，页头按钮检查通过普通、窄窗口以及 125%、150%、175% 已执行状态；175% 英文深色添加资源库提交空名称时找不到可见错误提示。共用表单此前把提示放在字段滚动区末尾，长表单会把提示卷出视口。现按紧凑样板将提示置于字段滚动区外、按钮上方，仅显示时扣除其实际高度，并加强共用检查要求提示完整可见。此次改动尚待远程验证，200% 及后续检查不能称为通过。

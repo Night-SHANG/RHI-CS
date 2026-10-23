@@ -126,6 +126,29 @@ function Assert-FormError([string]$key) {
     [SmokeWindow]::GetWindowRect($process.MainWindowHandle, [ref]$window) | Out-Null
     if ($bounds.Width -le 0 -or $bounds.Height -le 0 -or $bounds.Top -lt $viewport.Bottom - 2 -or
         $bounds.Bottom -gt $save.Top -or $bounds.Left -lt $window.Left -or $bounds.Right -gt $window.Right) {
+        # Do not infer visible overlap from provider rectangles alone. Keep the
+        # assertion, but collect native point hits and pixels at the failing DPI.
+        try {
+            $failureDpi = [SmokeWindow]::GetDpiForWindow($process.MainWindowHandle)
+            Capture "validation-failure-dpi-$failureDpi-$key"
+            if ($bounds.Width -gt 0 -and $bounds.Height -gt 0) {
+                foreach ($fraction in @(0.2, 0.5, 0.8)) {
+                    $point = [Windows.Point]::new($bounds.Left + 12, $bounds.Top + $bounds.Height * $fraction)
+                    $hit = [Windows.Automation.AutomationElement]::FromPoint($point)
+                    Write-Host "Validation point $point : id=$($hit.Current.AutomationId); name=$($hit.Current.Name); bounds=$($hit.Current.BoundingRectangle)"
+                }
+            }
+            $dialog = Find-OptionalId 'ValidatedForm'
+            if ($dialog) {
+                $peers = $dialog.FindAll([Windows.Automation.TreeScope]::Descendants, [Windows.Automation.Condition]::TrueCondition)
+                foreach ($peer in $peers) {
+                    $box = $peer.Current.BoundingRectangle
+                    if (-not $box.IsEmpty -and $box.Bottom -ge $bounds.Top - 30 -and $box.Top -le $bounds.Bottom + 30) {
+                        Write-Host "Validation neighbor: id=$($peer.Current.AutomationId); type=$($peer.Current.ControlType.ProgrammaticName); name=$($peer.Current.Name); offscreen=$($peer.Current.IsOffscreen); bounds=$box"
+                    }
+                }
+            }
+        } catch { Write-Warning "Validation evidence capture failed: $_" }
         throw "Validation must be visible between fields and footer: $key; feedback=$bounds; viewport=$viewport; save=$save"
     }
     if ((Find-Control -name (Label 'Save') -Action).Current.IsEnabled) { throw 'Invalid form can be saved.' }

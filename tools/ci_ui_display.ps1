@@ -75,7 +75,18 @@ try {
         $evidence.Add("PASS: actual $actual DPI / $percent percent; Light and Dark pages, forms and preflight.")
     }
 } catch {
-    if ($scaleChanged -or $_.Exception.Message -notmatch 'No enabled display scale selector|Cannot determine original display scale|Display scale .* is unavailable|Cannot find a process with the name') { throw }
+    # Preserve the failing DPI before finally restores the runner display.
+    # The outer harness screenshot is taken after that restoration and is not
+    # evidence of the original high-DPI layout.
+    $displayFailure = $_
+    if ($scaleChanged) {
+        try {
+            $failureDpi = [SmokeWindow]::GetDpiForWindow($process.MainWindowHandle)
+            Write-Host "Capturing display failure before restoration: DPI=$failureDpi"
+            Capture "failure-before-display-restore-dpi-$failureDpi"
+        } catch { Write-Warning "Could not capture original display state: $_" }
+    }
+    if ($scaleChanged -or $displayFailure.Exception.Message -notmatch 'No enabled display scale selector|Cannot determine original display scale|Display scale .* is unavailable|Cannot find a process with the name') { throw $displayFailure }
     $evidence.Add("HIGH DPI UNVERIFIED: $_")
     Write-Warning "High DPI environment unavailable: $_"
 } finally {
