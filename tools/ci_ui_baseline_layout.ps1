@@ -8,8 +8,8 @@ function Assert-LayoutHitArea($control) {
     if (-not [SmokeWindow]::GetWindowRect($process.MainWindowHandle, [ref]$rect)) { throw 'Native window bounds unavailable.' }
     if ($box.Width -le 0 -or $box.Height -le 0 -or $box.Left -lt $rect.Left -or $box.Right -gt $rect.Right -or
         $box.Top -lt $rect.Top -or $box.Bottom -gt $rect.Bottom) { throw "Control outside native window: $($control.Current.Name)" }
-    foreach ($x in @($box.Left + 4, $box.Right - 4)) {
-        foreach ($y in @($box.Top + 4, $box.Bottom - 4)) {
+    foreach ($x in @(($box.Left + 4), ($box.Right - 4))) {
+        foreach ($y in @(($box.Top + 4), ($box.Bottom - 4))) {
             $hit = [Windows.Automation.AutomationElement]::FromPoint([Windows.Point]::new($x, $y))
             $found = $false
             while ($hit) {
