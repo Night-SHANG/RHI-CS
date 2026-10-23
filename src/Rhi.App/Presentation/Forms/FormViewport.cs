@@ -8,18 +8,25 @@ namespace Rhi.App.Presentation;
 
 public sealed partial class PageContext
 {
-    private static void ClipFormViewport(ScrollViewer scroll, Grid container)
+    private static Action ClipFormViewport(ScrollViewer scroll, Grid container)
     {
         // WinUI's UIA peer can include descendants beyond the native
         // ScrollContentPresenter clip. Expose the actual arranged viewport,
         // not the bounds of partially scrolled-out fields, to accessibility.
         var clip = new RectangleGeometry();
         scroll.Clip = clip;
+        var active = true;
+        var callbacks = 0;
+        var ci = Environment.GetEnvironmentVariable("GITHUB_ACTIONS") == "true";
+        void Lifecycle(string reason) {
+            if (ci) Console.Error.WriteLine($"Viewport lifecycle: {reason}; loaded={scroll.IsLoaded}; active={active}; callbacks={callbacks}");
+        }
         string? lastDiagnostic = null;
         var diagnostics = 0;
         void UpdateClip(object? sender, object args)
         {
-            if (!scroll.IsLoaded) return;
+            callbacks++;
+            if (!active || !scroll.IsLoaded) return;
             // RenderSize can exceed the allocated slot after layout squeezing.
             // Slot changes do not necessarily raise SizeChanged.
             var slot = LayoutInformation.GetLayoutSlot(scroll);
@@ -51,6 +58,8 @@ public sealed partial class PageContext
         }
         scroll.Loaded += (_, _) =>
         {
+            Lifecycle("loaded");
+            if (!active) return;
             scroll.LayoutUpdated += layoutChanged;
             scroll.SizeChanged += SizeChanged;
             container.SizeChanged += SizeChanged;
@@ -58,6 +67,35 @@ public sealed partial class PageContext
         };
         scroll.Unloaded += (_, _) =>
         {
+            Lifecycle("unloaded");
+            scroll.LayoutUpdated -= layoutChanged;
+            scroll.SizeChanged -= SizeChanged;
+            container.SizeChanged -= SizeChanged;
+        };
+        // Read-only CI probe: it never repairs clipping or forces a layout pass.
+        // This distinguishes an inactive subscription from stale object dimensions.
+        var timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
+        string? lastProbe = null;
+        var probes = 0;
+        timer.Tick += (_, _) =>
+        {
+            if (!active || ++probes > 240) { timer.Stop(); return; }
+            try
+            {
+                var line = $"Viewport probe: loaded={scroll.IsLoaded}; root={scroll.XamlRoot is not null}; " +
+                    $"actual={scroll.ActualWidth},{scroll.ActualHeight}; slot={LayoutInformation.GetLayoutSlot(scroll)}; " +
+                    $"row={container.RowDefinitions[0].ActualHeight}; container={container.ActualHeight}; " +
+                    $"clip={clip.Rect}; sameClip={ReferenceEquals(scroll.Clip, clip)}; callbacks={callbacks}";
+                if (line != lastProbe) { Console.Error.WriteLine(line); lastProbe = line; }
+            }
+            catch (Exception ex) { Console.Error.WriteLine($"Viewport probe unavailable: {ex.GetType().Name}"); }
+        };
+        if (ci) timer.Start();
+        return () =>
+        {
+            active = false;
+            timer.Stop();
+            Lifecycle("disposed");
             scroll.LayoutUpdated -= layoutChanged;
             scroll.SizeChanged -= SizeChanged;
             container.SizeChanged -= SizeChanged;

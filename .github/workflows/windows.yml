@@ -20,6 +20,10 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
+      - name: Read completed paired benchmark numbers
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python tools/ci_read_performance.py
       - name: Static manifest and localization checks
         run: python tools/check_sources.py
       - name: Test deployment and recovery against temporary directories

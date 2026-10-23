@@ -24,7 +24,7 @@ public sealed partial class PageContext
         Grid.SetRow(error, 1);
         content.Children.Add(scroll);
         content.Children.Add(error);
-        ClipFormViewport(scroll, content);
+        var stopViewportTracking = ClipFormViewport(scroll, content);
         var dialog = new ContentDialog { XamlRoot = Root.XamlRoot, Title = Strings.Get(title),
             Content = content, PrimaryButtonText = Strings.Get("Cancel"),
             SecondaryButtonText = Strings.Get(action), DefaultButton = ContentDialogButton.Secondary,
@@ -82,7 +82,8 @@ public sealed partial class PageContext
             }
         };
         Check();
-        await dialog.ShowAsync();
+        try { await dialog.ShowAsync(); }
+        finally { stopViewportTracking(); }
         return saved;
     }
 }
