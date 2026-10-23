@@ -25,8 +25,11 @@ while (Console.ReadLine() is { } line)
         ?? throw new InvalidDataException("Missing trial command.");
     if (command.Trial < 0 || command.Warmup != (command.Trial == 0))
         throw new InvalidDataException("Trial zero is warmup; measured trials must be positive.");
+    if (command.Suite is not ("deployment" or "backup"))
+        throw new InvalidDataException("Unknown benchmark suite.");
+    if (command.Suite == "backup") CaptureMeasurements.RequireAvailable();
     var report = new TrialReport(args[2], args[3], command.Trial, command.Warmup,
-        command.Warmup ? 32 : Fixture.FileCount);
+        command.Warmup ? 32 : Fixture.FileCount, command.Suite);
     var path = Path.Combine(output, $"{args[3]}-{(command.Warmup ? "warmup" : $"trial-{command.Trial}")}.json");
     // Checkpoint outside all timed phases, including when a later phase fails.
     void Save() => File.WriteAllText(path, JsonSerializer.Serialize(report, json));
@@ -35,7 +38,10 @@ while (Console.ReadLine() is { } line)
     {
         var fixture = new Fixture(root, report.Files);
         RunReference(fixture, report, Save);
-        foreach (var scenario in new[] { "freshDeploy", "overwrite", "noop", "clear" })
+        var scenarios = command.Suite == "backup"
+            ? new[] { "firstUnmanagedOverwrite", "managedSmallUpdate" }
+            : new[] { "freshDeploy", "overwrite", "noop", "clear" };
+        foreach (var scenario in scenarios)
             RunScenario(fixture, scenario, report, Save);
         fixture.VerifySources();
         report.Verified = true;
@@ -77,17 +83,19 @@ static void RunScenario(Fixture fixture, string scenario, TrialReport report, Ac
     var sentinel = Path.Combine(target, "unmanaged.keep");
     File.WriteAllText(sentinel, "Do not modify unrelated game files.");
     var sentinelHash = Fixture.Hash(sentinel);
-    var originals = scenario == "overwrite" ? Fixture.WriteResources(target, report.Files, 555120)
+    var originals = scenario is "overwrite" or "firstUnmanagedOverwrite" ? Fixture.WriteResources(target, report.Files, 555120)
         : new Dictionary<string, string>();
     using var store = WorkspaceStore.Open(Path.Combine(fixture.Root, scenario, "Data"), create: true);
     var game = new GameEntry(Guid.NewGuid(), "Benchmark", target, exe, target, "DirectX 12", "x64", "Manual");
     var version = new ResourceVersion(Guid.NewGuid(), "Synthetic files", fixture.Source, null, ResourceKind.Files);
     var library = new ResourceLibrary(Guid.NewGuid(), "Benchmark", "", [version]);
+    var selectedVersion = version;
+    var expected = fixture.Hashes;
     store.Save(store.State with { Games = [game], Libraries = [library] });
     var planner = new DeploymentPlanner(store);
     var engine = new DeploymentEngine(store);
     BatchPlan Build(OperationKind kind) => planner.Build(store.State, game.Id,
-        [new(library.Id, kind == OperationKind.Clear ? null : version.Id, kind)]);
+        [new(library.Id, kind == OperationKind.Clear ? null : selectedVersion.Id, kind)]);
     void Execute(BatchPlan plan)
     {
         Fixture.Require(plan.CanExecute, "Preflight blocked: " + JsonSerializer.Serialize(plan.Issues));
@@ -96,18 +104,73 @@ static void RunScenario(Fixture fixture, string scenario, TrialReport report, Ac
             "Operation failed: " + JsonSerializer.Serialize(result));
     }
 
-    if (scenario is "noop" or "clear")
+    if (scenario is "noop" or "clear" or "managedSmallUpdate")
     {
         // Build a legitimate independent installed fixture, excluded from timings.
         Execute(Build(OperationKind.Deploy));
         VerifyInstalled(store, target, fixture.Hashes, originals);
     }
-    var kind = scenario switch { "noop" => OperationKind.Change, "clear" => OperationKind.Clear, _ => OperationKind.Deploy };
+    if (scenario == "managedSmallUpdate")
+    {
+        // Version generation and legitimate initial install are untimed. Never
+        // edit the installed target to fake an update or protection requirement.
+        selectedVersion = new(Guid.NewGuid(), "Ten changed files", fixture.UpdatedSource, null, ResourceKind.Files);
+        expected = fixture.UpdatedHashes;
+        library = library with { Versions = [version, selectedVersion] };
+        store.Save(store.State with { Libraries = [library] });
+    }
+    var kind = scenario switch { "noop" or "managedSmallUpdate" => OperationKind.Change, "clear" => OperationKind.Clear, _ => OperationKind.Deploy };
     var plan = Measure(report, scenario + ".preflight", store.Root, () => Build(kind), save);
     Fixture.Require(plan.CanExecute, "Preflight blocked: " + JsonSerializer.Serialize(plan.Issues));
     if (scenario == "noop")
         Fixture.Require(plan.Libraries.Single().Changes.All(c => c.BeforeHash == c.DesiredHash), "No-op fixture is not unchanged.");
+    if (scenario == "managedSmallUpdate")
+    {
+        var changes = plan.Libraries.Single().Changes;
+        Fixture.Require(changes.Length == report.Files && changes.Count(c => c.BeforeHash != c.DesiredHash) == Fixture.ChangedFiles,
+            "Small update must contain exactly ten changed files and all remaining files unchanged.");
+        Fixture.Require(!plan.Libraries.Single().RequiresProtection && !plan.Libraries.Single().RequiresOverwrite,
+            "Small update unexpectedly requires original capture or external-change protection.");
+        report.Scenarios.Add(scenario, new(report.Files, Fixture.ChangedFiles, report.Files - Fixture.ChangedFiles, 0));
+    }
+    else if (scenario == "firstUnmanagedOverwrite")
+    {
+        Fixture.Require(plan.Libraries.Single().Changes.Length == report.Files && plan.Libraries.Single().RequiresOverwrite,
+            "First unmanaged overwrite fixture did not require original backups.");
+        report.Scenarios.Add(scenario, new(0, report.Files, 0, report.Files));
+    }
+    using var capture = report.Suite == "backup" ? CaptureMeasurements.Attach(store.Blobs) : null;
     var result = Measure(report, scenario + ".execute", store.Root, () => engine.Execute(plan, new(true, true)), save);
+    if (capture is not null)
+    {
+        capture.Dispose();
+        var measurement = capture.Snapshot();
+        report.Capture.Add(scenario, measurement);
+        var expectedCalls = scenario == "firstUnmanagedOverwrite" ? report.Files : 0;
+        Fixture.Require(measurement.Calls == expectedCalls && measurement.SucceededCalls == expectedCalls,
+            "Capture call count or success differs from the fixture contract.");
+        Fixture.Require(measurement.PublishedBlobs == expectedCalls && measurement.ReusedBlobs == 0 &&
+            measurement.BytesWritten == (long)expectedCalls * Fixture.FileBytes && measurement.FlushCalls >= expectedCalls &&
+            measurement.PublishedCallsWithoutDurableFlush == 0,
+            "Capture publication, byte or durable-flush counters differ from the fixture contract.");
+        if (report.Role == "baseline" && scenario == "firstUnmanagedOverwrite")
+        {
+            var bytes = (long)expectedCalls * Fixture.FileBytes;
+            Fixture.Require(measurement.SourceBytesRead == 2 * bytes && measurement.BackupBytesRead == 2 * bytes &&
+                measurement.BytesHashed == 3 * bytes && measurement.HashPasses == 3 * expectedCalls &&
+                measurement.FlushCalls == expectedCalls && measurement.WriteThroughCalls == expectedCalls,
+                "Pinned baseline overlay did not report its preserved four-read, three-hash, one-flush algorithm.");
+        }
+        if (report.Role == "candidate" && scenario == "firstUnmanagedOverwrite")
+        {
+            var bytes = (long)expectedCalls * Fixture.FileBytes;
+            Fixture.Require(measurement.SourceBytesRead == bytes && measurement.BackupBytesRead == bytes &&
+                measurement.BytesHashed == 2 * bytes && measurement.HashPasses == 2 * expectedCalls &&
+                measurement.FlushCalls == 2 * expectedCalls && measurement.WriteThroughCalls == 0,
+                "Candidate did not retain its two-read, two-hash, two-durable-barrier capture contract.");
+        }
+        save();
+    }
     Fixture.Require(result.Count == 1 && result[0].Status == OperationStatus.Succeeded,
         "Operation failed: " + JsonSerializer.Serialize(result));
     if (scenario == "clear")
@@ -116,7 +179,22 @@ static void RunScenario(Fixture fixture, string scenario, TrialReport report, Ac
         Fixture.Require(Directory.EnumerateFiles(target, "*", SearchOption.AllDirectories).Count() == 2, "Clear retained managed/temporary files.");
         Fixture.Require(!Directory.EnumerateFileSystemEntries(Path.Combine(store.Root, "blobs")).Any(), "Clear unnecessarily cached source files.");
     }
-    else VerifyInstalled(store, target, fixture.Hashes, originals);
+    else
+    {
+        VerifyInstalled(store, target, expected, originals);
+        Fixture.Require(store.State.Receipts.Single().VersionId == selectedVersion.Id, "Receipt selected the wrong resource version.");
+    }
+    if (scenario == "firstUnmanagedOverwrite")
+    {
+        // Safety oracle only: restoration is deliberately outside every timer
+        // and outside the Capture observer, never reported as backup work.
+        Execute(Build(OperationKind.Clear));
+        Fixture.VerifyFiles(target, originals);
+        Fixture.Require(Directory.EnumerateFiles(target, "*", SearchOption.AllDirectories).Count() == originals.Count + 2,
+            "Restoring originals left missing or extra files.");
+        Fixture.Require(store.State.Receipts.Length == 0, "Restoring originals retained a receipt.");
+        report.RestoredScenarios.Add(scenario);
+    }
     Fixture.Require(Fixture.Hash(exe) == fixture.ExecutableHash && Fixture.Hash(sentinel) == sentinelHash,
         "Unrelated executable or sentinel changed.");
     Fixture.Require(store.Pending().Length == 0, "Operation left a pending journal.");
@@ -170,24 +248,29 @@ static T Measure<T>(TrialReport report, string name, string? workspace, Func<T> 
     }
 }
 
-sealed record TrialCommand(int Trial, bool Warmup);
-sealed class TrialReport(string revision, string role, int trial, bool warmup, int files)
+sealed record TrialCommand(int Trial, bool Warmup, string Suite = "deployment");
+sealed class TrialReport(string revision, string role, int trial, bool warmup, int files, string suite)
 {
     public string Revision { get; } = revision;
     public string Role { get; } = role;
     public int Trial { get; } = trial;
     public bool Warmup { get; } = warmup;
+    public string Suite { get; } = suite;
     public int Files { get; } = files;
     public long Bytes { get; } = (long)files * Fixture.FileBytes;
     public long ExecutableBytes { get; } = Fixture.ExecutableBytes;
     public string Runtime { get; } = RuntimeInformation.FrameworkDescription;
     public string OperatingSystem { get; } = RuntimeInformation.OSDescription;
     public Dictionary<string, StageMeasurement> Stages { get; } = [];
+    public Dictionary<string, ScenarioDescription> Scenarios { get; } = [];
+    public Dictionary<string, CaptureSummary> Capture { get; } = [];
     public List<string> VerifiedScenarios { get; } = [];
+    public List<string> RestoredScenarios { get; } = [];
     public bool Verified { get; set; }
     public string? Error { get; set; }
     public string? CleanupError { get; set; }
 }
+sealed record ScenarioDescription(int PreviouslyInstalledFiles, int ChangedFiles, int UnchangedFiles, int ExpectedCaptureCalls);
 sealed record StageMeasurement(double Seconds, double CpuSeconds, long ManagedAllocatedBytes,
     int ProcessHandlesBefore, int ProcessHandlesAfter, ProcessIo ProcessIo, JsonFile[] JsonBefore, JsonFile[] JsonAfter);
 sealed record JsonFile(string Path, long Bytes);
@@ -199,12 +282,16 @@ static class JsonFiles
 
 sealed class Fixture
 {
-    public const int FileCount = 990, FileBytes = 128 * 1024, ExecutableBytes = 64 * 1024 * 1024;
+    public const int FileCount = 990, FileBytes = 128 * 1024, ExecutableBytes = 64 * 1024 * 1024, ChangedFiles = 10;
     public string Root { get; }
     public string Source { get; }
     public string Executable { get; }
     public string ExecutableHash { get; }
     public Dictionary<string, string> Hashes { get; }
+    private string? updatedSource;
+    private Dictionary<string, string>? updatedHashes;
+    public string UpdatedSource { get { EnsureUpdate(); return updatedSource!; } }
+    public Dictionary<string, string> UpdatedHashes { get { EnsureUpdate(); return updatedHashes!; } }
     public Fixture(string root, int count)
     {
         Root = Directory.CreateDirectory(root).FullName;
@@ -248,6 +335,30 @@ sealed class Fixture
         VerifyFiles(Source, Hashes);
         Require(Directory.EnumerateFiles(Source).Count() == Hashes.Count, "Source file set changed.");
         Require(Hash(Executable) == ExecutableHash, "Executable template changed.");
+        if (updatedSource is not null)
+        {
+            VerifyFiles(updatedSource, updatedHashes!);
+            Require(Directory.EnumerateFiles(updatedSource).Count() == Hashes.Count, "Updated source file set changed.");
+        }
+    }
+    private void EnsureUpdate()
+    {
+        if (updatedSource is not null) return;
+        updatedSource = Directory.CreateDirectory(Path.Combine(Root, "source-v2")).FullName;
+        updatedHashes = new(Hashes, StringComparer.Ordinal);
+        foreach (var name in Hashes.Keys) File.Copy(Path.Combine(Source, name), Path.Combine(updatedSource, name));
+        var data = new byte[FileBytes];
+        var random = new Random(120992);
+        for (var i = 0; i < ChangedFiles; i++)
+        {
+            // 0,99,...,891 in the measured 990-file fixture; evenly distributed
+            // and still distinct in the bounded 32-file warmup.
+            var name = $"shader-{i * Hashes.Count / ChangedFiles:D4}.fx";
+            random.NextBytes(data);
+            File.WriteAllBytes(Path.Combine(updatedSource, name), data);
+            updatedHashes[name] = Convert.ToHexString(SHA256.HashData(data));
+            Require(updatedHashes[name] != Hashes[name], "Changed file accidentally retained its original bytes.");
+        }
     }
     public static void Require(bool condition, string message)
     {

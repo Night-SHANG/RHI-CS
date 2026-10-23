@@ -1,0 +1,47 @@
+name: Backup capture and managed update diagnostics
+on:
+  push:
+    branches: ['maintenance/backup-capture/**']
+    paths:
+      - 'src/Rhi.Core/**'
+      - 'tests/Rhi.Core.Tests/**'
+      - 'tests/Rhi.Performance/**'
+      - 'tools/ci_backup_performance.ps1'
+      - '.github/workflows/backup-capture.yml'
+permissions:
+  contents: read
+concurrency:
+  group: backup-capture-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  compare:
+    runs-on: windows-2025
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: candidate
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          ref: 76efd504ed0d3b473a5d4cc281cbf7d387fe2e32
+          path: baseline
+          persist-credentials: false
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Verify both report aggregators
+        shell: pwsh
+        working-directory: candidate
+        run: |
+          ./tests/Rhi.Performance/Report.Tests.ps1
+          ./tests/Rhi.Performance/BackupReport.Tests.ps1
+      - name: Run candidate Core safety tests without building UI
+        shell: pwsh
+        working-directory: candidate
+        run: dotnet test tests/Rhi.Core.Tests/Rhi.Core.Tests.csproj -c Release --logger "trx;LogFileName=core.trx" --results-directory artifacts/core-tests
+      - name: Compare delivered baseline and candidate on this runner
+        shell: pwsh
+        working-directory: candidate
+        run: |
+          ./tools/ci_backup_performance.ps1 -BaselineRoot ../baseline -CandidateRevision $env:GITHUB_SHA

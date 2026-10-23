@@ -1,0 +1,150 @@
+using System.Diagnostics;
+using System.Security.Cryptography;
+using Rhi.Core.Deployment;
+using Rhi.Core.Models;
+
+namespace Rhi.Core.Storage;
+
+public sealed class BlobStore(string root)
+{
+    // Measurement-only overlay of 76efd504ed0d3b473a5d4cc281cbf7d387fe2e32.
+    // Capture keeps its original copy, flush, hash, move, final verification,
+    // sharing modes, and ordering. This is not the candidate implementation.
+    public Action<BlobCaptureMeasurement>? CaptureObserver { get; set; }
+
+    public string PathFor(string hash)
+    {
+        if (hash.Length != 64 || !hash.All(Uri.IsHexDigit)) throw new InvalidDataException("Invalid blob id");
+        var path = Path.Combine(root, "blobs", hash);
+        PathPolicy.CheckNoLinks(path);
+        return path;
+    }
+
+    public static string? Hash(string path)
+    {
+        PathPolicy.CheckNoLinks(path);
+        if (Directory.Exists(path)) throw new DeploymentException("FileDirectoryConflict", path);
+        if (!File.Exists(path)) return null;
+        using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+        return Convert.ToHexString(SHA256.HashData(stream));
+    }
+
+    public void Verify(string hash)
+    {
+        if (Hash(PathFor(hash)) != hash) throw new DeploymentException("BackupUnavailable", hash);
+    }
+
+    public void CaptureGenerated(byte[] content, string expectedHash)
+    {
+        if (Convert.ToHexString(SHA256.HashData(content)) != expectedHash)
+            throw new DeploymentException("ChangedSincePreflight");
+        var dest = PathFor(expectedHash);
+        if (File.Exists(dest)) { Verify(expectedHash); return; }
+        var temp = dest + "." + Guid.NewGuid().ToString("N") + ".pending";
+        using (var output = new FileStream(temp, FileMode.CreateNew, FileAccess.Write, FileShare.None,
+            81920, FileOptions.WriteThrough))
+        {
+            output.Write(content);
+            output.Flush(true);
+        }
+        if (Hash(temp) != expectedHash) throw new DeploymentException("ChangedSincePreflight");
+        File.Move(temp, dest);
+        Verify(expectedHash);
+    }
+
+    public void Capture(string source, string expectedHash)
+    {
+        var observer = CaptureObserver;
+        var watch = observer is null ? null : Stopwatch.StartNew();
+        long sourceBytesRead = 0, backupBytesRead = 0, bytesWritten = 0, bytesHashed = 0;
+        int hashPasses = 0, flushCalls = 0, publishedBlobs = 0, reusedBlobs = 0;
+        double copySeconds = 0, verificationSeconds = 0, durableFlushSeconds = 0, publishSeconds = 0;
+        var succeeded = false;
+        try
+        {
+            var dest = PathFor(expectedHash);
+            if (File.Exists(dest)) { VerifyMeasured(expectedHash); reusedBlobs++; succeeded = true; return; }
+            var temp = dest + "." + Guid.NewGuid().ToString("N") + ".pending";
+            PathPolicy.CheckNoLinks(source);
+            using (var input = new FileStream(source, FileMode.Open, FileAccess.Read, FileShare.Read))
+            using (var output = new FileStream(temp, FileMode.CreateNew, FileAccess.Write, FileShare.None,
+                81920, FileOptions.WriteThrough))
+            {
+                var phase = observer is null ? null : Stopwatch.StartNew();
+                try { input.CopyTo(output); }
+                finally
+                {
+                    if (phase is not null)
+                    {
+                        copySeconds += phase.Elapsed.TotalSeconds;
+                        sourceBytesRead += input.Position;
+                        bytesWritten += output.Position;
+                    }
+                }
+                phase = observer is null ? null : Stopwatch.StartNew();
+                flushCalls++;
+                try { output.Flush(true); }
+                finally { if (phase is not null) durableFlushSeconds += phase.Elapsed.TotalSeconds; }
+            }
+            if (HashMeasured(temp, isSource: false) != expectedHash || HashMeasured(source, isSource: true) != expectedHash)
+                throw new DeploymentException("ChangedSincePreflight", source);
+            var publish = observer is null ? null : Stopwatch.StartNew();
+            try { File.Move(temp, dest); publishedBlobs++; }
+            finally { if (publish is not null) publishSeconds += publish.Elapsed.TotalSeconds; }
+            VerifyMeasured(expectedHash);
+            succeeded = true;
+        }
+        finally
+        {
+            if (observer is not null)
+            {
+                watch!.Stop();
+                try
+                {
+                    observer(new(watch.Elapsed.TotalSeconds, sourceBytesRead, backupBytesRead, bytesWritten,
+                        bytesHashed, hashPasses, flushCalls, publishedBlobs, reusedBlobs, succeeded, true,
+                        copySeconds, verificationSeconds, durableFlushSeconds, publishSeconds));
+                }
+                catch (Exception error) when (error is not OutOfMemoryException and not StackOverflowException)
+                {
+                    // Diagnostics must not change Capture's outcome. The harness
+                    // rejects a missing callback via its exact call-count oracle.
+                }
+            }
+        }
+
+        void VerifyMeasured(string hash)
+        {
+            if (HashMeasured(PathFor(hash), isSource: false) != hash)
+                throw new DeploymentException("BackupUnavailable", hash);
+        }
+
+        string? HashMeasured(string path, bool isSource)
+        {
+            if (observer is null) return Hash(path);
+            var phase = Stopwatch.StartNew();
+            try
+            {
+                // Same operations and sharing as baseline Hash. Stream position
+                // records actual logical bytes read, not guessed FileInfo lengths.
+                PathPolicy.CheckNoLinks(path);
+                if (Directory.Exists(path)) throw new DeploymentException("FileDirectoryConflict", path);
+                if (!File.Exists(path)) return null;
+                using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+                hashPasses++;
+                try
+                {
+                    var hash = Convert.ToHexString(SHA256.HashData(stream));
+                    bytesHashed += stream.Position;
+                    return hash;
+                }
+                finally
+                {
+                    if (isSource) sourceBytesRead += stream.Position;
+                    else backupBytesRead += stream.Position;
+                }
+            }
+            finally { verificationSeconds += phase.Elapsed.TotalSeconds; }
+        }
+    }
+}

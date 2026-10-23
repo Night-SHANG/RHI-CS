@@ -11,6 +11,16 @@ if (args[1].StartsWith("Migration:", StringComparison.Ordinal))
         checkpoint: phase => { if ("Migration:" + phase == args[1]) Environment.Exit(97); });
     return 2;
 }
+if (args[1].StartsWith("Capture:", StringComparison.Ordinal))
+{
+    var original = args[2];
+    store.Blobs.CaptureFault = (phase, _) =>
+    {
+        if ("Capture:" + phase == args[1]) Environment.Exit(97);
+    };
+    store.Blobs.Capture(original, BlobStore.Hash(original)!);
+    return 2;
+}
 var game = store.State.Games.Single();
 var library = store.State.Libraries.Single();
 var plan = new DeploymentPlanner(store).Build(store.State, game.Id,

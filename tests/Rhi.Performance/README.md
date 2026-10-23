@@ -1,5 +1,9 @@
 # Paired deployment measurements
 
+This page describes the historical f26 comparison. The separately opted-in
+delivered-baseline backup/small-update experiment is documented in [BACKUP.md](BACKUP.md).
+It does not change this workflow or its expected baseline failures.
+
 Run only in the disposable Windows GitHub Actions job. `tools/ci_performance.ps1`
 builds this exact harness twice, against pinned baseline Core and candidate Core.
 It does not build the UI or modify baseline production code. Only the seven new
