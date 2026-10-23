@@ -12,6 +12,7 @@ public sealed class ProcessRecoveryTests
     [InlineData("StageWriting")]
     [InlineData("TargetParked")]
     [InlineData("TargetPublished")]
+    [InlineData("PublishFlushing")]
     [InlineData("CopyCompleted")]
     [InlineData("BeforeWrite")]
     [InlineData("BeforeCommit")]

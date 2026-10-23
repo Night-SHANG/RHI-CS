@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Security.Cryptography;
 using Rhi.Core.Models;
 using Rhi.Core.Storage;
@@ -84,7 +85,11 @@ internal static class FileReplacement
             NativeFile.Rename(staged, paths.Target);
             // Buffered protocol-2 staging uses explicit durability boundaries rather
             // than WRITE_THROUGH on every copy buffer. Keep the handle through flush.
-            if (journal.FileProtocol >= 2) staged.Flush(flushToDisk: true);
+            if (journal.FileProtocol >= 2)
+            {
+                fault?.Invoke("PublishFlushing", index);
+                staged.Flush(flushToDisk: true);
+            }
         }
         fault?.Invoke("TargetPublished", index);
     }
@@ -107,18 +112,13 @@ internal static class FileReplacement
                 // a second staging read. Reject writers while copying these bytes.
                 using var input = new FileStream(source!, FileMode.Open, FileAccess.Read,
                     FileShare.Read, 128 * 1024, FileOptions.SequentialScan);
-                var buffer = new byte[128 * 1024];
-                int count;
-                while ((count = input.Read(buffer)) != 0)
-                {
-                    output.Write(buffer, 0, count);
-                    hash.AppendData(buffer, 0, count);
-                    duringWrite();
-                }
+                CopyBuffer.CopyAndHash(input, output, hash, duringWrite, ArrayPool<byte>.Shared);
             }
             if (Convert.ToHexString(hash.GetHashAndReset()) != expected)
                 throw new DeploymentException("ChangedSincePreflight", source ?? path);
-            output.Flush(flushToDisk: true);
+            // Drain managed writes before touching the target; the one durable
+            // flush follows publication and must succeed before the receipt commits.
+            output.Flush(flushToDisk: false);
             copied();
             return output;
         }

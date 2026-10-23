@@ -242,6 +242,7 @@ try {
             'Warm-cache synthetic results, not cold-disk or user-PC predictions. Positive change means slower.', '',
             '| Stage | Baseline median (s) | Candidate median (s) | Change |', '|---|---:|---:|---:|')
         foreach ($comparison in $report.comparisons) {
+            Write-Host ('PERFORMANCE_SUMMARY:' + ($comparison | ConvertTo-Json -Depth 12 -Compress))
             $delta = if ($null -eq $comparison.candidateChangePercent) { 'n/a' } else { '{0:+0.00;-0.00;0.00}%' -f $comparison.candidateChangePercent }
             $summary += '| {0} | {1:F4} | {2:F4} | {3} |' -f $comparison.stage, $comparison.baseline.seconds, $comparison.candidate.seconds, $delta
         }

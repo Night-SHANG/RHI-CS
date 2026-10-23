@@ -35,3 +35,5 @@
 数值诊断显示该表单 Clip 只在初次 Loaded 更新为349，随后来源输入换行与反馈改变布局时没有 LayoutUpdated 更新记录；UIA仍报告349，而错误提示位置已随着布局变化。不能把旧 Clip 当成当前真实视口，也不应改松间距断言。后续仅补充强引用布局委托，以及滚动器/容器 SizeChanged 通知和队列末尾的最终布局读取，保持原裁剪计算与所有断言不变。新的运行结果待CI，未把静态修改记成通过。
 
 12:57 补充：9087e11 / run 39902349824 的 SizeChanged 补充仍出现同样初始尺寸，232核心测试通过；这不足以证明具体是事件解绑还是 IsLoaded 门控。官方 ContentDialog 源码记录过模板测量/弹出层重挂时紧随 Loaded 的异常 Unloaded，因此下一轮保留生产更新路径，仅加入绑定 ShowAsync finally 生命周期的只读 CI timer 和事件计数，读取尺寸、Clip 与 IsLoaded，不调用 UpdateLayout 或更新裁剪，避免诊断本身掩盖缺陷。同轮只读取已完成的合成性能数字，不重新运行基准。
+
+13:10 实证：512d851 / run 39903835186、job 120251145148 的只读探针显示 Loaded 后出现 IsLoaded=True 的 Unloaded；回调次数固定2，随后真实 actual/slot/row 从349增长367及448，而 Clip始终349。这直接证实了误解绑，不是行高猜测。现按 ShowAsync 的完整生命周期订阅，finally 先令 active=false 再解绑全部具名事件，队列回调检查 active；不再根据临时 Unloaded 解绑。保持裁剪公式与所有测试，移除已完成的计时探针和一次性报告读取步骤。
