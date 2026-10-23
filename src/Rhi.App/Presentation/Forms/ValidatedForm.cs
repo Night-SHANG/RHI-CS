@@ -16,6 +16,7 @@ public sealed partial class PageContext
         error.Visibility = Visibility.Collapsed;
         error.Margin = new Thickness(0, 8, 0, 0);
         var scroll = DialogContent(fields);
+        ClipFormViewport(scroll);
         // Validation stays above the footer when the fields need scrolling.
         // Collapsed feedback contributes no space to a fresh or valid form.
         var content = new Grid { VerticalAlignment = VerticalAlignment.Top };

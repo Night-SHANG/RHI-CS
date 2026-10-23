@@ -134,6 +134,27 @@ function Check-Pages([string]$prefix) {
     Assert-FormError 'NameRequired'
     Assert-FixedAction $blankGameAction
     Capture "$prefix-game-required"
+    # A truthful viewport must not make the last field unreachable at high DPI.
+    Scroll-DialogToEnd 'Save' -IfNeeded
+    $apiControl = Find-Control -id 'GameApiInput' -Enabled
+    $apiAtEnd = $apiControl.Current.BoundingRectangle
+    $fieldViewport = (Find-Control -id 'DialogContentScroll').Current.BoundingRectangle
+    # The header plus ComboBox is 60 DIPs; a clipped sliver is not reachability.
+    $minimumApiHeight = 58 * [SmokeWindow]::GetDpiForWindow($process.MainWindowHandle) / 96.0
+    if ($apiAtEnd.Height -lt $minimumApiHeight -or $apiAtEnd.Top -lt $fieldViewport.Top - 2 -or
+        $apiAtEnd.Bottom -gt $fieldViewport.Bottom + 2) {
+        throw "Last game field is not reachable inside the form viewport: $apiAtEnd / $fieldViewport"
+    }
+    $apiDropDown = $apiControl.GetCurrentPattern([Windows.Automation.ExpandCollapsePattern]::Pattern)
+    $apiDropDown.Expand()
+    Start-Sleep -Milliseconds 200
+    if ($apiDropDown.Current.ExpandCollapseState -ne [Windows.Automation.ExpandCollapseState]::Expanded) {
+        throw 'Last game field cannot open its choices after scrolling.'
+    }
+    $apiDropDown.Collapse()
+    Assert-FormError 'NameRequired'
+    Assert-FixedAction $blankGameAction
+    Capture "$prefix-game-required-scrolled"
     Invoke-Control 'Cancel'
     $hover = (Find-Control -id 'GameEdit').Current.BoundingRectangle
     [Windows.Forms.Cursor]::Position = [Drawing.Point]::new([int]($hover.X + $hover.Width / 2), [int]($hover.Y + $hover.Height / 2))
