@@ -87,6 +87,7 @@ function Assert-OfflineLayout {
     $evidence.Add("Settings section layout: wide=$wide; nav=$nav; title=$title")
 }
 function Check-Pages([string]$prefix) {
+    Write-Host "Visual phase: $prefix"
     Select-SettingsSection 'General'
     Capture "$prefix-general"
     Assert-InWindow (Reveal-SettingsControl 'SettingsSave')

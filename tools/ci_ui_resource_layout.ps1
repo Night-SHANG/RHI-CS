@@ -33,7 +33,31 @@ function Assert-VersionActions([string]$versionId) {
 function Assert-HeaderActions([string]$page) {
     $ids = if ($page -eq 'Game') { @('GameEdit', 'GameInspectTargets', 'GameRelocate', 'GameOpenFolder') }
         else { @('LibraryEdit', 'LibraryAddVersion', 'LibraryRemove', 'LibraryOpenFolder', 'LibraryRelocate') }
-    $window = [Windows.Automation.AutomationElement]::FromHandle($process.MainWindowHandle)
+    $scrollId = if ($page -eq 'Game') { 'GamesScroll' } else { 'LibraryScroll' }
+    $viewer = Find-Control -id $scrollId
+    $scroll = $viewer.GetCurrentPattern([Windows.Automation.ScrollPattern]::Pattern)
+    Write-Host "Header check: page=$page; DPI=$([SmokeWindow]::GetDpiForWindow($process.MainWindowHandle)); viewport=$($viewer.Current.BoundingRectangle); scroll=$($scroll.Current.VerticalScrollPercent)"
+    # Navigation retains the page, including its scroll position. DPI changes also
+    # relayout the wrapping panel asynchronously; inspect the settled header at the top.
+    if ($scroll.Current.VerticallyScrollable) { $scroll.SetScrollPercent(-1, 0) }
+    $previous = ''
+    for ($attempt = 0; $attempt -lt 12; $attempt++) {
+        Start-Sleep -Milliseconds 250
+        $window = [Windows.Automation.AutomationElement]::FromHandle($process.MainWindowHandle)
+        $snapshot = @()
+        foreach ($id in $ids) {
+            $condition = [Windows.Automation.PropertyCondition]::new([Windows.Automation.AutomationElement]::AutomationIdProperty, $id)
+            $node = $window.FindFirst([Windows.Automation.TreeScope]::Descendants, $condition)
+            $snapshot += if ($node) { "$id=$($node.Current.BoundingRectangle);offscreen=$($node.Current.IsOffscreen)" } else { "$id=missing" }
+        }
+        $current = $snapshot -join ' | '
+        $missing = @($snapshot | Where-Object { $_ -match '=missing$' -and $_ -ne 'GameRelocate=missing' })
+        if ($current -eq $previous -and $missing.Count -eq 0) { break }
+        $previous = $current
+    }
+    Write-Host "Header geometry: $current"
+    $evidence.Add("Header geometry: $page; $current")
+    if ($missing.Count -gt 0) { Capture "header-missing-$page" }
     $bounds = @()
     foreach ($id in $ids) {
         $condition = [Windows.Automation.PropertyCondition]::new([Windows.Automation.AutomationElement]::AutomationIdProperty, $id)
@@ -47,7 +71,6 @@ function Assert-HeaderActions([string]$page) {
     $first = $bounds[0]
     $rows = @($bounds | Group-Object { [Math]::Round($_.Top / $scale) })
     $columns = $rows[0].Count
-    $scrollId = if ($page -eq 'Game') { 'GamesScroll' } else { 'LibraryScroll' }
     $available = (Find-Control -id $scrollId).Current.BoundingRectangle.Width / $scale
     # The native vertical scrollbar can consume up to 16 DIP of the content viewport.
     $minimum = [Math]::Max(1, [Math]::Min($bounds.Count, [Math]::Floor(($available - 16) / 188)))
