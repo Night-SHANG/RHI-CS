@@ -91,6 +91,9 @@ jobs:
         run: powershell.exe -NoProfile -File tools/ci_ui_smoke.ps1 -AppDirectory artifacts/app -OutputDirectory artifacts/ui-startup -Startup
       - name: Verify fresh workspace and retain fixture outside package
         run: dotnet run --project tests/Rhi.UiSmoke.Seed/Rhi.UiSmoke.Seed.csproj -c Release -- --verify-startup artifacts/startup-context.json
+      - name: Print bounded synthetic window previews for visual review
+        if: always()
+        run: powershell.exe -NoProfile -File tools/ci_ui_preview.ps1
       - name: Upload outputs to a draft Release
         if: ${{ !cancelled() && github.event_name != 'pull_request' }}
         env:

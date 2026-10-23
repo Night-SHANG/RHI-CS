@@ -57,7 +57,7 @@ function Assert-HeaderActions([string]$page) {
     if ($columns -ne $expected) { throw "Unexpected header wrapping: $page; columns=$columns; expected=$expected" }
     foreach ($id in $ids) {
         if ($id -eq 'GameRelocate' -and $bounds.Count -lt $ids.Count) { continue }
-        Assert-LayoutHitArea (Find-Control -id $id -IncludeOffscreen)
+        Assert-LayoutNativeBounds (Find-Control -id $id -IncludeOffscreen)
     }
     for ($i = 0; $i -lt $bounds.Count; $i++) {
         $box = $bounds[$i]

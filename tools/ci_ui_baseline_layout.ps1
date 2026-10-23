@@ -1,34 +1,28 @@
 ﻿# Geometry and interaction checks for the 1530417 layout regression.
-# UIA rectangles may ignore WinUI clipping, so use native bounds, hit tests,
+# UIA rectangles may ignore WinUI clipping, so use native bounds,
 # real pointer clicks, and screenshots. Never treat a ScrollViewer peer as a viewport.
 if ($env:GITHUB_ACTIONS -ne 'true') { throw 'Disposable CI harness required.' }
-function Assert-LayoutHitArea($control) {
+function Assert-LayoutNativeBounds($control) {
     $box = $control.Current.BoundingRectangle
     $rect = [SmokeWindow+Rect]::new()
     if (-not [SmokeWindow]::GetWindowRect($process.MainWindowHandle, [ref]$rect)) { throw 'Native window bounds unavailable.' }
     if ($box.Width -le 0 -or $box.Height -le 0 -or $box.Left -lt $rect.Left -or $box.Right -gt $rect.Right -or
         $box.Top -lt $rect.Top -or $box.Bottom -gt $rect.Bottom) { throw "Control outside native window: $($control.Current.Name)" }
-    foreach ($x in @(($box.Left + 4), ($box.Right - 4))) {
-        foreach ($y in @(($box.Top + 4), ($box.Bottom - 4))) {
-            $hit = [Windows.Automation.AutomationElement]::FromPoint([Windows.Point]::new($x, $y))
-            $found = $false
-            while ($hit) {
-                if ([Windows.Automation.Automation]::Compare($hit, $control)) { $found = $true; break }
-                $hit = [Windows.Automation.TreeWalker]::ControlViewWalker.GetParent($hit)
-            }
-            if (-not $found) { throw "Control clipped or occluded: $($control.Current.Name) at $x,$y" }
-        }
-    }
+    # Native containment is necessary but does not establish visual clipping.
+    # Actual pointer/input outcomes and captured pixels are separate checks.
 }
 function Assert-ContentSizedFormActions([string]$action) {
     $confirm = Assert-ActionOrder $action
     $cancel = Find-Control -name (Label 'Cancel') -Action
     $submit = Find-Control -name (Label $action) -Action
-    Assert-LayoutHitArea $cancel
-    Assert-LayoutHitArea $submit
+    Assert-LayoutNativeBounds $cancel
+    Assert-LayoutNativeBounds $submit
     if ($cancel.Current.BoundingRectangle.Right -ge $confirm.Left) { throw 'Form actions overlap.' }
 }
 function Click-LayoutPoint([double]$x, [double]$y) {
+    [SmokeWindow]::SetForegroundWindow($process.MainWindowHandle) | Out-Null
+    Start-Sleep -Milliseconds 100
+    if ([SmokeWindow]::GetForegroundWindow() -ne $process.MainWindowHandle) { throw 'Cannot foreground app for physical layout interaction.' }
     [Windows.Forms.Cursor]::Position = [Drawing.Point]::new([int]$x, [int]$y)
     [SmokeWindow]::mouse_event(2, 0, 0, 0, [UIntPtr]::Zero)
     [SmokeWindow]::mouse_event(4, 0, 0, 0, [UIntPtr]::Zero)
@@ -61,14 +55,18 @@ function Invoke-BaselineRootLayout {
         # falsely succeed even if this line were outside the visual clipping area.
         (Find-Control -name (Label 'Cancel') -Action).SetFocus()
         Click-LayoutPoint ($box.Left + 20) ($box.Bottom - 8)
-        $focus = [Windows.Automation.AutomationElement]::FocusedElement
-        $focused = $false
-        while ($focus) {
-            if ($focus.Current.AutomationId -eq 'FirstLibraryRootInput') { $focused = $true; break }
-            $focus = [Windows.Automation.TreeWalker]::ControlViewWalker.GetParent($focus)
+        # A real keystroke must change this field. Do not infer success from
+        # UIA focus ancestry, which is also unreliable across WinUI popup roots.
+        $beforeTyping = $value.Current.Value
+        [Windows.Forms.SendKeys]::SendWait('Q')
+        Start-Sleep -Milliseconds 150
+        $afterTyping = $value.Current.Value
+        if ($afterTyping.Length -ne $beforeTyping.Length + 1 -or $afterTyping.Replace('Q', '') -ne $beforeTyping) {
+            throw 'Physical input did not reach the final wrapped path line.'
         }
-        if (-not $focused) { throw 'Pointer cannot reach the final wrapped path line.' }
-        Assert-LayoutHitArea $browse
+        $value.SetValue($beforeTyping)
+        Start-Sleep -Milliseconds 150
+        Assert-LayoutNativeBounds $browse
         Assert-ContentSizedFormActions 'SaveAndContinue'
         Capture ("baseline-root-" + $phase)
     }

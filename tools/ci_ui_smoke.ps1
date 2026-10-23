@@ -66,6 +66,27 @@ function Find-Control([string]$name = '', [string]$id = '', [switch]$Action, [sw
 }
 function Invoke-Control([string]$key) {
     $item = Find-Control -name (Label $key) -Action -Enabled
+    $window = [Windows.Automation.AutomationElement]::FromHandle($process.MainWindowHandle)
+    $formCondition = [Windows.Automation.PropertyCondition]::new([Windows.Automation.AutomationElement]::AutomationIdProperty, 'ValidatedForm')
+    $form = $window.FindFirst([Windows.Automation.TreeScope]::Descendants, $formCondition)
+    if ($form -and $key -in @('Cancel', 'Save', 'SaveAndContinue', 'CheckLocation', 'ReviewMatches', 'Next')) {
+        Assert-LayoutNativeBounds $item
+        $box = $item.Current.BoundingRectangle
+        Write-Host "Physical form action: $key; bounds=$box"
+        Click-LayoutPoint ($box.Left + $box.Width / 2) ($box.Top + $box.Height / 2)
+        if ($key -eq 'Cancel') {
+            $wait = [Diagnostics.Stopwatch]::StartNew()
+            do {
+                $remaining = $window.FindFirst([Windows.Automation.TreeScope]::Descendants, $formCondition)
+                if (-not $remaining) { break }
+                Start-Sleep -Milliseconds 100
+            } while ($wait.Elapsed.TotalSeconds -lt 5)
+            if ($remaining) { throw 'Physical Cancel click did not dismiss the form.' }
+        }
+        # Submission is checked by the existing validation, saved-state and
+        # next-screen assertions at each call site. A click alone is not a pass.
+        return
+    }
     $pattern = $null
     if ($item.TryGetCurrentPattern([Windows.Automation.InvokePattern]::Pattern, [ref]$pattern)) { $pattern.Invoke() }
     elseif ($item.TryGetCurrentPattern([Windows.Automation.TogglePattern]::Pattern, [ref]$pattern)) { $pattern.Toggle() }

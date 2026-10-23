@@ -18,4 +18,13 @@ class LayoutRegression(unittest.TestCase):
         self.assertIn('Math.Floor', s)
         s = (ROOT / 'src/Rhi.App/Pages/LibrariesView.cs').read_text()
         self.assertIn('"LibraryOpenFolder"), relocate)', s)
+    def test_pointer_oracle_checks_effect_not_popup_hit_ancestry(self):
+        helper = (ROOT / 'tools/ci_ui_baseline_layout.ps1').read_text(encoding='utf-8-sig')
+        self.assertNotIn('::FromPoint', helper)
+        self.assertNotIn('TreeWalker', helper)
+        self.assertIn("SendWait('Q')", helper)
+        self.assertIn('$afterTyping.Length', helper)
+        smoke = (ROOT / 'tools/ci_ui_smoke.ps1').read_text()
+        self.assertIn('Physical Cancel click did not dismiss the form.', smoke)
+        self.assertIn('Click-LayoutPoint ($box.Left + $box.Width / 2)', smoke)
 if __name__ == '__main__': unittest.main()
