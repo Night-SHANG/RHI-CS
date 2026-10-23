@@ -1,3 +1,4 @@
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Media;
@@ -18,6 +19,7 @@ public sealed partial class PageContext
         var diagnostics = 0;
         void UpdateClip(object? sender, object args)
         {
+            if (!scroll.IsLoaded) return;
             // RenderSize can exceed the allocated slot after layout squeezing.
             // Slot changes do not necessarily raise SizeChanged.
             var slot = LayoutInformation.GetLayoutSlot(scroll);
@@ -38,11 +40,27 @@ public sealed partial class PageContext
                 }
             }
         }
+        // Keep the handler strongly reachable and also observe size notifications.
+        // LayoutUpdated alone did not refresh this viewport after wrapped text and
+        // feedback changed a live ContentDialog in the Windows regression fixture.
+        EventHandler<object> layoutChanged = UpdateClip;
+        void SizeChanged(object sender, SizeChangedEventArgs args)
+        {
+            UpdateClip(sender, args);
+            scroll.DispatcherQueue.TryEnqueue(() => UpdateClip(null, EventArgs.Empty));
+        }
         scroll.Loaded += (_, _) =>
         {
-            scroll.LayoutUpdated += UpdateClip;
+            scroll.LayoutUpdated += layoutChanged;
+            scroll.SizeChanged += SizeChanged;
+            container.SizeChanged += SizeChanged;
             UpdateClip(null, EventArgs.Empty);
         };
-        scroll.Unloaded += (_, _) => scroll.LayoutUpdated -= UpdateClip;
+        scroll.Unloaded += (_, _) =>
+        {
+            scroll.LayoutUpdated -= layoutChanged;
+            scroll.SizeChanged -= SizeChanged;
+            container.SizeChanged -= SizeChanged;
+        };
     }
 }
