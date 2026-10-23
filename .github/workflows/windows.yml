@@ -13,6 +13,8 @@ jobs:
   build:
     runs-on: windows-2025
     timeout-minutes: 40
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
@@ -82,51 +84,9 @@ jobs:
         run: powershell.exe -NoProfile -File tools/ci_ui_smoke.ps1 -AppDirectory artifacts/app -OutputDirectory artifacts/ui-startup -Startup
       - name: Verify fresh workspace and retain fixture outside package
         run: dotnet run --project tests/Rhi.UiSmoke.Seed/Rhi.UiSmoke.Seed.csproj -c Release -- --verify-startup artifacts/startup-context.json
-      - name: Upload UI evidence
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: RHI-CS-ui-evidence
-          path: |
-            artifacts/ui/
-            artifacts/ui-pending/
-            artifacts/ui-features/
-            artifacts/ui-relocation/
-            artifacts/ui-visual/
-            artifacts/ui-startup/
-            artifacts/ui-migration/
-            artifacts/ui-migration-resume/
-            artifacts/ui-usability/
-          if-no-files-found: warn
-      - name: Upload application
-        uses: actions/upload-artifact@v4
-        with:
-          name: RHI-CS-win-x64-development
-          path: artifacts/app/
-          if-no-files-found: error
-          retention-days: 14
-      - name: Upload matching source and notices
-        uses: actions/upload-artifact@v4
-        with:
-          name: RHI-CS-source-${{ github.sha }}
-          path: |
-            src/
-            tests/
-            tools/
-            Directory.Build.props
-            global.json
-            RHI-CS.slnx
-            LICENSE
-            THIRD-PARTY-NOTICES.md
-            docs/development/
-            !**/bin/**
-            !**/obj/**
-      - name: Upload build diagnostics
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: RHI-CS-build-diagnostics
-          path: |
-            artifacts/tests/
-            artifacts/winui.binlog
-          if-no-files-found: ignore
+      - name: Upload outputs to a draft Release
+        if: ${{ !cancelled() && github.event_name != 'pull_request' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RHI_BUILD_STATUS: ${{ job.status }}
+        run: python tools/release/publish_draft.py development
