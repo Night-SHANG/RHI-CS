@@ -24,7 +24,8 @@ public sealed partial class SettingsView
         var measured = Ui.Secondary("");
         measured.TextAlignment = TextAlignment.Right;
         measured.HorizontalAlignment = HorizontalAlignment.Right;
-        var refresh = c.Button("RefreshProtection", () => Task.CompletedTask, !c.Session.Busy);
+        Button refresh = null!;
+        refresh = c.Button("RefreshProtection", RefreshInventory, !c.Session.Busy);
         AutomationProperties.SetAutomationId(refresh, "RefreshProtection");
         void RenderInventory()
         {
@@ -54,7 +55,19 @@ public sealed partial class SettingsView
                 owner.Spacing = version.Spacing = time.Spacing = 6;
                 var open = c.FolderAction("OpenProtectionItem", copy.Directory, "OpenProtection_" + copy.Entry.OperationId.ToString("N"));
                 open.Width = 128;
-                records.Children.Add(Ui.TableLine(ProtectionRow(owner, version, time, open)));
+                var remove = c.Button("RemoveProtectionRecord", async () =>
+                {
+                    var confirmed = await c.Confirm("RemoveProtectionRecord",
+                        Ui.Stack(Ui.Text(game + " · " + library), Ui.Text(copy.Entry.VersionLabel ?? Strings.Get("LegacyProtection")),
+                            Ui.Label("RemoveProtectionRecordConfirm")), "RemoveProtectionRecord",
+                        configure: dialog => dialog.DefaultButton = ContentDialogButton.Primary);
+                    if (c.Session.RemoveProtectionRecord(copy.Entry.OperationId, confirmed)) RenderInventory();
+                }, !c.Session.Busy);
+                remove.Width = 128;
+                AutomationProperties.SetAutomationId(remove, "RemoveProtectionRecord_" + copy.Entry.OperationId.ToString("N"));
+                var itemActions = Ui.Stack(open, remove);
+                itemActions.Spacing = 6;
+                records.Children.Add(Ui.TableLine(ProtectionRow(owner, version, time, itemActions)));
             }
             scroll.DispatcherQueue.TryEnqueue(() => scroll.ChangeView(null, offset, null, true));
         }
@@ -65,7 +78,6 @@ public sealed partial class SettingsView
             try { await c.Session.InspectProtection(); }
             finally { RenderInventory(); refresh.IsEnabled = !c.Session.Busy; }
         }
-        refresh.Click += async (_, _) => await c.Run(RefreshInventory);
         var actions = Ui.Actions(148, c.FolderAction("OpenProtectionRoot", root, "OpenProtectionRoot"), refresh);
         actions.ColumnDefinitions[1].Width = new GridLength(108);
         actions.HorizontalAlignment = HorizontalAlignment.Right;
@@ -98,7 +110,7 @@ public sealed partial class SettingsView
         var row = Ui.Columns([1.1, 2.5, 0.8, 1], owner, version, time, action);
         row.MinHeight = 0;
         row.Padding = new Thickness(20, 12, 20, 12);
-        row.Height = header ? 48 : 92;
+        row.Height = header ? 48 : 108;
         row.ColumnDefinitions[3].Width = new GridLength(128);
         foreach (FrameworkElement cell in row.Children) cell.VerticalAlignment = VerticalAlignment.Center;
         return row;

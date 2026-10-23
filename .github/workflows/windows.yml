@@ -21,7 +21,14 @@ jobs:
         with:
           dotnet-version: '10.0.x'
       - name: Static manifest and localization checks
-        run: python tools/check_sources.py
+        run: |
+          python tools/check_sources.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python tools/test_baseline_busy_source.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python tools/test_baseline_layout_source.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python tools/test_protection_record_source.py
       - name: Test deployment and recovery against temporary directories
         run: dotnet test tests/Rhi.Core.Tests/Rhi.Core.Tests.csproj -c Release --logger "trx;LogFileName=core.trx" --results-directory artifacts/tests
       - name: Publish self-contained WinUI application

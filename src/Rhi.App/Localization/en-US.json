@@ -96,7 +96,7 @@
   "TaskResults": "Task results",
   "TaskProgress": "{0} · {1} · {2}/{3}",
   "Idle": "Ready · Sources remain read-only",
-  "Busy": "Working. Wait or request a stop. Other pages remain viewable.",
+  "Busy": "Working.",
   "TaskEnded": "Task ended. Results can be reopened.",
   "TaskRunning": "Task in progress",
   "CloseDuringTask": "Wait for completion, or request a stop and restore the current library. Completed libraries stay deployed; remaining libraries will not run. Close the window after recovery finishes.",
@@ -154,5 +154,10 @@
   "VersionDetails": "Version details",
   "Available": "Available",
   "View": "View",
-  "SearchLibraries": "Search libraries"
+  "SearchLibraries": "Search libraries",
+  "RemoveProtectionRecord": "Remove record",
+  "RemoveProtectionRecordConfirm": "Remove this record from the app list only. No protection copies, files, or folders will be deleted. It stays hidden after refresh or restart.",
+  "ProtectionSummary": "{0:N0} visible sets · {1:N0} bytes retained",
+  "ProtectionUsage": "{0:N0} visible protected sets · {1:N0} bytes retained (including hidden records and incomplete copies)",
+  "SettingsSaveHelp": "Appearance, language, and library root changes take effect when you select Save."
 }

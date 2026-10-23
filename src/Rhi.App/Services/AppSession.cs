@@ -98,8 +98,7 @@ public sealed partial class AppSession : ObservableObject, IDisposable
     public async Task<BatchPlan> Preflight(Guid game, DeploymentRequest[] requests)
     {
         RequireIdle();
-        Busy = true; Changed?.Invoke();
-        try { return await Task.Run(() => new DeploymentPlanner(Store!).Build(State!, game, requests)); }
+        try { Busy = true; Changed?.Invoke(); return await Task.Run(() => new DeploymentPlanner(Store!).Build(State!, game, requests)); }
         finally { Busy = false; Changed?.Invoke(); }
     }
 
@@ -110,17 +109,17 @@ public sealed partial class AppSession : ObservableObject, IDisposable
         TaskContext = OperationContext.Capture(State!, plan.GameId, plan.Libraries.Select(l => l.Request).Concat(skipped));
         TargetObservation = null; ProtectionObservation = null; ProtectionReadAttempted = false;
         Results = []; CurrentProgress = null;
-        IsWriting = true; StopRequested = false; Busy = true; Changed?.Invoke();
-        cancellation = new();
-        var reporter = new Progress<TaskProgress>(p => { CurrentProgress = p; Progress?.Invoke(p); });
-        var description = ProtectionText.Capture();
         try
         {
+            cancellation = new();
+            IsWriting = true; StopRequested = false; Busy = true; Changed?.Invoke();
+            var reporter = new Progress<TaskProgress>(p => { CurrentProgress = p; Progress?.Invoke(p); });
+            var description = ProtectionText.Capture();
             Results = await Task.Run(() => new DeploymentEngine(Store!, gameSafetyCheck: CheckGame,
                 protectionDescription: description).Execute(plan, consent, reporter, cancellation.Token));
             Results = Results.Concat(skipped.Select(r => new OperationResult(r.LibraryId, OperationStatus.NotExecuted, "SkippedByUser"))).ToArray();
         }
-        finally { cancellation.Dispose(); cancellation = null; IsWriting = false; Busy = false; Changed?.Invoke(); }
+        finally { cancellation?.Dispose(); cancellation = null; IsWriting = false; Busy = false; Changed?.Invoke(); }
     }
 
     public async Task Recover(Guid id)
@@ -129,16 +128,14 @@ public sealed partial class AppSession : ObservableObject, IDisposable
         var journal = Store!.Pending().Single(j => j.Id == id);
         TaskContext = OperationContext.Capture(State!, journal.GameId, [new(journal.LibraryId, null, journal.Kind)], recovery: true);
         TargetObservation = null; ProtectionObservation = null; ProtectionReadAttempted = false;
-        IsWriting = true; StopRequested = true; Busy = true; Changed?.Invoke();
-        try { Results = [await Task.Run(() => new DeploymentEngine(Store!, gameSafetyCheck: CheckGame).Recover(id))]; }
+        try { IsWriting = true; StopRequested = true; Busy = true; Changed?.Invoke(); Results = [await Task.Run(() => new DeploymentEngine(Store!, gameSafetyCheck: CheckGame).Recover(id))]; }
         finally { IsWriting = false; Busy = false; Changed?.Invoke(); }
     }
 
     public async Task<RecoveryPreview> InspectRecovery(Guid id)
     {
         RequireIdle();
-        Busy = true; Changed?.Invoke();
-        try { return await Task.Run(() => new DeploymentEngine(Store!, gameSafetyCheck: CheckGame).InspectRecovery(id)); }
+        try { Busy = true; Changed?.Invoke(); return await Task.Run(() => new DeploymentEngine(Store!, gameSafetyCheck: CheckGame).InspectRecovery(id)); }
         finally { Busy = false; Changed?.Invoke(); }
     }
 

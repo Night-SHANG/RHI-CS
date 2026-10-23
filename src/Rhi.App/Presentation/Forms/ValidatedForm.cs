@@ -13,11 +13,12 @@ public sealed partial class PageContext
     {
         var error = Ui.Text("");
         AutomationProperties.SetAutomationId(error, "FormValidation");
-        error.MinHeight = 58;
         var scroll = DialogContent(fields);
-        scroll.Height = Math.Clamp(Root.ActualHeight - 324, 64, 360);
-        var feedback = new ScrollViewer { Content = error, Height = 66,
+        var feedback = new ScrollViewer { Content = error, MaxHeight = 66, Visibility = Visibility.Collapsed,
             HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled, VerticalScrollBarVisibility = ScrollBarVisibility.Auto };
+        // Do not reserve blank space for feedback that does not exist.
+        error.RegisterPropertyChangedCallback(TextBlock.TextProperty, (_, _) =>
+            feedback.Visibility = string.IsNullOrEmpty(error.Text) ? Visibility.Collapsed : Visibility.Visible);
         var dialog = new ContentDialog { XamlRoot = Root.XamlRoot, Title = Strings.Get(title),
             Content = Ui.Stack(scroll, feedback), PrimaryButtonText = Strings.Get("Cancel"),
             SecondaryButtonText = Strings.Get(action), DefaultButton = ContentDialogButton.Secondary,
@@ -70,7 +71,7 @@ public sealed partial class PageContext
             }
         };
         Check();
-        await dialog.ShowAsync();
+        await PresentDialog(dialog);
         return saved;
     }
 }

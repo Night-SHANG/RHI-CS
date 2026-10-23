@@ -1,4 +1,4 @@
-# Dot-sourced only by ci_ui_smoke.ps1 on an isolated GitHub runner.
+﻿# Dot-sourced only by ci_ui_smoke.ps1 on an isolated GitHub runner.
 if ($env:GITHUB_ACTIONS -ne 'true' -or -not $Features) { throw 'Feature checks require the CI UI harness.' }
 $fixture = [IO.File]::ReadAllText((Resolve-Path -LiteralPath $FixtureMetadata).Path, [Text.Encoding]::UTF8) | ConvertFrom-Json
 $alpha = $fixture.AlphaId.Replace('-', '')
@@ -64,6 +64,7 @@ Invoke-Control 'Close'
 if (((Find-Control -id 'LibrariesSearch').GetRuntimeId() -join ',') -ne $listBefore) { throw 'Viewing a version rebuilt the library list.' }
 Capture '20-referenced-library'
 Invoke-Control 'Games'
+. (Join-Path $PSScriptRoot 'ci_ui_baseline_busy.ps1')
 $searchIdentity = (Find-Control -id 'GamesSearch').GetRuntimeId() -join ','
 $scrollIdentity = (Find-Control -id 'GamesScroll').GetRuntimeId() -join ','
 Invoke-Control 'CheckTargets'
@@ -181,5 +182,6 @@ Invoke-Control 'TaskResults'
 Find-Control -name ($taskPrefix + (Label 'Deploy')) | Out-Null
 Capture '32-batch-result-en'
 Invoke-Control 'Close'
+. (Join-Path $PSScriptRoot 'ci_ui_protection_records.ps1')
 [IO.File]::WriteAllText((Join-Path $captureRoot 'result.txt'), 'PASS: read-only differences, version-details dialog without rebuilding the sidebar, protection statistics without replacing page/draft/scroll, reference guards, mixed deployment/version change, select-all and partial selection, batch clear and cancellation, skipped batches, version/library removal, and bilingual results. Verify persisted files in the following fixture step.', [Text.Encoding]::UTF8)
 [IO.File]::WriteAllLines((Join-Path $captureRoot 'layout-result.txt'), $evidence, [Text.Encoding]::UTF8)

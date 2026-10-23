@@ -8,6 +8,7 @@ namespace Rhi.App.Presentation;
 
 public sealed partial class PageContext(AppSession session, WindowsIntegration windows, FrameworkElement root, Action refresh)
 {
+    private readonly SemaphoreSlim dialogGate = new(1, 1);
     public AppSession Session { get; } = session;
     public WindowsIntegration Windows { get; } = windows;
     public FrameworkElement Root { get; } = root;
@@ -35,7 +36,16 @@ public sealed partial class PageContext(AppSession session, WindowsIntegration w
     {
         var button = new Button { IsEnabled = enabled, MinHeight = 36, Padding = new Thickness(12, 7, 12, 7) };
         Ui.ButtonContent(button, Strings.Get(key));
-        button.Click += async (_, _) => await Run(action);
+        var running = false;
+        button.Click += async (_, _) =>
+        {
+            // Queued clicks can arrive after the page has been disabled. Reject
+            // duplicate gestures before dispatch, without bypassing RequireIdle.
+            if (running || Session.Busy) return;
+            running = true;
+            try { await Run(action); }
+            finally { running = false; }
+        };
         return button;
     }
     public Button Action(string key, Action action, bool enabled = true) => Button(key, () => { action(); return Task.CompletedTask; }, enabled);
@@ -60,7 +70,15 @@ public sealed partial class PageContext(AppSession session, WindowsIntegration w
             RequestedTheme = Root.RequestedTheme };
         TrackDialogSize(dialog, scroll, stableContent: stableContent);
         configure?.Invoke(dialog);
-        await dialog.ShowAsync();
+        await PresentDialog(dialog);
+    }
+    private async Task<ContentDialogResult> PresentDialog(ContentDialog dialog)
+    {
+        // WinUI allows only one ContentDialog per XamlRoot. Independent result,
+        // error and close prompts must share the same lifetime boundary.
+        await dialogGate.WaitAsync();
+        try { return await dialog.ShowAsync(); }
+        finally { dialogGate.Release(); }
     }
     public async Task<bool> Confirm(string title, UIElement content, string primary = "Save", bool enabled = true,
         Action<ContentDialog>? configure = null, bool stableContent = false)
@@ -73,6 +91,6 @@ public sealed partial class PageContext(AppSession session, WindowsIntegration w
             RequestedTheme = Root.RequestedTheme };
         TrackDialogSize(dialog, scroll, stableContent: stableContent);
         configure?.Invoke(dialog);
-        return await dialog.ShowAsync() == ContentDialogResult.Secondary;
+        return await PresentDialog(dialog) == ContentDialogResult.Secondary;
     }
 }

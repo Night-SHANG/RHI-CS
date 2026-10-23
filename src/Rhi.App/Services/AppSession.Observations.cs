@@ -10,20 +10,28 @@ public sealed partial class AppSession
     public ProtectionInventory? ProtectionObservation { get; private set; }
     public bool ProtectionReadAttempted { get; private set; }
 
-    public async Task<GameObservation> InspectTargets(Guid gameId, bool refresh = true)
+    public async Task<GameObservation> InspectTargets(Guid gameId)
     {
         RequireIdle(); TargetObservation = null;
-        Busy = true; if (refresh) Changed?.Invoke();
-        try { return TargetObservation = await Task.Run(() => DeploymentInspection.Inspect(Store!, gameId)); }
-        finally { Busy = false; if (refresh) Changed?.Invoke(); }
+        try
+        {
+            // Read-only operations still own the session; publish both edges so
+            // the retained page cannot accept a second operation or stay disabled.
+            Busy = true; Changed?.Invoke();
+            return TargetObservation = await Task.Run(() => DeploymentInspection.Inspect(Store!, gameId));
+        }
+        finally { Busy = false; Changed?.Invoke(); }
     }
 
     public async Task InspectProtection()
     {
         RequireIdle(); ProtectionObservation = null; ProtectionReadAttempted = true;
-        Busy = true;
-        try { ProtectionObservation = await Task.Run(() => ProtectionCatalog.Read(Store!)); }
-        finally { Busy = false; }
+        try
+        {
+            Busy = true; Changed?.Invoke();
+            ProtectionObservation = await Task.Run(() => ProtectionCatalog.Read(Store!));
+        }
+        finally { Busy = false; Changed?.Invoke(); }
     }
 
     public void RecordSkipped(Guid gameId, DeploymentRequest[] skipped)

@@ -1,4 +1,4 @@
-if ($env:GITHUB_ACTIONS -ne 'true' -or -not $Usability) { throw 'CI usability fixture required.' }
+﻿if ($env:GITHUB_ACTIONS -ne 'true' -or -not $Usability) { throw 'CI usability fixture required.' }
 $fixture = Get-Content -LiteralPath $FixtureMetadata -Raw -Encoding UTF8 | ConvertFrom-Json
 $libraryId = ([guid]$fixture.LibraryId).ToString('N')
 $versionId = ([guid]$fixture.VersionId).ToString('N')
@@ -34,6 +34,7 @@ function Check-Picker([string]$id, [string]$expected) {
 Invoke-Control 'Libraries'
 Click-Id 'AddLibrary'
 Find-Control -id 'FirstLibraryRootInput' | Out-Null
+Invoke-BaselineRootLayout
 Capture 'r12-first-root-empty'
 Invoke-Control 'Cancel'
 if ((Read-State).Preferences.LibraryRoot) { throw 'Cancel saved a default directory.' }

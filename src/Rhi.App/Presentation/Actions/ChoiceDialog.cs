@@ -36,6 +36,6 @@ public sealed partial class PageContext
             for (var i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++) Identify(VisualTreeHelper.GetChild(parent, i));
         }
         configure?.Invoke(dialog);
-        return await dialog.ShowAsync();
+        return await PresentDialog(dialog);
     }
 }

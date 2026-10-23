@@ -10,10 +10,14 @@ public sealed partial class GamesView
 {
     private async Task ViewDifferences(GameEntry game, ResourceLibrary library, DeploymentReceipt receipt)
     {
-        var observation = await c.Session.InspectTargets(game.Id, refresh: false);
+        // Display the timestamped result the user just checked. Checking again is
+        // explicit; opening details need not hash every deployed library again.
+        var observation = c.Session.TargetObservation;
+        if (observation?.GameId != game.Id || observation.Revision != c.Session.State!.Revision)
+            observation = await c.Session.InspectTargets(game.Id);
         var current = observation.Receipts.Single(r => r.LibraryId == library.Id);
         var panel = Ui.Stack(Ui.Text(game.Name + " · " + library.Name, 20), Ui.Text(receipt.TargetRoot),
-            Ui.Label("InspectionOnly"));
+            Ui.Label("InspectionOnly"), Ui.Text(Strings.Format("LastChecked", observation.CheckedAt.ToLocalTime())));
         panel.Children.Add(Ui.FileDetails("Inspection", current.Files.Length, () => current.Files.Select(file =>
             file.RelativePath + " · " + Strings.Get(file.Health.ToString()))));
         foreach (var issue in current.Issues)

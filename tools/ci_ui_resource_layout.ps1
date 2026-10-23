@@ -47,7 +47,18 @@ function Assert-HeaderActions([string]$page) {
     $first = $bounds[0]
     $rows = @($bounds | Group-Object { [Math]::Round($_.Top / $scale) })
     $columns = $rows[0].Count
-    if ($columns -notin @(1, 2, [Math]::Min(4, $bounds.Count))) { throw "Unexpected header wrapping: $page; columns=$columns" }
+    $client = [SmokeWindow+Rect]::new()
+    $origin = [SmokeWindow+Point]::new()
+    if (-not [SmokeWindow]::GetClientRect($process.MainWindowHandle, [ref]$client) -or
+        -not [SmokeWindow]::ClientToScreen($process.MainWindowHandle, [ref]$origin)) { throw 'Native client bounds unavailable.' }
+    $padding = if (($client.Right - $client.Left) / $scale -lt 1100) { 20 } else { 28 }
+    $availableWidth = ($origin.X + $client.Right - $first.Left) / $scale - $padding
+    $expected = [Math]::Max(1, [Math]::Min($bounds.Count, [Math]::Floor(($availableWidth + 0.1) / 188)))
+    if ($columns -ne $expected) { throw "Unexpected header wrapping: $page; columns=$columns; expected=$expected" }
+    foreach ($id in $ids) {
+        if ($id -eq 'GameRelocate' -and $bounds.Count -lt $ids.Count) { continue }
+        Assert-LayoutHitArea (Find-Control -id $id -IncludeOffscreen)
+    }
     for ($i = 0; $i -lt $bounds.Count; $i++) {
         $box = $bounds[$i]
         if ([Math]::Abs($box.Width / $scale - 180) -gt 2 -or [Math]::Abs($box.Height / $scale - 36) -gt 2) {

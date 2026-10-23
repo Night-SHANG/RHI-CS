@@ -19,5 +19,8 @@ public sealed record WorkspaceState(Guid Id, long Revision, GameEntry[] Games,
     ResourceLibrary[] Libraries, DeploymentReceipt[] Receipts, Guid[] CommittedOperations,
     Preferences Preferences)
 {
+    // Presentation-only exclusions; protection records and copy files are never removed.
+    public Guid[] HiddenProtectionIds { get; init; } = [];
+
     public static WorkspaceState New() => new(Guid.NewGuid(), 0, [], [], [], [], new());
 }

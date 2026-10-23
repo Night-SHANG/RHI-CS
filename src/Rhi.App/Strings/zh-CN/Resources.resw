@@ -115,7 +115,7 @@
   <data name="TaskResults" xml:space="preserve"><value>查看任务结果</value></data>
   <data name="TaskProgress" xml:space="preserve"><value>{0} · {1} · {2}/{3}</value></data>
   <data name="Idle" xml:space="preserve"><value>就绪</value></data>
-  <data name="Busy" xml:space="preserve"><value>正在处理，可查看其他页面或请求停止。</value></data>
+  <data name="Busy" xml:space="preserve"><value>正在处理。</value></data>
   <data name="TaskEnded" xml:space="preserve"><value>任务已结束。</value></data>
   <data name="TaskRunning" xml:space="preserve"><value>任务正在执行</value></data>
   <data name="CloseDuringTask" xml:space="preserve"><value>请等待任务结束，或请求停止并恢复当前库。已经完成的库会保留，后续库不会继续执行。恢复完成后再关闭窗口。</value></data>
@@ -208,7 +208,7 @@
   <data name="FinishReview" xml:space="preserve"><value>结束，本次不部署</value></data>
   <data name="BatchOperation" xml:space="preserve"><value>批量操作</value></data>
   <data name="RefreshProtection" xml:space="preserve"><value>刷新</value></data>
-  <data name="ProtectionUsage" xml:space="preserve"><value>修改保护副本 {0:N0} 组 · 占用 {1:N0} 字节（含记录及未完成副本）</value></data>
+  <data name="ProtectionUsage" xml:space="preserve"><value>显示修改保护副本 {0:N0} 组 · 实际保留 {1:N0} 字节（含隐藏记录及未完成副本）</value></data>
   <data name="ProtectionNotCounted" xml:space="preserve"><value>正在统计修改保护副本…</value></data>
   <data name="ProtectionReadFailed" xml:space="preserve"><value>无法统计修改保护副本，请检查数据目录后重试。</value></data>
   <data name="ProtectionMeasuredAt" xml:space="preserve"><value>统计时间：{0:g}</value></data>
@@ -300,7 +300,7 @@
   <data name="ProtectionVersionTarget" xml:space="preserve"><value>版本 / 原部署目录</value></data>
   <data name="ProtectionTime" xml:space="preserve"><value>时间</value></data>
   <data name="ProtectionEmpty" xml:space="preserve"><value>暂无修改保护副本。</value></data>
-  <data name="ProtectionSummary" xml:space="preserve"><value>{0:N0} 组 · {1:N0} 字节</value></data>
+  <data name="ProtectionSummary" xml:space="preserve"><value>显示 {0:N0} 组 · 保留文件 {1:N0} 字节</value></data>
   <data name="MigrateData" xml:space="preserve"><value>迁移数据</value></data>
   <data name="ContinueMigration" xml:space="preserve"><value>继续迁移</value></data>
   <data name="StartMigration" xml:space="preserve"><value>开始迁移</value></data>
@@ -333,4 +333,7 @@
   <data name="RelocationMatched" xml:space="preserve"><value>已找到，请核对新路径</value></data>
   <data name="RelocationMissing" xml:space="preserve"><value>未找到可用来源，保留原路径</value></data>
   <data name="RelocationOutsideRoot" xml:space="preserve"><value>不在原资源库目录内，保持原位</value></data>
+  <data name="RemoveProtectionRecord" xml:space="preserve"><value>移除记录</value></data>
+  <data name="RemoveProtectionRecordConfirm" xml:space="preserve"><value>仅从软件列表移除此记录，不会删除任何保护副本、文件或目录。移除后刷新或重新启动也不会再次显示。</value></data>
+  <data name="SettingsSaveHelp" xml:space="preserve"><value>外观、语言和资源库总目录在点击保存后生效。</value></data>
 </root>

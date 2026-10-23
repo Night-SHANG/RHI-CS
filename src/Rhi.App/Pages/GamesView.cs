@@ -192,7 +192,9 @@ public sealed partial class GamesView : UserControl
             var clear = c.Button("ClearDeployment", () => Preflight(game, [new(library.Id, null, OperationKind.Clear)]), !c.Session.Busy && !locked);
             AutomationProperties.SetAutomationId(clear, "ClearLibrary_" + library.Id.ToString("N"));
             actionButtons.Add(clear);
-            actionButtons.Add(c.Button("ViewDifferences", () => ViewDifferences(game, library, receipt), !c.Session.Busy));
+            var differences = c.Button("ViewDifferences", () => ViewDifferences(game, library, receipt), !c.Session.Busy);
+            AutomationProperties.SetAutomationId(differences, "ViewDifferences_" + library.Id.ToString("N"));
+            actionButtons.Add(differences);
             var snapshot = c.Session.TargetObservation;
             var health = snapshot?.GameId == game.Id && snapshot.Revision == c.Session.State.Revision
                 ? snapshot.Receipts.FirstOrDefault(r => r.LibraryId == library.Id)?.Health.ToString() : null;

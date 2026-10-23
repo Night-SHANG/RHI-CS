@@ -53,7 +53,7 @@ public sealed partial class SettingsView
         actions.HorizontalAlignment = HorizontalAlignment.Right;
         var title = Ui.Label("General", 28);
         AutomationProperties.SetAutomationId(title, "SettingsGeneralTitle");
-        var card = Ui.Card(Ui.Stack(Ui.Row(theme, language), Ui.DirectoryField(libraryRoot, browse, open), Ui.Label("LibraryRootHelp"), actions));
+        var card = Ui.Card(Ui.Stack(Ui.Row(theme, language), Ui.DirectoryField(libraryRoot, browse, open), Ui.Label("LibraryRootHelp"), Ui.Label("SettingsSaveHelp"), actions));
         AutomationProperties.SetAutomationId(card, "SettingsGeneralCard");
         return Ui.Stack(title, card);
     }

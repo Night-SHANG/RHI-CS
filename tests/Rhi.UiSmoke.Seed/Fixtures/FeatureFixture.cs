@@ -9,6 +9,9 @@ namespace Rhi.UiSmoke.Seed;
 internal sealed record FeatureMetadata(string Root, Guid ReShadeId, Guid AlphaId, Guid BetaId,
     string AlphaSource, string BetaSource, string AlphaHash, string BetaHash, string UnknownFile);
 
+internal sealed record FeatureProtectionEvidence(Guid OperationId, string GameRoot,
+    Dictionary<string, string> Files, string[] Directories);
+
 internal static class FeatureFixture
 {
     public static void Prepare(string metadataPath)
@@ -65,7 +68,23 @@ internal static class FeatureFixture
         if (BlobStore.Hash(metadata.AlphaSource) != metadata.AlphaHash || BlobStore.Hash(metadata.BetaSource) != metadata.BetaHash ||
             File.ReadAllText(metadata.UnknownFile, System.Text.Encoding.UTF8) != "keep")
             throw new InvalidOperationException("Source or unknown target file changed.");
-        var protectedCopy = ProtectionCatalog.Read(store).Operations.Single();
+        var evidence = AtomicJson.Read<FeatureProtectionEvidence>(metadataPath + ".protection.json");
+        var gameRoot = store.State.Games.Single().DeploymentRoot;
+        if (!PathPolicy.Comparer.Equals(evidence.GameRoot, gameRoot) ||
+            !store.State.HiddenProtectionIds.SequenceEqual([evidence.OperationId]) ||
+            ProtectionCatalog.Read(store).Operations.Length != 0)
+            throw new InvalidOperationException("Protection record hiding did not persist.");
+        var protectedCopy = ProtectionCatalog.Find(store, evidence.OperationId)
+            ?? throw new InvalidOperationException("Hidden protection record was deleted.");
+        var snapshotRoots = new[] { Path.Combine(store.Root, "protection"), gameRoot };
+        var files = snapshotRoots.SelectMany(root => Directory.GetFiles(root, "*", SearchOption.AllDirectories))
+            .ToDictionary(path => path, path => BlobStore.Hash(path)!, PathPolicy.Comparer);
+        var directories = snapshotRoots.SelectMany(root => new[] { root }.Concat(
+            Directory.GetDirectories(root, "*", SearchOption.AllDirectories))).ToHashSet(PathPolicy.Comparer);
+        if (files.Count != evidence.Files.Count || !directories.SetEquals(evidence.Directories) ||
+            evidence.Files.Any(file => !files.TryGetValue(file.Key, out var hash) ||
+                !string.Equals(hash, file.Value, StringComparison.OrdinalIgnoreCase)))
+            throw new InvalidOperationException("Record removal changed protection/game files or directories.");
         if (protectedCopy.Entry.LibraryId != metadata.ReShadeId ||
             !File.ReadAllText(Path.Combine(protectedCopy.Directory, "ReShade.ini"), System.Text.Encoding.UTF8).Contains("UserChange=preserve"))
             throw new InvalidOperationException("External configuration was not protected.");
@@ -73,6 +92,6 @@ internal static class FeatureFixture
             !File.Exists(Path.Combine(protectedCopy.Directory, "dxgi.dll")) ||
             !File.Exists(Path.Combine(Path.GetDirectoryName(protectedCopy.Directory)!, "备份说明.txt")))
             throw new InvalidOperationException("Full version protection or its description is missing.");
-        Console.WriteLine("PASS: UI changes match persisted receipts; skipped library not deployed; removal retains sources; external edits protected; unknown files retained.");
+        Console.WriteLine("PASS: UI changes match persisted receipts; skipped library not deployed; removal retains sources; external edits protected; unknown files retained; hidden protection record and every protection/game byte retained after restart.");
     }
 }

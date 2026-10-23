@@ -96,7 +96,7 @@
   "TaskResults": "查看任务结果",
   "TaskProgress": "{0} · {1} · {2}/{3}",
   "Idle": "就绪 · 只读源库",
-  "Busy": "正在处理，请等待或请求停止。其他页面仍可查看。",
+  "Busy": "正在处理。",
   "TaskEnded": "任务已结束，可重新打开结果。",
   "TaskRunning": "任务正在执行",
   "CloseDuringTask": "请等待任务结束，或请求停止并恢复当前库。已经完成的库会保留，后续库不会继续执行。恢复完成后再关闭窗口。",
@@ -154,5 +154,10 @@
   "VersionDetails": "版本详情",
   "Available": "可用",
   "View": "查看",
-  "SearchLibraries": "搜索资源库"
+  "SearchLibraries": "搜索资源库",
+  "RemoveProtectionRecord": "移除记录",
+  "RemoveProtectionRecordConfirm": "仅从软件列表移除此记录，不会删除任何保护副本、文件或目录。移除后刷新或重新启动也不会再次显示。",
+  "ProtectionSummary": "显示 {0:N0} 组 · 保留文件 {1:N0} 字节",
+  "ProtectionUsage": "显示修改保护副本 {0:N0} 组 · 实际保留 {1:N0} 字节（含隐藏记录及未完成副本）",
+  "SettingsSaveHelp": "外观、语言和资源库总目录在点击保存后生效。"
 }

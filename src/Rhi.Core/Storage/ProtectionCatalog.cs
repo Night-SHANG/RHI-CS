@@ -17,6 +17,15 @@ public static class ProtectionCatalog
         return new(entry, ProtectionLayout.FilesDirectory(root, entry));
     }
 
+    public static bool RemoveRecord(WorkspaceStore store, Guid operationId, bool confirmed)
+    {
+        if (!confirmed) return false;
+        store.CheckAvailable();
+        if (store.State.HiddenProtectionIds.Contains(operationId) || Find(store, operationId) is null) return false;
+        store.Save(store.State with { HiddenProtectionIds = [.. store.State.HiddenProtectionIds, operationId] });
+        return true;
+    }
+
     public static ProtectionInventory Read(WorkspaceStore store)
     {
         store.CheckAvailable();
@@ -44,7 +53,8 @@ public static class ProtectionCatalog
             var folder = ProtectionLayout.FilesDirectory(root, entry);
             PathPolicy.CheckNoLinks(folder);
             return new ProtectedOperation(entry, folder);
-        }).OrderByDescending(x => x.Entry.CreatedAt).ToArray();
+        }).Where(x => !store.State.HiddenProtectionIds.Contains(x.Entry.OperationId))
+            .OrderByDescending(x => x.Entry.CreatedAt).ToArray();
         store.CheckAvailable();
         return new(bytes, DateTimeOffset.UtcNow, entries);
     }

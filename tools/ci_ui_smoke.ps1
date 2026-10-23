@@ -1,4 +1,4 @@
-param([Parameter(Mandatory)][string]$AppDirectory, [Parameter(Mandatory)][string]$OutputDirectory,
+﻿param([Parameter(Mandatory)][string]$AppDirectory, [Parameter(Mandatory)][string]$OutputDirectory,
     [switch]$PendingConfiguration, [switch]$Features, [switch]$Relocation, [switch]$Visual, [switch]$Startup, [switch]$Migration, [switch]$Usability, [string]$FixtureMetadata)
 $ErrorActionPreference = 'Stop'
 if ($env:GITHUB_ACTIONS -ne 'true') { throw 'UI smoke runs only on disposable GitHub Actions runners.' }
@@ -8,6 +8,10 @@ using System;
 using System.Runtime.InteropServices;
 public static class SmokeWindow {
     [StructLayout(LayoutKind.Sequential)] public struct Rect { public int Left, Top, Right, Bottom; }
+    [StructLayout(LayoutKind.Sequential)] public struct Point { public int X, Y; }
+    [DllImport("user32.dll")] public static extern bool GetClientRect(IntPtr window, out Rect rect);
+    [DllImport("user32.dll")] public static extern bool ClientToScreen(IntPtr window, ref Point point);
+    [DllImport("user32.dll")] public static extern void mouse_event(uint flags, uint x, uint y, uint data, UIntPtr extra);
     [DllImport("user32.dll")] public static extern bool GetWindowRect(IntPtr window, out Rect rect);
     [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr window);
     [DllImport("user32.dll")] public static extern IntPtr GetForegroundWindow();
@@ -19,6 +23,7 @@ public static class SmokeWindow {
     [DllImport("user32.dll", SetLastError=true)] public static extern bool SystemParametersInfo(uint action, uint parameter, out Rect rect, uint flags);
 }
 '@
+. (Join-Path $PSScriptRoot 'ci_ui_baseline_layout.ps1')
 [SmokeWindow]::SetThreadDpiAwarenessContext([IntPtr](-4)) | Out-Null
 $appRoot = (Resolve-Path -LiteralPath $AppDirectory).Path
 $captureRoot = [IO.Path]::GetFullPath($OutputDirectory)
@@ -140,6 +145,12 @@ function Invoke-LibraryControl([string]$id) {
     Start-Sleep -Milliseconds 250
 }
 function Assert-FixedAction($before, [string]$action = 'Save') {
+    $window = [Windows.Automation.AutomationElement]::FromHandle($process.MainWindowHandle)
+    $form = $window.FindFirst([Windows.Automation.TreeScope]::Descendants,
+        [Windows.Automation.PropertyCondition]::new([Windows.Automation.AutomationElement]::AutomationIdProperty, 'ValidatedForm'))
+    # Natural form height may change with wrapping/validation; its footer must
+    # remain complete and unobstructed. Preflight keeps the fixed-position check.
+    if ($form) { Assert-ContentSizedFormActions $action; return }
     $after = Assert-ActionOrder $action
     foreach ($property in @('X', 'Y', 'Width', 'Height')) {
         if ([Math]::Abs($before.$property - $after.$property) -gt 1) {
