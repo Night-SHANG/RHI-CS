@@ -6,23 +6,28 @@ namespace Rhi.App.Presentation;
 public sealed partial class PageContext
 {
     private void TrackDialogSize(ContentDialog dialog, ScrollViewer scroll, bool stableContent = false,
-        FrameworkElement? feedback = null)
+        FrameworkElement? container = null)
     {
         void Resize()
         {
-            scroll.Width = Math.Clamp(Root.ActualWidth - 96, 120, 480);
-            var feedbackHeight = 0.0;
-            if (feedback is not null)
+            var width = Math.Clamp(Root.ActualWidth - 96, 120, 480);
+            var height = Math.Max(64, Root.ActualHeight - 180);
+            scroll.Width = width;
+            if (container is not null)
             {
-                feedback.Width = scroll.Width;
-                if (feedback.Visibility == Visibility.Visible)
-                {
-                    feedback.Measure(new Windows.Foundation.Size(scroll.Width, double.PositiveInfinity));
-                    feedbackHeight = feedback.DesiredSize.Height;
-                }
+                // Grid measures the Auto feedback row first and constrains the
+                // scrolling star row in the same layout pass. Do not resize a
+                // sibling from SizeChanged or freeze an early DesiredSize.
+                container.Width = width;
+                container.MaxHeight = height;
+                scroll.MaxHeight = double.PositiveInfinity;
+                scroll.Height = double.NaN;
             }
-            scroll.MaxHeight = Math.Max(64, Root.ActualHeight - 180 - feedbackHeight);
-            scroll.Height = stableContent ? Math.Min(scroll.MaxHeight, 480) : double.NaN;
+            else
+            {
+                scroll.MaxHeight = height;
+                scroll.Height = stableContent ? Math.Min(height, 480) : double.NaN;
+            }
         }
         void Changed(object sender, SizeChangedEventArgs args) => Resize();
         dialog.Opened += (_, _) =>
@@ -31,12 +36,10 @@ public sealed partial class PageContext
             // Freezing an early DesiredSize clips controls after their templates load.
             Resize();
             Root.SizeChanged += Changed;
-            if (feedback is not null) feedback.SizeChanged += Changed;
         };
         dialog.Closed += (_, _) =>
         {
             Root.SizeChanged -= Changed;
-            if (feedback is not null) feedback.SizeChanged -= Changed;
         };
         Resize();
     }

@@ -109,9 +109,19 @@ function Assert-FormError([string]$key) {
     Start-Sleep -Milliseconds 250
     $feedback = Find-Control -id 'FormValidation'
     if ($feedback.Current.Name -ne (Label $key)) { throw "Wrong form guidance: $key" }
-    $bounds = $feedback.Current.BoundingRectangle
-    $viewport = (Find-Control -id 'DialogContentScroll').Current.BoundingRectangle
-    $save = (Find-Control -name (Label 'Save') -Action).Current.BoundingRectangle
+    $lastGeometry = ''
+    $settled = $false
+    for ($attempt = 0; $attempt -lt 12; $attempt++) {
+        $bounds = (Find-Control -id 'FormValidation').Current.BoundingRectangle
+        $viewport = (Find-Control -id 'DialogContentScroll').Current.BoundingRectangle
+        $save = (Find-Control -name (Label 'Save') -Action).Current.BoundingRectangle
+        $geometry = "$bounds | $viewport | $save"
+        if ($geometry -eq $lastGeometry) { $settled = $true; break }
+        $lastGeometry = $geometry
+        Start-Sleep -Milliseconds 150
+    }
+    Write-Host "Validation geometry: $key; DPI=$([SmokeWindow]::GetDpiForWindow($process.MainWindowHandle)); $geometry"
+    if (-not $settled) { throw 'Validation layout did not settle.' }
     $window = [SmokeWindow+Rect]::new()
     [SmokeWindow]::GetWindowRect($process.MainWindowHandle, [ref]$window) | Out-Null
     if ($bounds.Width -le 0 -or $bounds.Height -le 0 -or $bounds.Top -lt $viewport.Bottom - 2 -or

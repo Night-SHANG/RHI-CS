@@ -18,7 +18,10 @@ public sealed partial class PageContext
         var scroll = DialogContent(fields);
         // Validation stays above the footer when the fields need scrolling.
         // Collapsed feedback contributes no space to a fresh or valid form.
-        var content = new StackPanel();
+        var content = new Grid { VerticalAlignment = VerticalAlignment.Top };
+        content.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+        content.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        Grid.SetRow(error, 1);
         content.Children.Add(scroll);
         content.Children.Add(error);
         var dialog = new ContentDialog { XamlRoot = Root.XamlRoot, Title = Strings.Get(title),
@@ -26,7 +29,7 @@ public sealed partial class PageContext
             SecondaryButtonText = Strings.Get(action), DefaultButton = ContentDialogButton.Secondary,
             RequestedTheme = Root.RequestedTheme };
         AutomationProperties.SetAutomationId(dialog, "ValidatedForm");
-        TrackDialogSize(dialog, scroll, feedback: error);
+        TrackDialogSize(dialog, scroll, container: content);
         void Feedback(string text)
         {
             error.Text = text;
