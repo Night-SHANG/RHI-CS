@@ -54,7 +54,6 @@ public sealed class RelocationTests
     [Theory]
     [InlineData("modified")]
     [InlineData("missing")]
-    [InlineData("exe")]
     [InlineData("backup")]
     [InlineData("old-returned")]
     public void Unverifiable_candidate_keeps_original_ledger(string change)
@@ -64,11 +63,23 @@ public sealed class RelocationTests
         var target = Move(box);
         if (change == "modified") File.WriteAllText(Path.Combine(target, "mod.txt"), "external");
         if (change == "missing") File.Move(Path.Combine(target, "mod.txt"), Path.Combine(target, "mod.offline"));
-        if (change == "exe") File.AppendAllText(Path.Combine(target, "game.exe"), "updated");
         if (change == "backup") File.WriteAllText(box.Store.Blobs.PathFor(box.Store.State.Receipts.Single().Files.Single().OriginalHash!), "corrupt");
         if (change == "old-returned") Directory.CreateDirectory(box.Game.DeploymentRoot);
         Assert.False(Inspect(box, target).CanApply);
         Assert.Equal(ledger, File.ReadAllBytes(Path.Combine(box.Data, "workspace.json")));
+    }
+
+    [Fact]
+    public void Updated_executable_does_not_block_relocating_unchanged_managed_files()
+    {
+        using var box = Deployed();
+        var target = Move(box);
+        File.AppendAllText(Path.Combine(target, "game.exe"), "updated");
+        var plan = Inspect(box, target);
+        Assert.True(plan.CanApply);
+        GameRelocation.Apply(box.Store, plan);
+        Assert.Equal(target, box.Store.State.Receipts.Single().TargetRoot);
+        Assert.Equal("v1", File.ReadAllText(Path.Combine(target, "mod.txt")));
     }
 
     [Theory]

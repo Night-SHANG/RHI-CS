@@ -18,6 +18,12 @@ public sealed class ProcessRecoveryTests
     {
         using var f = new Sandbox();
         File.WriteAllText(f.Target, "original");
+        var sourceFolder = Path.GetDirectoryName(f.Source)!;
+        File.WriteAllText(Path.Combine(sourceFolder, "z-later.txt"), "later file");
+        f.Store.Save(f.Store.State with
+        {
+            Libraries = [f.Library with { Versions = [f.Version with { SourcePath = sourceFolder }] }]
+        });
         f.Store.Dispose();
         var worker = Path.Combine(AppContext.BaseDirectory, "CrashWorker", "Rhi.CrashWorker.dll");
         Assert.True(File.Exists(worker), worker);
@@ -39,6 +45,8 @@ public sealed class ProcessRecoveryTests
         Assert.Equal(OperationStatus.Restored, result.Status);
         Assert.Equal("original", File.ReadAllText(f.Target));
         Assert.Equal("v1", File.ReadAllText(f.Source));
+        Assert.Equal("later file", File.ReadAllText(Path.Combine(sourceFolder, "z-later.txt")));
+        Assert.False(File.Exists(Path.Combine(f.Game.DeploymentRoot, "z-later.txt")));
         Assert.Empty(reopened.Pending());
         Assert.Empty(reopened.State.Receipts);
         Assert.Empty(Directory.GetFiles(f.Game.DeploymentRoot, ".rhi-*"));

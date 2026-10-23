@@ -9,11 +9,13 @@ internal static class FileReplacement
 {
     private sealed record Locations(string Target, string Next, string Before, string Restore, string Displaced);
 
-    private static Locations Paths(OperationJournal journal, int index)
+    private static Locations Paths(OperationJournal journal, int index, bool parentHeld = false)
     {
         if (journal.FileProtocol is not (1 or 2) || journal.TargetIdentity is null)
             throw new DeploymentException("RecoveryTargetChanged", journal.TargetRoot);
-        var target = PathPolicy.Target(journal.TargetIdentity.Path, journal.Files[index].RelativePath);
+        var target = parentHeld
+            ? Path.Combine(journal.TargetIdentity.Path, PathPolicy.Relative(journal.Files[index].RelativePath))
+            : PathPolicy.Target(journal.TargetIdentity.Path, journal.Files[index].RelativePath);
         var prefix = Path.Combine(Path.GetDirectoryName(target)!, $".rhi-{journal.Id:N}-{index}");
         return new(target, prefix + ".next", prefix + ".before", prefix + ".restore", prefix + ".displaced");
     }
@@ -24,12 +26,13 @@ internal static class FileReplacement
             throw new DeploymentException("GameIdentityChanged", file.RelativePath);
     }
 
-    public static void Apply(BlobStore blobs, OperationJournal journal, int index, Action<string, int>? fault, FileChange? source = null)
+    public static void Apply(BlobStore blobs, OperationJournal journal, int index, Action<string, int>? fault,
+        FileChange? source = null, bool parentHeld = false)
     {
-        var paths = Paths(journal, index);
+        var paths = Paths(journal, index, parentHeld);
         var change = journal.Files[index];
-        using var directory = DirectoryLease.Acquire(Path.GetDirectoryName(paths.Target)!);
-        CheckParent(change);
+        using var directory = parentHeld ? null : DirectoryLease.Acquire(Path.GetDirectoryName(paths.Target)!);
+        if (!parentHeld) CheckParent(change);
         foreach (var path in new[] { paths.Next, paths.Before, paths.Restore, paths.Displaced })
             if (File.Exists(path) || Directory.Exists(path)) throw new DeploymentException("TargetConflict", path);
         if (journal.FileProtocol < 2 && BlobStore.Hash(paths.Target) != change.BeforeHash)
@@ -145,12 +148,12 @@ internal static class FileReplacement
         }
     }
 
-    public static void Cleanup(OperationJournal journal, int index, bool verify = true)
+    public static void Cleanup(OperationJournal journal, int index, bool verify = true, bool parentHeld = false)
     {
-        var paths = Paths(journal, index);
-        using var directory = DirectoryLease.Acquire(Path.GetDirectoryName(paths.Target)!);
+        var paths = Paths(journal, index, parentHeld);
+        using var directory = parentHeld ? null : DirectoryLease.Acquire(Path.GetDirectoryName(paths.Target)!);
         var file = journal.Files[index];
-        CheckParent(file);
+        if (!parentHeld) CheckParent(file);
         RemoveVerified(paths.Before, file.BeforeHash, verify);
         RemoveVerified(paths.Next, file.DesiredHash, verify && journal.FileProtocol < 2);
         RemoveVerified(paths.Restore, file.BeforeHash, verify);

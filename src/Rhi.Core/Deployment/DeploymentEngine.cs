@@ -59,6 +59,7 @@ public sealed partial class DeploymentEngine(WorkspaceStore store, Action<string
             [], -1, null, DateTimeOffset.UtcNow, batch.TargetIdentity, FileProtocol: 2,
             PreviouslyCreatedDirectories: library.PreviouslyCreatedDirectories);
         var started = false;
+        var parentLeases = new List<DirectoryLease>();
         try
         {
             using var targetLease = DirectoryLease.Acquire(batch.TargetRoot);
@@ -101,6 +102,30 @@ public sealed partial class DeploymentEngine(WorkspaceStore store, Action<string
                 Directory.CreateDirectory(directory);
                 journal = journal with { CreatedDirectories = [.. journal.CreatedDirectories, relative] };
             }
+            // Hold each distinct parent once for the batch, rather than reopening its
+            // full ancestor chain for every copy and every cleanup.
+            var heldParents = new Dictionary<string, DirectoryIdentity>(PathPolicy.Comparer)
+                { [targetLease.Identity.Path] = targetLease.Identity };
+            foreach (var expected in library.Changes.Select(c => c.ParentIdentity).Distinct())
+            {
+                if (expected is null) throw new DeploymentException("GameIdentityChanged");
+                if (!heldParents.TryGetValue(expected.Path, out var actual))
+                {
+                    var lease = DirectoryLease.Acquire(expected.Path);
+                    parentLeases.Add(lease);
+                    actual = lease.Identity;
+                    heldParents.Add(expected.Path, actual);
+                }
+                if (actual != expected) throw new DeploymentException("GameIdentityChanged", expected.Path);
+            }
+            foreach (var parent in library.Changes.Select(c => Path.GetDirectoryName(
+                Path.Combine(targetLease.Identity.Path, PathPolicy.Relative(c.RelativePath)))!).Distinct(PathPolicy.Comparer))
+            {
+                if (heldParents.ContainsKey(parent)) continue;
+                var lease = DirectoryLease.Acquire(parent);
+                parentLeases.Add(lease);
+                heldParents.Add(parent, lease.Identity);
+            }
             // One durable plan before copying; all planned paths remain recoverable on
             // restart. Progress below is memory-only, never a full JSON rewrite per file.
             journal = journal with { Status = OperationStatus.Executing, IntentIndex = journal.Files.Length - 1 };
@@ -112,13 +137,15 @@ public sealed partial class DeploymentEngine(WorkspaceStore store, Action<string
                 var change = library.Changes[i];
                 journal = journal with { IntentIndex = i };
                 fault?.Invoke("BeforeWrite", i);
-                FileReplacement.Apply(store.Blobs, journal, i, fault, change);
+                FileReplacement.Apply(store.Blobs, journal, i, fault, change, parentHeld: true);
                 fault?.Invoke("AfterWrite", i);
                 progress?.Report(new("Executing", library.LibraryName, i + 1, library.Changes.Length));
             }
             cancellation.ThrowIfCancellationRequested();
             Commit(batch, library, journal);
-            for (var i = 0; i <= journal.IntentIndex; i++) FileReplacement.Cleanup(journal, i, verify: false);
+            for (var i = 0; i <= journal.IntentIndex; i++) FileReplacement.Cleanup(journal, i, verify: false, parentHeld: true);
+            foreach (var lease in parentLeases) lease.Dispose();
+            parentLeases.Clear();
             FileWriter.CleanEmptyDirectories(targetLease.Identity.Path,
                 library.PreviouslyCreatedDirectories.Union(journal.CreatedDirectories));
             journal = journal with { Status = OperationStatus.Succeeded };
@@ -127,6 +154,8 @@ public sealed partial class DeploymentEngine(WorkspaceStore store, Action<string
         }
         catch (Exception ex) when (ex is not OutOfMemoryException and not StackOverflowException)
         {
+            foreach (var lease in parentLeases) lease.Dispose();
+            parentLeases.Clear();
             if (store.State.CommittedOperations.Contains(id))
                 return new(library.Request.LibraryId, OperationStatus.Succeeded, "CommittedJournalPending", id);
             if (!started)
@@ -137,6 +166,10 @@ public sealed partial class DeploymentEngine(WorkspaceStore store, Action<string
             }
             progress?.Report(new("Recovering", library.LibraryName, 0, journal.Files.Length));
             return Rollback(journal, ex is OperationCanceledException, ex.Message);
+        }
+        finally
+        {
+            foreach (var lease in parentLeases) lease.Dispose();
         }
     }
 

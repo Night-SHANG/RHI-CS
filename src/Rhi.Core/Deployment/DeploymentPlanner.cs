@@ -17,11 +17,14 @@ public sealed class DeploymentPlanner(WorkspaceStore store)
         var targets = new Dictionary<string, Guid>(PathPolicy.Comparer);
         var exeHash = "";
         DirectoryIdentity? targetIdentity = null;
+        string? physicalExe = null;
+        var parents = new Dictionary<string, DirectoryIdentity>(PathPolicy.Comparer);
         try
         {
             ValidateRoots(state, game);
             targetIdentity = DirectoryLease.Inspect(game.DeploymentRoot);
             if (!File.Exists(game.ExePath)) throw new DeploymentException("GameUnavailable", game.ExePath);
+            physicalExe = DirectoryLease.PhysicalPath(game.ExePath);
             if (store.Pending().Any(j => j.GameId == game.Id && !state.CommittedOperations.Contains(j.Id)))
                 throw new DeploymentException("NeedsRepair", game.Name);
             foreach (var receipt in state.Receipts)
@@ -60,7 +63,8 @@ public sealed class DeploymentPlanner(WorkspaceStore store)
                 foreach (var relative in paths)
                 {
                     var target = PathPolicy.Target(game.DeploymentRoot, relative);
-                    if (PathPolicy.Comparer.Equals(DirectoryLease.PhysicalPath(target), DirectoryLease.PhysicalPath(game.ExePath)))
+                    if (targetIdentity is not null && PathPolicy.Comparer.Equals(
+                        Path.Combine(targetIdentity.Path, relative), physicalExe))
                         throw new DeploymentException("GameExecutableTarget", target);
                     if (targets.TryGetValue(target, out var owner) && owner != library.Id)
                         throw new DeploymentException("TargetConflict", target);
@@ -77,7 +81,7 @@ public sealed class DeploymentPlanner(WorkspaceStore store)
                             ?? throw new DeploymentException("SourceUnavailable", source);
                     changes.Add(new(relative, source, wanted, before, managed?.OriginalHash,
                         resource is not null, managed is not null && before != managed.InstalledHash,
-                        DirectoryLease.ExistingParent(target), resource?.Content, resource?.Edits,
+                        InspectParent(target, parents), resource?.Content, resource?.Edits,
                         source is null ? null : Stamp(source), Stamp(target)));
                 }
                 foreach (var input in mapping.Inputs)
@@ -142,7 +146,7 @@ public sealed class DeploymentPlanner(WorkspaceStore store)
                 if (change.GeneratedContent is not null) targetBytes = checked(targetBytes + change.GeneratedContent.LongLength);
                 if (change.SourcePath is null && change.GeneratedContent is null && change.DesiredHash is { } hash)
                     targetBytes = checked(targetBytes + new FileInfo(store.Blobs.PathFor(hash)).Length);
-                var target = PathPolicy.Target(targetRoot, change.RelativePath);
+                var target = Path.Combine(targetRoot, change.RelativePath);
                 if ((plan.RequiresOverwrite || plan.RequiresProtection) && File.Exists(target))
                     backupBytes = checked(backupBytes + new FileInfo(target).Length * (plan.RequiresProtection ? 2 : 1));
             }
@@ -164,5 +168,15 @@ public sealed class DeploymentPlanner(WorkspaceStore store)
     {
         var info = new FileInfo(path);
         return info.Exists ? new(info.Length, info.LastWriteTimeUtc.Ticks) : null;
+    }
+
+    private static DirectoryIdentity InspectParent(string file, Dictionary<string, DirectoryIdentity> parents)
+    {
+        var parent = Path.GetDirectoryName(file);
+        while (parent is not null && !Directory.Exists(parent)) parent = Path.GetDirectoryName(parent);
+        if (parent is null) throw new DirectoryNotFoundException(file);
+        if (!parents.TryGetValue(parent, out var identity))
+            parents.Add(parent, identity = DirectoryLease.Inspect(parent));
+        return identity;
     }
 }

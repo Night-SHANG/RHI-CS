@@ -35,14 +35,14 @@ public sealed class ObservationTests
     }
 
     [Fact]
-    public void Changed_game_identity_is_not_reported_as_matching()
+    public void Updated_executable_does_not_change_managed_file_health()
     {
         using var f = new Sandbox();
         f.Deploy();
         File.AppendAllText(f.Game.ExePath, "updated");
         var result = Assert.Single(DeploymentInspection.Inspect(f.Store, f.Game.Id).Receipts);
-        Assert.Equal(TargetHealth.TargetUnavailable, result.Health);
-        Assert.Equal("GameIdentityChanged", Assert.Single(result.Issues).Code);
+        Assert.Equal(TargetHealth.TargetMatched, result.Health);
+        Assert.Empty(result.Issues);
     }
 
     [Theory]
