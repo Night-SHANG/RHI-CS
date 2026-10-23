@@ -28,7 +28,7 @@ internal static class FileReplacement
             throw new DeploymentException("GameIdentityChanged", file.RelativePath);
     }
 
-    public static void Apply(BlobStore blobs, OperationJournal journal, int index, Action<string, int>? fault,
+    public static FileStream? Apply(BlobStore blobs, OperationJournal journal, int index, Action<string, int>? fault,
         ICollection<FileStream> parked, FileChange? source = null, bool parentHeld = false)
     {
         var paths = Paths(journal, index, parentHeld);
@@ -50,48 +50,54 @@ internal static class FileReplacement
             }
             else if (File.Exists(paths.Target) || Directory.Exists(paths.Target))
                 throw new DeploymentException("ChangedSincePreflight", paths.Target);
-            return;
+            return null;
         }
 
-        using var staged = change.DesiredHash is { } desired
+        var staged = change.DesiredHash is { } desired
             ? journal.FileProtocol >= 2
                 ? PrepareCopy(source?.SourcePath ?? (source?.GeneratedContent is null ? blobs.PathFor(desired) : null),
                     source?.GeneratedContent, desired, paths.Next, () => fault?.Invoke("CopyCompleted", index),
                     () => fault?.Invoke("StageWriting", index))
                 : Prepare(blobs, desired, paths.Next, () => fault?.Invoke("StageWriting", index))
             : null;
-        fault?.Invoke("StageReady", index);
-        if (change.BeforeHash is { } before)
+        try
         {
-            var original = NativeFile.Open(paths.Target);
-            try
+            fault?.Invoke("StageReady", index);
+            if (change.BeforeHash is { } before)
             {
-                NativeFile.Verify(original, before, paths.Target);
-                fault?.Invoke("TargetLocked", index);
-                NativeFile.Rename(original, paths.Before);
-                // The engine retains this exact identity through commit and deletion,
-                // without reopening a mutable temporary path or hashing it again.
-                parked.Add(original);
-                original = null!;
+                var original = NativeFile.Open(paths.Target);
+                try
+                {
+                    NativeFile.Verify(original, before, paths.Target);
+                    fault?.Invoke("TargetLocked", index);
+                    NativeFile.Rename(original, paths.Before);
+                    // The engine retains this exact identity through commit and deletion,
+                    // without reopening a mutable temporary path or hashing it again.
+                    parked.Add(original);
+                    original = null!;
+                }
+                finally { original?.Dispose(); }
             }
-            finally { original?.Dispose(); }
-        }
-        else if (File.Exists(paths.Target) || Directory.Exists(paths.Target))
-            throw new DeploymentException("ChangedSincePreflight", paths.Target);
+            else if (File.Exists(paths.Target) || Directory.Exists(paths.Target))
+                throw new DeploymentException("ChangedSincePreflight", paths.Target);
 
-        fault?.Invoke("TargetParked", index);
-        if (staged is not null)
-        {
-            NativeFile.Rename(staged, paths.Target);
-            // Buffered protocol-2 staging uses explicit durability boundaries rather
-            // than WRITE_THROUGH on every copy buffer. Keep the handle through flush.
-            if (journal.FileProtocol >= 2)
+            fault?.Invoke("TargetParked", index);
+            if (staged is not null)
             {
-                fault?.Invoke("PublishFlushing", index);
-                staged.Flush(flushToDisk: true);
+                NativeFile.Rename(staged, paths.Target);
+                if (journal.FileProtocol >= 2)
+                {
+                    // Transfer the exact published identity to the bounded flush
+                    // owner. No callback can throw between transfer and return.
+                    var published = staged;
+                    staged = null;
+                    return published;
+                }
             }
+            fault?.Invoke("TargetPublished", index);
+            return null;
         }
-        fault?.Invoke("TargetPublished", index);
+        finally { staged?.Dispose(); }
     }
 
     private static FileStream PrepareCopy(string? source, byte[]? content, string expected,
@@ -117,7 +123,7 @@ internal static class FileReplacement
             if (Convert.ToHexString(hash.GetHashAndReset()) != expected)
                 throw new DeploymentException("ChangedSincePreflight", source ?? path);
             // Drain managed writes before touching the target; the one durable
-            // flush follows publication and must succeed before the receipt commits.
+            // flush follows publication in a bounded batch and must succeed before commit.
             output.Flush(flushToDisk: false);
             copied();
             return output;

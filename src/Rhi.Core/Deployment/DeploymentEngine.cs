@@ -61,6 +61,7 @@ public sealed partial class DeploymentEngine(WorkspaceStore store, Action<string
         var started = false;
         var parentLeases = new List<DirectoryLease>();
         var parked = new List<FileStream>();
+        var publications = new PublicationBatch(fault);
         try
         {
             using var targetLease = DirectoryLease.Acquire(batch.TargetRoot);
@@ -138,10 +139,20 @@ public sealed partial class DeploymentEngine(WorkspaceStore store, Action<string
                 var change = library.Changes[i];
                 journal = journal with { IntentIndex = i };
                 fault?.Invoke("BeforeWrite", i);
-                FileReplacement.Apply(store.Blobs, journal, i, fault, parked, change, parentHeld: true);
-                fault?.Invoke("AfterWrite", i);
-                progress?.Report(new("Executing", library.LibraryName, i + 1, library.Changes.Length));
+                var published = FileReplacement.Apply(store.Blobs, journal, i, fault, parked, change, parentHeld: true);
+                var hasPublication = published is not null;
+                try
+                {
+                    publications.Add(published, i);
+                    published = null; // Add succeeded: only the batch now owns it.
+                }
+                finally { published?.Dispose(); }
+                if (hasPublication) fault?.Invoke("PublishPendingFlush", i);
+                if (publications.IsFull) publications.Drain(Completed);
             }
+            publications.Drain(Completed);
+            // Cancellation cannot abandon active barriers. Drain joins and closes
+            // everything first; cancellation still prevents the library commit.
             cancellation.ThrowIfCancellationRequested();
             Commit(batch, library, journal);
             // Normal execution owns only these parked originals; staging has already
@@ -159,6 +170,12 @@ public sealed partial class DeploymentEngine(WorkspaceStore store, Action<string
         }
         catch (Exception ex) when (ex is not OutOfMemoryException and not StackOverflowException)
         {
+            // Drain never returns with running workers. Earlier copy/cancellation
+            // errors can leave an unflushed batch, which must close before rollback.
+            Exception failure = ex;
+            try { publications.Dispose(); }
+            catch (Exception closeError) when (closeError is not OutOfMemoryException and not StackOverflowException)
+            { failure = new AggregateException(ex, closeError); }
             foreach (var original in parked) original.Dispose();
             parked.Clear();
             foreach (var lease in parentLeases) lease.Dispose();
@@ -169,15 +186,27 @@ public sealed partial class DeploymentEngine(WorkspaceStore store, Action<string
             {
                 FileWriter.CleanEmptyDirectories(batch.TargetRoot, journal.CreatedDirectories);
                 return new(library.Request.LibraryId,
-                    ex is OperationCanceledException ? OperationStatus.Cancelled : OperationStatus.Restored, ex.Message, id);
+                    ex is OperationCanceledException ? OperationStatus.Cancelled : OperationStatus.Restored, failure.Message, id);
             }
             progress?.Report(new("Recovering", library.LibraryName, 0, journal.Files.Length));
-            return Rollback(journal, ex is OperationCanceledException, ex.Message);
+            return Rollback(journal, ex is OperationCanceledException, failure.Message);
         }
         finally
         {
-            foreach (var original in parked) original.Dispose();
-            foreach (var lease in parentLeases) lease.Dispose();
+            try { publications.Dispose(); }
+            finally
+            {
+                foreach (var original in parked) original.Dispose();
+                foreach (var lease in parentLeases) lease.Dispose();
+            }
+        }
+
+        void Completed(int index)
+        {
+            // Completion callbacks can fail after later files in this batch were
+            // applied. Keep journal.IntentIndex at the last actual Apply, not index.
+            fault?.Invoke("AfterWrite", index);
+            progress?.Report(new("Executing", library.LibraryName, index + 1, library.Changes.Length));
         }
     }
 

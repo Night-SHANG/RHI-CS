@@ -81,7 +81,7 @@ public sealed partial class PageContext
             }
         };
         Check();
-        var stopViewportTracking = ClipFormViewport(scroll, content);
+        var stopViewportTracking = ObserveFormViewport(scroll, content);
         try { await dialog.ShowAsync(); }
         finally { stopViewportTracking(); }
         return saved;
