@@ -7,6 +7,9 @@ Add-Type @'
 using System;
 using System.Runtime.InteropServices;
 public static class SmokeWindow {
+    [StructLayout(LayoutKind.Sequential)] public struct Point { public int X, Y; }
+    [DllImport("user32.dll", SetLastError=true)] public static extern bool ClientToScreen(IntPtr window, ref Point point);
+    [DllImport("user32.dll")] public static extern void mouse_event(uint flags, uint dx, uint dy, uint data, UIntPtr extra);
     [StructLayout(LayoutKind.Sequential)] public struct Rect { public int Left, Top, Right, Bottom; }
     [DllImport("user32.dll")] public static extern bool GetWindowRect(IntPtr window, out Rect rect);
     [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr window);
@@ -32,8 +35,13 @@ function Label([string]$key) {
     return $node.InnerText
 }
 $launchTime = Get-Date
+$previousGeometryFlag = $env:RHI_UI_GEOMETRY
+$env:RHI_UI_GEOMETRY = '1'
+try {
 $process = Start-Process -FilePath (Join-Path $appRoot 'RHI-CS.exe') -PassThru `
     -RedirectStandardOutput (Join-Path $captureRoot 'stdout.txt') -RedirectStandardError (Join-Path $captureRoot 'stderr.txt')
+} finally { $env:RHI_UI_GEOMETRY = $previousGeometryFlag }
+. (Join-Path $PSScriptRoot 'ci_ui_form_geometry.ps1')
 $processHandle = $process.Handle
 function Find-Control([string]$name = '', [string]$id = '', [switch]$Action, [switch]$IncludeOffscreen, [switch]$Enabled) {
     $limit = [Diagnostics.Stopwatch]::StartNew()
@@ -113,7 +121,7 @@ function Assert-FormError([string]$key) {
     $settled = $false
     for ($attempt = 0; $attempt -lt 12; $attempt++) {
         $bounds = (Find-Control -id 'FormValidation').Current.BoundingRectangle
-        $viewport = (Find-Control -id 'DialogContentScroll').Current.BoundingRectangle
+        $viewport = Get-FormViewport
         $save = (Find-Control -name (Label 'Save') -Action).Current.BoundingRectangle
         $geometry = "$bounds | $viewport | $save"
         if ($geometry -eq $lastGeometry) { $settled = $true; break }
@@ -143,7 +151,7 @@ function Assert-FormError([string]$key) {
                 $peers = $dialog.FindAll([Windows.Automation.TreeScope]::Descendants, [Windows.Automation.Condition]::TrueCondition)
                 foreach ($peer in $peers) {
                     $box = $peer.Current.BoundingRectangle
-                    if ($peer.Current.ControlType -eq [Windows.Automation.ControlType]::ScrollBar -or (-not $box.IsEmpty -and $box.Bottom -ge $bounds.Top - 30 -and $box.Top -le $bounds.Bottom + 30)) {
+                    if (-not $box.IsEmpty -and $box.Bottom -ge $bounds.Top - 30 -and $box.Top -le $bounds.Bottom + 30) {
                         Write-Host "Validation neighbor: id=$($peer.Current.AutomationId); type=$($peer.Current.ControlType.ProgrammaticName); name=$($peer.Current.Name); offscreen=$($peer.Current.IsOffscreen); bounds=$box"
                     }
                 }
@@ -193,7 +201,7 @@ function Assert-FixedAction($before, [string]$action = 'Save') {
         }
     }
     if ($compactForm) {
-        $viewport = (Find-Control -id 'DialogContentScroll').Current.BoundingRectangle
+        $viewport = Get-FormViewport
         $window = [SmokeWindow+Rect]::new()
         [SmokeWindow]::GetWindowRect($process.MainWindowHandle, [ref]$window) | Out-Null
         $scale = [SmokeWindow]::GetDpiForWindow($process.MainWindowHandle) / 96.0

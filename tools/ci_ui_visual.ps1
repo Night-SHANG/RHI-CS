@@ -138,7 +138,7 @@ function Check-Pages([string]$prefix) {
     Scroll-DialogToEnd 'Save' -IfNeeded
     $apiControl = Find-Control -id 'GameApiInput' -Enabled
     $apiAtEnd = $apiControl.Current.BoundingRectangle
-    $fieldViewport = (Find-Control -id 'DialogContentScroll').Current.BoundingRectangle
+    $fieldViewport = Get-FormViewport
     # The header plus ComboBox is 60 DIPs; a clipped sliver is not reachability.
     $minimumApiHeight = 58 * [SmokeWindow]::GetDpiForWindow($process.MainWindowHandle) / 96.0
     if ($apiAtEnd.Height -lt $minimumApiHeight -or $apiAtEnd.Top -lt $fieldViewport.Top - 2 -or
@@ -146,7 +146,11 @@ function Check-Pages([string]$prefix) {
         throw "Last game field is not reachable inside the form viewport: $apiAtEnd / $fieldViewport"
     }
     $apiDropDown = $apiControl.GetCurrentPattern([Windows.Automation.ExpandCollapsePattern]::Pattern)
-    $apiDropDown.Expand()
+    # A real mouse click must reach the rendered control, not bypass hit testing.
+    [SmokeWindow]::SetForegroundWindow($process.MainWindowHandle) | Out-Null
+    [Windows.Forms.Cursor]::Position = [Drawing.Point]::new([int]($apiAtEnd.Left + $apiAtEnd.Width / 2), [int]($apiAtEnd.Bottom - 16 * ($minimumApiHeight / 58)))
+    [SmokeWindow]::mouse_event(0x0002, 0, 0, 0, [UIntPtr]::Zero)
+    [SmokeWindow]::mouse_event(0x0004, 0, 0, 0, [UIntPtr]::Zero)
     Start-Sleep -Milliseconds 200
     if ($apiDropDown.Current.ExpandCollapseState -ne [Windows.Automation.ExpandCollapseState]::Expanded) {
         throw 'Last game field cannot open its choices after scrolling.'
@@ -161,7 +165,7 @@ function Check-Pages([string]$prefix) {
     Capture "$prefix-hover"
     Invoke-VisualId 'GameEdit'
     $apiField = Find-Control -id 'GameApiInput' -IncludeOffscreen
-    $dialogViewport = (Find-Control -id 'DialogContentScroll').Current.BoundingRectangle
+    $dialogViewport = Get-FormViewport
     if (([SmokeWindow]::GetDpiForWindow($process.MainWindowHandle) -eq 96) -and
         ($apiField.Current.BoundingRectangle.Bottom -gt $dialogViewport.Bottom -or $apiField.Current.IsOffscreen)) {
         throw 'Game API is unnecessarily hidden at normal wide-window size.'
