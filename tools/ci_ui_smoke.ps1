@@ -143,7 +143,7 @@ function Assert-FormError([string]$key) {
                 $peers = $dialog.FindAll([Windows.Automation.TreeScope]::Descendants, [Windows.Automation.Condition]::TrueCondition)
                 foreach ($peer in $peers) {
                     $box = $peer.Current.BoundingRectangle
-                    if (-not $box.IsEmpty -and $box.Bottom -ge $bounds.Top - 30 -and $box.Top -le $bounds.Bottom + 30) {
+                    if ($peer.Current.ControlType -eq [Windows.Automation.ControlType]::ScrollBar -or (-not $box.IsEmpty -and $box.Bottom -ge $bounds.Top - 30 -and $box.Top -le $bounds.Bottom + 30)) {
                         Write-Host "Validation neighbor: id=$($peer.Current.AutomationId); type=$($peer.Current.ControlType.ProgrammaticName); name=$($peer.Current.Name); offscreen=$($peer.Current.IsOffscreen); bounds=$box"
                     }
                 }

@@ -1,0 +1,26 @@
+name: Inspect native DPI viewport
+on:
+  push:
+    branches: ['maintenance/dpi-viewport/**']
+permissions:
+  contents: read
+jobs:
+  diagnose:
+    runs-on: windows-2025
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Build current UI with bounded native geometry diagnostics
+        run: dotnet publish src/Rhi.App/Rhi.App.csproj -c Release -r win-x64 -p:Platform=x64 --self-contained true -o artifacts/app
+      - name: Prepare disposable visual and offline fixtures
+        run: |
+          dotnet run --project tests/Rhi.UiSmoke.Seed/Rhi.UiSmoke.Seed.csproj -c Release -- --visual
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          dotnet run --project tests/Rhi.UiSmoke.Seed/Rhi.UiSmoke.Seed.csproj -c Release -- --offline artifacts/offline-context.json
+      - name: Observe actual viewports with unchanged assertions
+        run: powershell.exe -NoProfile -File tools/ci_ui_smoke.ps1 -AppDirectory artifacts/app -OutputDirectory artifacts/ui-visual -Visual -FixtureMetadata artifacts/offline-context.json
