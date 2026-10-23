@@ -16,7 +16,6 @@ public sealed partial class PageContext
         error.Visibility = Visibility.Collapsed;
         error.Margin = new Thickness(0, 8, 0, 0);
         var scroll = DialogContent(fields);
-        ClipFormViewport(scroll);
         // Validation stays above the footer when the fields need scrolling.
         // Collapsed feedback contributes no space to a fresh or valid form.
         var content = new Grid { VerticalAlignment = VerticalAlignment.Top };
@@ -25,6 +24,7 @@ public sealed partial class PageContext
         Grid.SetRow(error, 1);
         content.Children.Add(scroll);
         content.Children.Add(error);
+        ClipFormViewport(scroll, content);
         var dialog = new ContentDialog { XamlRoot = Root.XamlRoot, Title = Strings.Get(title),
             Content = content, PrimaryButtonText = Strings.Get("Cancel"),
             SecondaryButtonText = Strings.Get(action), DefaultButton = ContentDialogButton.Secondary,

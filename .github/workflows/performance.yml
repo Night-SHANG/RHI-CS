@@ -1,24 +1,38 @@
-name: Deployment versus system copy
+name: Paired deployment performance
 on:
   push:
     branches: ['development/**']
-    paths: ['src/Rhi.Core/**', 'tests/Rhi.Performance/**', 'tools/release/**', '.github/workflows/performance.yml']
+    paths: ['src/Rhi.Core/**', 'tests/Rhi.Core.Tests/Deployment/ExecutionIntegrityTests.cs', 'tests/Rhi.Performance/**', 'tools/ci_performance.ps1', 'tools/release/**', '.github/workflows/performance.yml']
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
   compare:
     runs-on: windows-2025
-    timeout-minutes: 30
+    timeout-minutes: 15
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Check out pinned baseline without changing candidate sources
+        uses: actions/checkout@v4
+        with:
+          ref: f26ed43614eac935fc4731073543bb17993544f5
+          path: .performance-baseline
+          persist-credentials: false
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
-      - name: Measure system copy and application on the same fixture
-        run: dotnet run --project tests/Rhi.Performance -c Release -- artifacts/performance/current.json ${{ github.sha }}
+      - name: Verify performance report aggregation
+        shell: pwsh
+        run: ./tests/Rhi.Performance/Report.Tests.ps1
+      - name: Prove integrity regressions and measure alternating baseline/candidate trials
+        shell: pwsh
+        env:
+          RHI_CANDIDATE_SHA: ${{ github.sha }}
+        run: ./tools/ci_performance.ps1 -BaselineRoot .performance-baseline -CandidateRevision $env:RHI_CANDIDATE_SHA
       - name: Upload measurements to a draft Release
         if: ${{ !cancelled() }}
         env:

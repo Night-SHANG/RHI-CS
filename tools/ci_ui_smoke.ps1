@@ -319,6 +319,7 @@ try {
     Assert-FormReady
     Capture '03-library-subfolder-ready'
     Invoke-Control 'Save'
+    . (Join-Path $PSScriptRoot 'ci_ui_picker_errors.ps1')
     Invoke-LibraryControl 'LibraryAddVersion'
     . (Join-Path $PSScriptRoot 'ci_ui_library_folder.ps1')
     Assert-NoResourceType

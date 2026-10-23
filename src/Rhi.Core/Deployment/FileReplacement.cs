@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using Rhi.Core.Models;
 using Rhi.Core.Storage;
 using Rhi.Core.Storage.Windows;
@@ -27,7 +28,7 @@ internal static class FileReplacement
     }
 
     public static void Apply(BlobStore blobs, OperationJournal journal, int index, Action<string, int>? fault,
-        FileChange? source = null, bool parentHeld = false)
+        ICollection<FileStream> parked, FileChange? source = null, bool parentHeld = false)
     {
         var paths = Paths(journal, index, parentHeld);
         var change = journal.Files[index];
@@ -37,45 +38,95 @@ internal static class FileReplacement
             if (File.Exists(path) || Directory.Exists(path)) throw new DeploymentException("TargetConflict", path);
         if (journal.FileProtocol < 2 && BlobStore.Hash(paths.Target) != change.BeforeHash)
             throw new DeploymentException("ChangedSincePreflight", paths.Target);
-        if (change.BeforeHash == change.DesiredHash) return;
+        if (change.BeforeHash == change.DesiredHash)
+        {
+            // A no-op still adopts the preflight bytes into a receipt. Validate those
+            // bytes under the same write-denying handle; no source copy is needed.
+            if (change.BeforeHash is { } unchanged)
+            {
+                using var current = NativeFile.Open(paths.Target);
+                NativeFile.Verify(current, unchanged, paths.Target);
+            }
+            else if (File.Exists(paths.Target) || Directory.Exists(paths.Target))
+                throw new DeploymentException("ChangedSincePreflight", paths.Target);
+            return;
+        }
 
         using var staged = change.DesiredHash is { } desired
             ? journal.FileProtocol >= 2
                 ? PrepareCopy(source?.SourcePath ?? (source?.GeneratedContent is null ? blobs.PathFor(desired) : null),
-                    source?.GeneratedContent, paths.Next, () => fault?.Invoke("CopyCompleted", index))
+                    source?.GeneratedContent, desired, paths.Next, () => fault?.Invoke("CopyCompleted", index),
+                    () => fault?.Invoke("StageWriting", index))
                 : Prepare(blobs, desired, paths.Next, () => fault?.Invoke("StageWriting", index))
             : null;
         fault?.Invoke("StageReady", index);
         if (change.BeforeHash is { } before)
         {
-            using var original = NativeFile.Open(paths.Target);
-            if (journal.FileProtocol < 2) NativeFile.Verify(original, before, paths.Target);
-            fault?.Invoke("TargetLocked", index);
-            NativeFile.Rename(original, paths.Before);
+            var original = NativeFile.Open(paths.Target);
+            try
+            {
+                NativeFile.Verify(original, before, paths.Target);
+                fault?.Invoke("TargetLocked", index);
+                NativeFile.Rename(original, paths.Before);
+                // The engine retains this exact identity through commit and deletion,
+                // without reopening a mutable temporary path or hashing it again.
+                parked.Add(original);
+                original = null!;
+            }
+            finally { original?.Dispose(); }
         }
         else if (File.Exists(paths.Target) || Directory.Exists(paths.Target))
             throw new DeploymentException("ChangedSincePreflight", paths.Target);
 
         fault?.Invoke("TargetParked", index);
-        if (staged is not null) NativeFile.Rename(staged, paths.Target);
+        if (staged is not null)
+        {
+            NativeFile.Rename(staged, paths.Target);
+            // Buffered protocol-2 staging uses explicit durability boundaries rather
+            // than WRITE_THROUGH on every copy buffer. Keep the handle through flush.
+            if (journal.FileProtocol >= 2) staged.Flush(flushToDisk: true);
+        }
         fault?.Invoke("TargetPublished", index);
-        // File.Copy reports copy errors. No second copy through Data and no repeated
-        // full-file hashing; the receipt uses the hash computed by the preflight.
     }
 
-    private static FileStream PrepareCopy(string? source, byte[]? content, string path, Action copied)
+    private static FileStream PrepareCopy(string? source, byte[]? content, string expected,
+        string path, Action copied, Action duringWrite)
     {
+        var output = NativeFile.Open(path, create: true, buffered: true);
         try
         {
-            if (content is not null) File.WriteAllBytes(path, content);
-            else File.Copy(source!, path, overwrite: false);
+            using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+            if (content is not null)
+            {
+                output.Write(content);
+                hash.AppendData(content);
+            }
+            else
+            {
+                // One source read and one staging write, never a source cache or
+                // a second staging read. Reject writers while copying these bytes.
+                using var input = new FileStream(source!, FileMode.Open, FileAccess.Read,
+                    FileShare.Read, 128 * 1024, FileOptions.SequentialScan);
+                var buffer = new byte[128 * 1024];
+                int count;
+                while ((count = input.Read(buffer)) != 0)
+                {
+                    output.Write(buffer, 0, count);
+                    hash.AppendData(buffer, 0, count);
+                    duringWrite();
+                }
+            }
+            if (Convert.ToHexString(hash.GetHashAndReset()) != expected)
+                throw new DeploymentException("ChangedSincePreflight", source ?? path);
+            output.Flush(flushToDisk: true);
             copied();
-            return NativeFile.Open(path);
+            return output;
         }
         catch
         {
-            // This operation's unique staging name, on the game volume, never a source file.
-            if (File.Exists(path)) File.Delete(path);
+            // Delete only our still-owned CREATE_NEW handle, never a reopened path.
+            try { NativeFile.Delete(output); }
+            finally { output.Dispose(); }
             throw;
         }
     }

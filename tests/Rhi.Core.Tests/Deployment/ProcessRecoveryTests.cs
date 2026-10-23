@@ -9,6 +9,7 @@ public sealed class ProcessRecoveryTests
 {
     [Theory]
     [InlineData("StageReady")]
+    [InlineData("StageWriting")]
     [InlineData("TargetParked")]
     [InlineData("TargetPublished")]
     [InlineData("CopyCompleted")]
@@ -18,6 +19,8 @@ public sealed class ProcessRecoveryTests
     {
         using var f = new Sandbox();
         File.WriteAllText(f.Target, "original");
+        var sourceContent = phase == "StageWriting" ? new string('s', 400000) : "v1";
+        File.WriteAllText(f.Source, sourceContent);
         var sourceFolder = Path.GetDirectoryName(f.Source)!;
         File.WriteAllText(Path.Combine(sourceFolder, "z-later.txt"), "later file");
         f.Store.Save(f.Store.State with
@@ -44,7 +47,7 @@ public sealed class ProcessRecoveryTests
         var result = new DeploymentEngine(reopened).Recover(journal.Id);
         Assert.Equal(OperationStatus.Restored, result.Status);
         Assert.Equal("original", File.ReadAllText(f.Target));
-        Assert.Equal("v1", File.ReadAllText(f.Source));
+        Assert.Equal(sourceContent, File.ReadAllText(f.Source));
         Assert.Equal("later file", File.ReadAllText(Path.Combine(sourceFolder, "z-later.txt")));
         Assert.False(File.Exists(Path.Combine(f.Game.DeploymentRoot, "z-later.txt")));
         Assert.Empty(reopened.Pending());

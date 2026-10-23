@@ -169,15 +169,44 @@ public sealed partial class LibrariesView : UserControl
         AutomationProperties.SetAutomationId(label, "VersionLabelInput");
         AutomationProperties.SetAutomationId(source, "VersionSourceInput");
         AutomationProperties.SetAutomationId(target, "VersionTargetOverride");
+        var pickerError = Ui.Text("");
+        pickerError.Foreground = Ui.ThemeBrush("ErrorBrush");
+        pickerError.Visibility = Visibility.Collapsed;
+        AutomationProperties.SetAutomationId(pickerError, "VersionPickerError");
+        void ClearPickerError()
+        {
+            pickerError.Text = "";
+            pickerError.Visibility = Visibility.Collapsed;
+        }
+        async Task PickSource(Func<Task<string?>> pick)
+        {
+            ClearPickerError();
+            try
+            {
+                var path = await pick();
+                if (path is not null) source.Text = path;
+            }
+            catch (Exception ex)
+            {
+                // An editor is already open: a second ContentDialog would itself throw.
+                // Keep picker/path-policy failures here without changing the draft or validation.
+                Console.Error.WriteLine(ex);
+                pickerError.Text = ex is DeploymentException de
+                    ? Strings.Get(de.Code) + (de.Message == de.Code ? "" : "\n" + de.Message)
+                    : Strings.Get("InspectionFailed") + "\n" + ex.Message;
+                pickerError.Visibility = Visibility.Visible;
+            }
+        }
+        source.TextChanged += (_, _) => ClearPickerError();
         string? StartFolder() => string.IsNullOrWhiteSpace(library.SourceRoot) ? null : library.SourceRoot;
-        var chooseFolder = c.Button("ChooseFolder", async () => { var p = await c.Windows.PickFolder(StartFolder()); if (p is not null) source.Text = p; });
+        var chooseFolder = c.Button("ChooseFolder", () => PickSource(() => c.Windows.PickFolder(StartFolder())));
         AutomationProperties.SetAutomationId(chooseFolder, "VersionChooseFolder");
-        var chooseFile = c.Button("ChooseFile", async () => { var p = await c.Windows.PickFile(initialDirectory: StartFolder()); if (p is not null) source.Text = p; });
+        var chooseFile = c.Button("ChooseFile", () => PickSource(() => c.Windows.PickFile(initialDirectory: StartFolder())));
         AutomationProperties.SetAutomationId(chooseFile, "VersionChooseFile");
         chooseFolder.IsEnabled = ordinary;
         target.IsEnabled = ordinary;
         if (!ordinary) target.Text = "";
-        var sourceGroup = Ui.Stack(source, Ui.Row(chooseFolder, chooseFile), Ui.Label(ordinary ? "VersionSourceHelp" : "ReShadePending"));
+        var sourceGroup = Ui.Stack(source, Ui.Row(chooseFolder, chooseFile), pickerError, Ui.Label(ordinary ? "VersionSourceHelp" : "ReShadePending"));
         var destination = Ui.Text("");
         AutomationProperties.SetAutomationId(destination, "VersionTargetHint");
         if (ordinary)

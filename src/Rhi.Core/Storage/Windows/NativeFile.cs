@@ -49,12 +49,12 @@ internal static class NativeFile
         return Path.TrimEndingDirectorySeparator(buffer.ToString());
     }
 
-    internal static FileStream Open(string path, bool create = false)
+    internal static FileStream Open(string path, bool create = false, bool buffered = false)
     {
         // DELETE + GENERIC_READ (+ GENERIC_WRITE for our new staging file).
         // No FILE_SHARE_WRITE or FILE_SHARE_DELETE: inspection and mutation use this handle.
         var handle = CreateFileW(path, create ? 0xC0010000u : 0x80010000u, 1,
-            IntPtr.Zero, create ? 1u : 3u, 0x80200000, IntPtr.Zero);
+            IntPtr.Zero, create ? 1u : 3u, buffered ? 0x00200000u : 0x80200000u, IntPtr.Zero);
         if (handle.IsInvalid) { var error = Error("CreateFile"); handle.Dispose(); throw error; }
         try
         {

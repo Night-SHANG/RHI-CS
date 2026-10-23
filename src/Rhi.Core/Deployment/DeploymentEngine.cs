@@ -60,6 +60,7 @@ public sealed partial class DeploymentEngine(WorkspaceStore store, Action<string
             PreviouslyCreatedDirectories: library.PreviouslyCreatedDirectories);
         var started = false;
         var parentLeases = new List<DirectoryLease>();
+        var parked = new List<FileStream>();
         try
         {
             using var targetLease = DirectoryLease.Acquire(batch.TargetRoot);
@@ -137,13 +138,17 @@ public sealed partial class DeploymentEngine(WorkspaceStore store, Action<string
                 var change = library.Changes[i];
                 journal = journal with { IntentIndex = i };
                 fault?.Invoke("BeforeWrite", i);
-                FileReplacement.Apply(store.Blobs, journal, i, fault, change, parentHeld: true);
+                FileReplacement.Apply(store.Blobs, journal, i, fault, parked, change, parentHeld: true);
                 fault?.Invoke("AfterWrite", i);
                 progress?.Report(new("Executing", library.LibraryName, i + 1, library.Changes.Length));
             }
             cancellation.ThrowIfCancellationRequested();
             Commit(batch, library, journal);
-            for (var i = 0; i <= journal.IntentIndex; i++) FileReplacement.Cleanup(journal, i, verify: false, parentHeld: true);
+            // Normal execution owns only these parked originals; staging has already
+            // been renamed. Recovery alone inspects names after ownership was lost.
+            foreach (var original in parked) NativeFile.Delete(original);
+            foreach (var original in parked) original.Dispose();
+            parked.Clear();
             foreach (var lease in parentLeases) lease.Dispose();
             parentLeases.Clear();
             FileWriter.CleanEmptyDirectories(targetLease.Identity.Path,
@@ -154,6 +159,8 @@ public sealed partial class DeploymentEngine(WorkspaceStore store, Action<string
         }
         catch (Exception ex) when (ex is not OutOfMemoryException and not StackOverflowException)
         {
+            foreach (var original in parked) original.Dispose();
+            parked.Clear();
             foreach (var lease in parentLeases) lease.Dispose();
             parentLeases.Clear();
             if (store.State.CommittedOperations.Contains(id))
@@ -169,6 +176,7 @@ public sealed partial class DeploymentEngine(WorkspaceStore store, Action<string
         }
         finally
         {
+            foreach (var original in parked) original.Dispose();
             foreach (var lease in parentLeases) lease.Dispose();
         }
     }
