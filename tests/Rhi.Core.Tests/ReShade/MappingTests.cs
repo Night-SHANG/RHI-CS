@@ -98,7 +98,8 @@ public sealed class MappingTests
         using var f = new ReShadeFixture();
         var plan = f.Box.Plan(f.Deploy);
         plan.Libraries[0].Changes.First(c => c.RelativePath == "dxgi.dll").GeneratedContent![0] ^= 1;
-        Assert.Equal(OperationStatus.Restored, Assert.Single(f.Box.Engine.Execute(plan, new(true, true))).Status);
+        var error = Assert.Throws<DeploymentException>(() => f.Box.Engine.Execute(plan, new(true, true)));
+        Assert.Equal("ChangedSincePreflight", error.Code);
         Assert.False(File.Exists(Path.Combine(f.Box.Game.DeploymentRoot, "dxgi.dll")));
         Assert.False(File.Exists(f.Config));
     }

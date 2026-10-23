@@ -45,7 +45,8 @@ public sealed partial class DeploymentEngine
         for (var i = 0; i <= journal.IntentIndex; i++)
         {
             var file = journal.Files[i];
-            if (file.BeforeHash is { } before) store.Blobs.Verify(before);
+            if (file.BeforeHash is { } before && (journal.FileProtocol < 2 || FileReplacement.NeedsBackupBlob(journal, i)))
+                store.Blobs.Verify(before);
             FileReplacement.ValidateRecovery(journal, i);
         }
     }

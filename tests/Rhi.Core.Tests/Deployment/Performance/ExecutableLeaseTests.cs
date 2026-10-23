@@ -5,16 +5,14 @@ namespace Rhi.Core.Tests.Deployment;
 public sealed class ExecutableLeaseTests
 {
     [Fact]
-    public void Executable_is_locked_through_each_write_and_released_after_commit()
+    public void Normal_copy_does_not_lock_or_rehash_the_game_executable()
     {
         Sandbox? box = null; var attempts = 0;
         using (box = new Sandbox((stage, _) =>
         {
             if (stage != "BeforeWrite") return;
             attempts++;
-            Assert.Throws<IOException>(() => File.WriteAllText(box!.Game.ExePath, "changed"));
-            Assert.Throws<IOException>(() => File.Move(box!.Game.ExePath, box.Game.ExePath + ".moved"));
-            Assert.Throws<IOException>(() => Directory.Move(box!.Game.DeploymentRoot, box.Game.DeploymentRoot + ".moved"));
+            File.WriteAllText(box!.Game.ExePath, "game updated");
         }))
         {
             Assert.Equal(OperationStatus.Succeeded, Assert.Single(box.Deploy()).Status);
@@ -34,13 +32,13 @@ public sealed class ExecutableLeaseTests
     }
 
     [Fact]
-    public void Executable_change_after_preflight_prevents_any_write()
+    public void Executable_update_does_not_invalidate_an_unrelated_resource_copy()
     {
         using var box = new Sandbox();
         var plan = box.Plan(new DeploymentRequest(box.Library.Id, box.Version.Id, OperationKind.Deploy));
         File.AppendAllText(box.Game.ExePath, "changed");
-        Assert.Equal("ChangedSincePreflight", Assert.Throws<DeploymentException>(() => box.Engine.Execute(plan, new(true, true))).Code);
-        Assert.False(File.Exists(box.Target));
-        Assert.Empty(box.Store.State.Receipts);
+        Assert.Equal(OperationStatus.Succeeded, Assert.Single(box.Engine.Execute(plan, new(true, true))).Status);
+        Assert.Equal("v1", File.ReadAllText(box.Target));
+        Assert.Single(box.Store.State.Receipts);
     }
 }

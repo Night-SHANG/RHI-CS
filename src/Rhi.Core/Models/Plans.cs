@@ -6,10 +6,12 @@ public sealed record DeploymentRequest(Guid LibraryId, Guid? VersionId, Operatio
 public sealed record PlanIssue(string Code, string Detail);
 public sealed record SourceSnapshot(string Path, string? Hash);
 public sealed record ConfigurationEdit(string Section, string Key, string? Before, string After);
+public sealed record FileStamp(long Length, long ModifiedUtcTicks);
 public sealed record FileChange(string RelativePath, string? SourcePath, string? DesiredHash,
     string? BeforeHash, string? OriginalHash, bool IsManagedAfter, bool ExternalChange,
     DirectoryIdentity? ParentIdentity = null,
-    [property: JsonIgnore] byte[]? GeneratedContent = null, ConfigurationEdit[]? ConfigurationEdits = null);
+    [property: JsonIgnore] byte[]? GeneratedContent = null, ConfigurationEdit[]? ConfigurationEdits = null,
+    FileStamp? SourceStamp = null, FileStamp? TargetStamp = null);
 public sealed record LibraryPlan(DeploymentRequest Request, string LibraryName, string VersionLabel,
     FileChange[] Changes, string[] PreviouslyCreatedDirectories, bool RequiresOverwrite, bool RequiresProtection,
     SourceSnapshot[]? Inputs = null);

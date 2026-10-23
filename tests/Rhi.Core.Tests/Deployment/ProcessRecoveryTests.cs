@@ -11,7 +11,9 @@ public sealed class ProcessRecoveryTests
     [InlineData("StageReady")]
     [InlineData("TargetParked")]
     [InlineData("TargetPublished")]
-    [InlineData("StageWriting")]
+    [InlineData("CopyCompleted")]
+    [InlineData("BeforeWrite")]
+    [InlineData("BeforeCommit")]
     public async Task A_new_process_restores_after_abrupt_exit(string phase)
     {
         using var f = new Sandbox();
@@ -34,14 +36,6 @@ public sealed class ProcessRecoveryTests
         using var reopened = WorkspaceStore.Open(f.Data);
         var journal = Assert.Single(reopened.Pending());
         var result = new DeploymentEngine(reopened).Recover(journal.Id);
-        if (phase == "StageWriting")
-        {
-            // Unflushed/partial staging is not mistaken for a complete replacement.
-            Assert.Equal(OperationStatus.NeedsRepair, result.Status);
-            Assert.Equal("original", File.ReadAllText(f.Target));
-            Assert.Single(reopened.Pending());
-            return;
-        }
         Assert.Equal(OperationStatus.Restored, result.Status);
         Assert.Equal("original", File.ReadAllText(f.Target));
         Assert.Equal("v1", File.ReadAllText(f.Source));

@@ -31,6 +31,16 @@ var library = new ResourceLibrary(Guid.NewGuid(), "Benchmark", "", [version]);
 store.Save(store.State with { Games = [game], Libraries = [library] });
 var stages = new Dictionary<string, double>();
 var watch = Stopwatch.StartNew();
+var direct = Directory.CreateDirectory(Path.Combine(root, "direct-copy")).FullName;
+watch.Restart();
+foreach (var name in hashes.Keys) File.Copy(Path.Combine(source, name), Path.Combine(direct, name));
+stages["systemCopySeconds"] = watch.Elapsed.TotalSeconds;
+foreach (var (name, hash) in hashes)
+    if (BlobStore.Hash(Path.Combine(direct, name)) != hash) throw new InvalidOperationException("System copy mismatch.");
+watch.Restart();
+foreach (var name in hashes.Keys) File.Delete(Path.Combine(direct, name));
+stages["systemClearSeconds"] = watch.Elapsed.TotalSeconds;
+watch.Restart();
 var plan = new DeploymentPlanner(store).Build(store.State, game.Id, [new(library.Id, version.Id, OperationKind.Deploy)]);
 stages["preflightSeconds"] = watch.Elapsed.TotalSeconds;
 if (!plan.CanExecute) throw new InvalidOperationException(JsonSerializer.Serialize(plan.Issues));
@@ -42,6 +52,8 @@ if (result.Single().Status != OperationStatus.Succeeded || store.State.Receipts.
 foreach (var (name, hash) in hashes)
     if (BlobStore.Hash(Path.Combine(source, name)) != hash || BlobStore.Hash(Path.Combine(target, name)) != hash)
         throw new InvalidOperationException("File verification failed: " + name);
+if (Directory.GetFiles(Path.Combine(store.Root, "blobs")).Length != 0)
+    throw new InvalidOperationException("Unnecessary source cache created.");
 watch.Restart();
 var clear = new DeploymentPlanner(store).Build(store.State, game.Id, [new(library.Id, null, OperationKind.Clear)]);
 stages["clearPreflightSeconds"] = watch.Elapsed.TotalSeconds;
@@ -50,6 +62,8 @@ var cleared = new DeploymentEngine(store).Execute(clear, new(true, true));
 stages["clearSeconds"] = watch.Elapsed.TotalSeconds;
 if (cleared.Single().Status != OperationStatus.Succeeded || store.State.Receipts.Length != 0 || Directory.GetFiles(target).Length != 1)
     throw new InvalidOperationException("Clear verification failed.");
+if (Directory.GetFiles(Path.Combine(store.Root, "blobs")).Length != 0)
+    throw new InvalidOperationException("Unmodified managed files were unnecessarily cached on clear.");
 var report = new { revision = args[1], files = hashes.Count, bytes = 990L * data.Length,
     executableBytes = new FileInfo(exe).Length, stages, verified = true,
     scope = "Synthetic local SSD runner; real storage, antivirus and app process checks are not represented." };

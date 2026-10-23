@@ -21,7 +21,7 @@ public sealed class DeploymentPlanner(WorkspaceStore store)
         {
             ValidateRoots(state, game);
             targetIdentity = DirectoryLease.Inspect(game.DeploymentRoot);
-            exeHash = BlobStore.Hash(game.ExePath) ?? throw new DeploymentException("GameUnavailable", game.ExePath);
+            if (!File.Exists(game.ExePath)) throw new DeploymentException("GameUnavailable", game.ExePath);
             if (store.Pending().Any(j => j.GameId == game.Id && !state.CommittedOperations.Contains(j.Id)))
                 throw new DeploymentException("NeedsRepair", game.Name);
             foreach (var receipt in state.Receipts)
@@ -46,7 +46,7 @@ public sealed class DeploymentPlanner(WorkspaceStore store)
                     request.Kind != OperationKind.Deploy && receipt is null)
                     throw new DeploymentException("StateChanged", library.Name);
                 if (receipt is not null && (!PathPolicy.Comparer.Equals(receipt.TargetRoot, game.DeploymentRoot) ||
-                    receipt.ExeHash != exeHash || receipt.TargetIdentity != targetIdentity))
+                    receipt.TargetIdentity != targetIdentity))
                     throw new DeploymentException("GameIdentityChanged", game.Name);
 
                 var version = request.Kind == OperationKind.Clear ? null : library.Versions.Single(v => v.Id == request.VersionId);
@@ -77,7 +77,8 @@ public sealed class DeploymentPlanner(WorkspaceStore store)
                             ?? throw new DeploymentException("SourceUnavailable", source);
                     changes.Add(new(relative, source, wanted, before, managed?.OriginalHash,
                         resource is not null, managed is not null && before != managed.InstalledHash,
-                        DirectoryLease.ExistingParent(target), resource?.Content, resource?.Edits));
+                        DirectoryLease.ExistingParent(target), resource?.Content, resource?.Edits,
+                        source is null ? null : Stamp(source), Stamp(target)));
                 }
                 foreach (var input in mapping.Inputs)
                     if (BlobStore.Hash(input.Path) != input.Hash)
@@ -133,16 +134,23 @@ public sealed class DeploymentPlanner(WorkspaceStore store)
     {
         try
         {
-            long bytes = 0;
-            foreach (var change in plans.SelectMany(p => p.Changes))
+            long targetBytes = 0, backupBytes = 0;
+            foreach (var plan in plans)
+            foreach (var change in plan.Changes)
             {
-                if (change.SourcePath is not null) bytes = checked(bytes + new FileInfo(change.SourcePath).Length);
-                if (change.GeneratedContent is not null) bytes = checked(bytes + change.GeneratedContent.LongLength);
+                if (change.SourcePath is not null) targetBytes = checked(targetBytes + new FileInfo(change.SourcePath).Length);
+                if (change.GeneratedContent is not null) targetBytes = checked(targetBytes + change.GeneratedContent.LongLength);
+                if (change.SourcePath is null && change.GeneratedContent is null && change.DesiredHash is { } hash)
+                    targetBytes = checked(targetBytes + new FileInfo(store.Blobs.PathFor(hash)).Length);
                 var target = PathPolicy.Target(targetRoot, change.RelativePath);
-                if (File.Exists(target)) bytes = checked(bytes + new FileInfo(target).Length);
+                if ((plan.RequiresOverwrite || plan.RequiresProtection) && File.Exists(target))
+                    backupBytes = checked(backupBytes + new FileInfo(target).Length * (plan.RequiresProtection ? 2 : 1));
             }
-            var required = checked(bytes * 3 + 16 * 1024 * 1024);
-            foreach (var volume in new[] { Path.GetPathRoot(store.Root)!, Path.GetPathRoot(targetRoot)! }.Distinct(PathPolicy.Comparer))
+            var volumes = new Dictionary<string, long>(PathPolicy.Comparer);
+            volumes[Path.GetPathRoot(targetRoot)!] = targetBytes;
+            var dataVolume = Path.GetPathRoot(store.Root)!;
+            volumes[dataVolume] = checked(volumes.GetValueOrDefault(dataVolume) + backupBytes + 1024 * 1024);
+            foreach (var (volume, required) in volumes)
                 if (new DriveInfo(volume).AvailableFreeSpace < required) issues.Add(new("InsufficientSpace", volume));
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or OverflowException)
@@ -151,4 +159,10 @@ public sealed class DeploymentPlanner(WorkspaceStore store)
 
     private static void AddIssue(List<PlanIssue> issues, Exception ex) =>
         issues.Add(new(ex is DeploymentException de ? de.Code : "InspectionFailed", ex.Message));
+
+    internal static FileStamp? Stamp(string path)
+    {
+        var info = new FileInfo(path);
+        return info.Exists ? new(info.Length, info.LastWriteTimeUtc.Ticks) : null;
+    }
 }

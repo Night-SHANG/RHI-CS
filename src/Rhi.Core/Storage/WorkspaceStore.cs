@@ -62,7 +62,7 @@ public sealed class WorkspaceStore : IDisposable
             store.CheckAvailable();
             foreach (var receipt in state.Receipts)
                 foreach (var file in receipt.Files.Where(f => f.OriginalHash is not null)) store.Blobs.Verify(file.OriginalHash!);
-            foreach (var journal in store.Pending().Where(j => j.IntentIndex >= 0))
+            foreach (var journal in store.Pending().Where(j => j.IntentIndex >= 0 && j.FileProtocol < 2))
                 foreach (var file in journal.Files.Where(f => f.BeforeHash is not null)) store.Blobs.Verify(file.BeforeHash!);
             return store;
         }

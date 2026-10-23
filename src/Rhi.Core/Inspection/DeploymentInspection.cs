@@ -26,8 +26,7 @@ public static class DeploymentInspection
             if (!Directory.Exists(receipt.TargetRoot) || !File.Exists(game.ExePath))
                 throw new DeploymentException("GameUnavailable", receipt.TargetRoot);
             using var lease = DirectoryLease.Acquire(receipt.TargetRoot);
-            if (receipt.TargetIdentity != lease.Identity || !PathPolicy.Comparer.Equals(receipt.TargetRoot, game.DeploymentRoot) ||
-                BlobStore.Hash(game.ExePath) != receipt.ExeHash)
+            if (receipt.TargetIdentity != lease.Identity || !PathPolicy.Comparer.Equals(receipt.TargetRoot, game.DeploymentRoot))
                 throw new DeploymentException("GameIdentityChanged", receipt.TargetRoot);
             foreach (var file in receipt.Files)
             {

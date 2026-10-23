@@ -19,9 +19,9 @@ public sealed class ReplacementSafetyTests
     }
 
     [Fact]
-    public void Partial_staging_failure_never_changes_existing_target()
+    public void Copy_failure_before_publish_preserves_existing_target()
     {
-        using var f = new Sandbox((phase, _) => { if (phase == "StageWriting") throw new IOException("disk full"); });
+        using var f = new Sandbox((phase, _) => { if (phase == "CopyCompleted") throw new IOException("copy failure"); });
         File.WriteAllText(f.Source, new string('x', 200000));
         File.WriteAllText(f.Target, "original");
         var result = f.Deploy().Single();

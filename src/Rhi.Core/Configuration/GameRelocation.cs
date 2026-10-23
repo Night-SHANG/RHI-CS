@@ -65,11 +65,10 @@ public static class GameRelocation
                 throw new DeploymentException("RelocationLayoutChanged");
             identity = held.Directory(candidate.DeploymentRoot);
             held.File(candidate.ExePath);
-            var exeHash = BlobStore.Hash(candidate.ExePath);
             var paths = new HashSet<string>(PathPolicy.Comparer);
             foreach (var receipt in receipts)
             {
-                if (!PathPolicy.Comparer.Equals(receipt.TargetRoot, old.DeploymentRoot) || receipt.TargetIdentity is null || receipt.ExeHash != exeHash)
+                if (!PathPolicy.Comparer.Equals(receipt.TargetRoot, old.DeploymentRoot) || receipt.TargetIdentity is null)
                     throw new DeploymentException("GameIdentityChanged", candidate.ExePath);
                 foreach (var file in receipt.Files)
                 {

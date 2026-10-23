@@ -11,7 +11,7 @@ internal static class FileReplacement
 
     private static Locations Paths(OperationJournal journal, int index)
     {
-        if (journal.FileProtocol != 1 || journal.TargetIdentity is null)
+        if (journal.FileProtocol is not (1 or 2) || journal.TargetIdentity is null)
             throw new DeploymentException("RecoveryTargetChanged", journal.TargetRoot);
         var target = PathPolicy.Target(journal.TargetIdentity.Path, journal.Files[index].RelativePath);
         var prefix = Path.Combine(Path.GetDirectoryName(target)!, $".rhi-{journal.Id:N}-{index}");
@@ -24,7 +24,7 @@ internal static class FileReplacement
             throw new DeploymentException("GameIdentityChanged", file.RelativePath);
     }
 
-    public static void Apply(BlobStore blobs, OperationJournal journal, int index, Action<string, int>? fault)
+    public static void Apply(BlobStore blobs, OperationJournal journal, int index, Action<string, int>? fault, FileChange? source = null)
     {
         var paths = Paths(journal, index);
         var change = journal.Files[index];
@@ -32,17 +32,21 @@ internal static class FileReplacement
         CheckParent(change);
         foreach (var path in new[] { paths.Next, paths.Before, paths.Restore, paths.Displaced })
             if (File.Exists(path) || Directory.Exists(path)) throw new DeploymentException("TargetConflict", path);
-        if (BlobStore.Hash(paths.Target) != change.BeforeHash)
+        if (journal.FileProtocol < 2 && BlobStore.Hash(paths.Target) != change.BeforeHash)
             throw new DeploymentException("ChangedSincePreflight", paths.Target);
         if (change.BeforeHash == change.DesiredHash) return;
 
         using var staged = change.DesiredHash is { } desired
-            ? Prepare(blobs, desired, paths.Next, () => fault?.Invoke("StageWriting", index)) : null;
+            ? journal.FileProtocol >= 2
+                ? PrepareCopy(source?.SourcePath ?? (source?.GeneratedContent is null ? blobs.PathFor(desired) : null),
+                    source?.GeneratedContent, paths.Next, () => fault?.Invoke("CopyCompleted", index))
+                : Prepare(blobs, desired, paths.Next, () => fault?.Invoke("StageWriting", index))
+            : null;
         fault?.Invoke("StageReady", index);
         if (change.BeforeHash is { } before)
         {
             using var original = NativeFile.Open(paths.Target);
-            NativeFile.Verify(original, before, paths.Target);
+            if (journal.FileProtocol < 2) NativeFile.Verify(original, before, paths.Target);
             fault?.Invoke("TargetLocked", index);
             NativeFile.Rename(original, paths.Before);
         }
@@ -52,7 +56,25 @@ internal static class FileReplacement
         fault?.Invoke("TargetParked", index);
         if (staged is not null) NativeFile.Rename(staged, paths.Target);
         fault?.Invoke("TargetPublished", index);
-        // Verification is performed after all held streams have closed by the executor.
+        // File.Copy reports copy errors. No second copy through Data and no repeated
+        // full-file hashing; the receipt uses the hash computed by the preflight.
+    }
+
+    private static FileStream PrepareCopy(string? source, byte[]? content, string path, Action copied)
+    {
+        try
+        {
+            if (content is not null) File.WriteAllBytes(path, content);
+            else File.Copy(source!, path, overwrite: false);
+            copied();
+            return NativeFile.Open(path);
+        }
+        catch
+        {
+            // This operation's unique staging name, on the game volume, never a source file.
+            if (File.Exists(path)) File.Delete(path);
+            throw;
+        }
     }
 
     private static FileStream Prepare(BlobStore blobs, string hash, string path, Action? duringWrite = null)
@@ -89,7 +111,7 @@ internal static class FileReplacement
         var file = journal.Files[index];
         CheckParent(file);
         VerifyOptional(paths.Before, file.BeforeHash);
-        VerifyOptional(paths.Next, file.DesiredHash);
+        if (journal.FileProtocol < 2) VerifyOptional(paths.Next, file.DesiredHash);
         VerifyOptional(paths.Restore, file.BeforeHash);
         VerifyOptional(paths.Displaced, file.DesiredHash);
         var current = BlobStore.Hash(paths.Target);
@@ -123,16 +145,24 @@ internal static class FileReplacement
         }
     }
 
-    public static void Cleanup(OperationJournal journal, int index)
+    public static void Cleanup(OperationJournal journal, int index, bool verify = true)
     {
         var paths = Paths(journal, index);
         using var directory = DirectoryLease.Acquire(Path.GetDirectoryName(paths.Target)!);
         var file = journal.Files[index];
         CheckParent(file);
-        RemoveVerified(paths.Before, file.BeforeHash);
-        RemoveVerified(paths.Next, file.DesiredHash);
-        RemoveVerified(paths.Restore, file.BeforeHash);
-        RemoveVerified(paths.Displaced, file.DesiredHash);
+        RemoveVerified(paths.Before, file.BeforeHash, verify);
+        RemoveVerified(paths.Next, file.DesiredHash, verify && journal.FileProtocol < 2);
+        RemoveVerified(paths.Restore, file.BeforeHash, verify);
+        RemoveVerified(paths.Displaced, file.DesiredHash, verify);
+    }
+
+    public static bool NeedsBackupBlob(OperationJournal journal, int index)
+    {
+        var paths = Paths(journal, index);
+        var file = journal.Files[index];
+        return file.BeforeHash is not null && BlobStore.Hash(paths.Target) != file.BeforeHash &&
+            !File.Exists(paths.Before) && !File.Exists(paths.Restore);
     }
 
     public static void ValidateCleanup(OperationJournal journal, int index)
@@ -154,12 +184,12 @@ internal static class FileReplacement
             throw new DeploymentException("RecoveryTargetChanged", path);
     }
 
-    private static void RemoveVerified(string path, string? expected)
+    private static void RemoveVerified(string path, string? expected, bool verify = true)
     {
         if (!File.Exists(path) && !Directory.Exists(path)) return;
         if (expected is null) throw new DeploymentException("RecoveryTargetChanged", path);
         using var file = NativeFile.Open(path);
-        NativeFile.Verify(file, expected, path);
+        if (verify) NativeFile.Verify(file, expected, path);
         NativeFile.Delete(file);
     }
 }
