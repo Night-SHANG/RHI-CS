@@ -1,32 +1,9 @@
-name: Inspect saved high-DPI evidence
-on:
-  push:
-    branches: [maintenance/rhi-dpi-evidence-20261023]
-    paths: [.github/workflows/dpi-evidence.yml]
-permissions:
-  contents: write
+name: Retired high-DPI evidence diagnostic
+on: workflow_dispatch
+permissions: {}
 jobs:
-  evidence:
+  retired:
+    if: ${{ false }}
     runs-on: ubuntu-latest
-    timeout-minutes: 3
     steps:
-      - name: Read verified fixture screenshot from existing draft
-        env:
-          GH_TOKEN: ${{ github.token }}
-        shell: python
-        run: |
-          import urllib.request, os, hashlib, io, zipfile, base64
-          url = "https://api.github.com/repos/Night-SHANG/RHI-CS/releases/assets/667868143"
-          req = urllib.request.Request(url, headers={"Authorization": "Bearer " + os.environ["GH_TOKEN"], "Accept": "application/octet-stream"})
-          data = urllib.request.urlopen(req).read()
-          assert hashlib.sha256(data).hexdigest() == "186056022e4d0863e44882143661344f4a5bbdf0c5c24936d5deff9f6d2fe7de"
-          with zipfile.ZipFile(io.BytesIO(data)) as z:
-              names = [n for n in z.namelist() if n.endswith("validation-failure-dpi-168-NameRequired.png")]
-              assert len(names) == 1, names
-              raw = z.read(names[0])
-              assert len(raw) < 2000000
-              print("FIXTURE_IMAGE_BEGIN")
-              encoded = base64.b64encode(raw).decode()
-              for start in range(0, len(encoded), 4000):
-                  print("FIXTURE_PNG:" + encoded[start:start+4000])
-              print("FIXTURE_IMAGE_END")
+      - run: echo Diagnostic retired; no asset access.
